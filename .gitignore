@@ -1,0 +1,16 @@
+# Files
+*.log
+secrets.yaml
+.DS_Store
+apps/apps.yaml
+
+# Directories
+tts
+venv
+.storage
+dashboards
+www
+__pycache__
+*.pyc
+.uuid
+.idea/*

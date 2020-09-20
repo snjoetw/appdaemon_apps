@@ -1,0 +1,272 @@
+
+water_leak_detected:
+  module: automation
+  class: Automation
+  cancel_job_when_no_match: true
+  triggers:
+    - platform: state
+      entity_ids:
+        # Kitchen Fridge Water Leak
+        - binary_sensor.water_leak_sensor_158d000212f249
+        - binary_sensor.zb_kitchen_sink_water_leak
+        - binary_sensor.zb_washer_water_leak
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: repeat
+          repeat: 300
+          delay: 5
+          actions:
+            - platform: sonos
+              tts_message: "{{ friendly_name(trigger_info.data.entity_id) }} detected water leak."
+
+
+mailbox_monitor:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - binary_sensor.zb_mailbox_door
+      from: "off"
+      to: "on"
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.mqtt_front_door
+          state: "off"
+      actions:
+        - platform: camera_snapshot
+          entity_id: camera.front_door
+          filename: mailbox_notifier.jpg
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_mail_delivered:
+              force_on: false
+
+
+mail_delivered_notifier:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_boolean.is_mail_delivered
+        - binary_sensor.mqtt_front_door
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          entity_id: input_boolean.is_mail_delivered
+          from: "off"
+          to: "on"
+      actions:
+        - platform: delay
+          delay: 120
+          actions:
+            - platform: alarm_notifier
+              message: "Looks like mail was just delivered"
+              image_filename: mailbox_notifier.jpg
+    - constraints:
+        - platform: triggered_state
+          # either input_boolean.is_mail_delivered or binary_sensor.mqtt_front_door
+          # went from on to off should cancel the notifier
+          from: "on"
+          to: "off"
+      actions:
+        - platform: cancel_job
+          cancel_all: true
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_mail_delivered:
+              force_off: false
+
+
+package_delivered_notifier:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - switch.mqtt_front_door_package_left
+        - binary_sensor.mqtt_front_door
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          entity_id: switch.mqtt_front_door_package_left
+          from: "off"
+          to: "on"
+      actions:
+        - platform: camera_snapshot
+          entity_id: camera.front_door
+          filename: mailbox_notifier.jpg
+        - platform: delay
+          delay: 5
+          actions:
+            - platform: alarm_notifier
+              message: "A package was just delivered"
+              image_filename: mailbox_notifier.jpg
+            - platform: sonos
+              tts_message: "A package was just delivered"
+    - constraints:
+        - platform: triggered_state
+          entity_id: binary_sensor.mqtt_front_door
+      actions:
+        - platform: cancel_job
+          cancel_all: true
+        - platform: turn_off
+          entity_ids:
+            - switch.mqtt_front_door_package_left
+
+
+
+runtime_accumulator:
+  module: runtime_accumulator
+  class: RuntimeAccumulator
+  reset_start_time: '00:00:00'
+  reset_end_time: '00:00:59'
+  accumulators:
+    - accumulate_entity_id: input_number.runtime_kwh_family_room_light
+      accumulator_type: WATTAGE
+      target_attribute: operation
+      target_entity_id: light.hue_family_room_light
+      running_state_value: 'on'
+      # 9W * 4
+      wattage: 36
+
+    - accumulate_entity_id: input_number.runtime_kwh_kitchen_light
+      accumulator_type: WATTAGE
+      target_attribute: operation
+      target_entity_id: light.zwave_kitchen_light
+      running_state_value: 'on'
+      # 16W * 7
+      wattage: 112
+
+    - accumulate_entity_id: input_number.runtime_climate_cooling
+      target_entity_id: climate.main_floor
+      target_attribute: hvac_action
+      running_attribute_value: cooling
+
+    - accumulate_entity_id: input_number.runtime_climate_heating
+      target_entity_id: climate.main_floor
+      target_attribute: hvac_action
+      running_attribute_value: heating
+
+    - accumulate_entity_id: input_number.runtime_climate_fan
+      target_entity_id: climate.main_floor
+      target_attribute: fan
+      running_attribute_value: 'on'
+
+    - accumulate_entity_id: input_number.runtime_kwh_family_room_tv
+      accumulator_type: WATTAGE
+      target_entity_id: media_player.family_room
+      target_attribute: source
+      running_state_value: playing
+      running_attribute_value: TV
+      wattage: 225
+
+    - accumulate_entity_id: input_number.runtime_kwh_sonos
+      accumulator_type: WATTAGE
+      always_running: true
+      # 3.8*3+2.1+5.8+3.6
+      wattage: 22.9
+
+    - accumulate_entity_id: input_number.runtime_kwh_tesla
+      accumulator_type: TESLA
+      location_home_name: home
+      charging_state_name: charging
+      charging_state_entity_id: sensor.tesla_state
+      location_entity_id: device_tracker.tesla_model_x_lan
+      charge_energy_added_entity_id: sensor.tesla_charge_energy_added
+
+    - accumulate_entity_id: input_number.runtime_kwh_enery_bridge
+      accumulator_type: WATTAGE
+      always_running: true
+      wattage_entity_id: sensor.mqtt_energy_bridge_usage_minute
+
+
+noise_level_monitor:
+  module: noise_level_monitor
+  class: NoiseLevelMonitor
+  monitor_settings:
+    - noise_entity_id: binary_sensor.ffmpeg_noise_master_bedroom
+      light_data:
+        xy_color:
+          - 0.191
+          - 0.229
+    - noise_entity_id: binary_sensor.ffmpeg_noise_lynn_s_room
+      light_data:
+        xy_color:
+          - 0.326
+          - 0.175
+  sleeping_time_entity_id: input_boolean.is_sleeping_time
+  light_settings:
+    - light_entity_id: light.hue_office_light
+    - light_entity_id: light.zwave_kitchen_light
+      delegate_light_entity_id: light.hue_kitchen_lightstrip
+
+
+downstairs_lights_on_counter:
+  module: device_on_counter
+  class: DeviceOnCounter
+  counter_entity_id: input_number.downstairs_lights_on_count
+  device_entity_id:
+    - *var_downstairs_lights
+
+upstairs_lights_on_counter:
+  module: device_on_counter
+  class: DeviceOnCounter
+  counter_entity_id: input_number.upstairs_lights_on_count
+  device_entity_id:
+    - *var_door_sensors
+    - switch.zwave_master_bathroom_fan
+
+outside_lights_on_counter:
+  module: device_on_counter
+  class: DeviceOnCounter
+  counter_entity_id: input_number.outside_lights_on_count
+  device_entity_id:
+    - *var_outside_lights
+
+media_player_playing_counter:
+  module: device_on_counter
+  class: DeviceOnCounter
+  device_on_state: playing
+  counter_entity_id: input_number.media_player_playing_count
+  device_entity_id:
+    - media_player.dining_room
+    - media_player.family_room
+    - media_player.lynns_room
+    - media_player.master_bathroom
+    - media_player.master_bedroom
+    - media_player.office
+
+device_monitor:
+  module: device_monitor
+  class: DeviceMonitor
+  checkers:
+    - type: vent
+      pattern: '^sensor\.zb_.*_vent_temperature.*'
+    - type: battery_level
+      pattern:
+        - pattern: '^zwave\.zwave_kids_bathroom_sensor'
+          ignore: true
+        - pattern: '^zwave\..+_lock'
+          battery_level_threshold: 40
+        - pattern: '^(zwave|zha|sensor|binary_sensor)\..+'
+        - pattern: '^sensor\.tesla_battery_level'
+          battery_level_threshold: 35
+        - pattern: '^sensor\.(yuyu_s_iphone|joes_iphone|joe_s_ipad_pro|joe_s_ipad_air)_battery_level'
+          battery_level_threshold: 35
+    - type: unavailable_entity
+      pattern:
+        - pattern: (^sensor|^binary_sensor|^light|^switch)\.zb.+
+        - pattern: ^binary_sensor\.wink_relay.*
+          ignore: true
+        - pattern: (zwave)
+    - type: ge_bulb
+      pattern: '^light\.ge_.*'
+    - type: ping
+      pattern: '^sensor\.stat_ping_.*'
+      threshold: 500

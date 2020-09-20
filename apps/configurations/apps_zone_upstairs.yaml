@@ -1,0 +1,25 @@
+###############################################################################
+# U P S T A I R S  H A L L W A Y
+###############################################################################
+upstairs_hallway_lighting:
+  debug: true
+  module: motion_lighting2
+  class: MotionLighting
+  scene_entity_id: input_select.lighting_mode_upstairs
+  motion_entity_id:
+    - binary_sensor.mqtt_upstairs_hallway_motion
+    - binary_sensor.zb_upstair_hallway_motion
+  turn_off_delay: 90
+  lighting_scenes:
+    Dark:
+      - entity_id: light.hue_upstairs_hallway_light
+        brightness: 220
+    Sleeping:
+      - entity_id: light.hue_upstairs_hallway_light
+        brightness: 100
+    Midnight:
+      - entity_id: light.hue_upstairs_hallway_light
+        brightness: 5
+#      - entity_id: light.xiaomi_upstairs_hallway_night_light
+#        brightness: 254
+#        rgb_color: [255, 119, 0]

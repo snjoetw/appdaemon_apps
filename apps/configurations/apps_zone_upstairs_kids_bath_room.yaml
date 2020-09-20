@@ -1,0 +1,26 @@
+kids_bathroom_lighting:
+  debug: true
+  module: motion_lighting2
+  class: MotionLighting
+  scene_entity_id: input_select.lighting_mode_upstairs
+  motion_entity_id: binary_sensor.template_kids_bathroom_motion
+  turn_off_delay: 60
+  lighting_scenes:
+    Dark:
+      - entity_id: light.yeelight_strip1_7811dc691196
+        brightness: 200
+        rgb_color: [255, 203, 114]
+      - entity_id: light.hue_kids_bathroom_light
+        brightness: 200
+    Sleeping:
+      - entity_id: light.yeelight_strip1_7811dc691196
+        brightness: 75
+        rgb_color: [255, 203, 114]
+      - entity_id: light.hue_kids_bathroom_light
+        brightness: 50
+    Midnight:
+      - entity_id: light.yeelight_strip1_7811dc691196
+        brightness: 75
+        rgb_color: [255, 203, 114]
+      - entity_id: light.hue_kids_bathroom_light
+        brightness: 50

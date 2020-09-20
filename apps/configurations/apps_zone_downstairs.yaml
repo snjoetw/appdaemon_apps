@@ -1,0 +1,171 @@
+###############################################################################
+# S T A I R W A Y
+###############################################################################
+stairway_lighting:
+  module: motion_lighting2
+  class: MotionLighting
+  enabler_entity_id: input_boolean.is_motion_enabled_stairway
+  scene_entity_id: input_select.lighting_mode_stairway
+  motion_entity_id: binary_sensor.zb_stairway_motion
+  turn_off_delay: 30
+  lighting_scenes:
+    Dark:
+      - entity_id: light.zwave_stairway_light
+        brightness: 100
+    Sleeping:
+      - entity_id: light.zwave_stairway_light
+        brightness: 40
+
+
+###############################################################################
+# W A S H R O O M
+###############################################################################
+washroom_lighting:
+  module: motion_lighting2
+  class: MotionLighting
+  motion_entity_id: binary_sensor.zb_washroom_motion
+  turn_off_delay: 600
+  lighting_scenes:
+    Default:
+      - switch.zwave_washroom_light
+
+
+###############################################################################
+# H A L L W A Y
+###############################################################################
+hallway_lighting:
+  module: motion_lighting2
+  class: MotionLighting
+  motion_entity_id:
+    - binary_sensor.zb_hallway_motion
+    - binary_sensor.zb_hallway_motion_2
+    - binary_sensor.zb_laundry_room_motion
+    - input_boolean.is_night_light_enabled_downstairs
+  enabler_entity_id: input_boolean.is_motion_enabled_hallway
+  scene_entity_id: input_select.lighting_mode_hallway
+  turn_off_delay: 20
+  lighting_scenes:
+    Dark:
+      - entity_id: light.zwave_hallway_light
+        brightness: 150
+
+
+hallway_night_light:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: group.downstairs_lights_without_hallway_light
+      from: "on"
+      to: "off"
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_select.lighting_mode_hallway
+          state: [Dark]
+      actions:
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_night_light_enabled_downstairs:
+              force_on: false
+        - platform: delay
+          delay: 20
+          actions:
+            - platform: turn_off
+              entity_ids:
+                input_boolean.is_night_light_enabled_downstairs:
+
+
+
+###############################################################################
+# L I V I N G  R O O M
+###############################################################################
+living_room_lighting:
+  debug: true
+  module: image_processing_motion_lighting
+  class: ImageProcessingMotionLighting
+  enabler_entity_id: input_boolean.is_motion_enabled_living_room
+  scene_entity_id: input_select.lighting_mode_living_room
+  image_processing_enabler_entity_id: input_boolean.is_image_processing_enabled_living_room
+  motion_entity_id:
+    - binary_sensor.zb_living_room_motion
+    - binary_sensor.template_living_room_person
+  turn_off_delay: 300
+  lighting_scenes:
+    Dark:
+      - entity_id: switch.zwave_living_room_light
+        brightness: 254
+
+
+living_room_person_detection:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_boolean.is_image_processing_enabled_living_room
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: repeat
+          repeat: 60
+          delay: 0
+          actions:
+            - platform: service
+              service: image_processing/scan
+              data:
+                entity_id: image_processing.tf_living_room_person
+    - do_parallel_actions: false
+      constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: cancel_job
+        - platform: set_state
+          entity_id: image_processing.tf_living_room_person
+          state: 0
+
+
+dining_room_lighting:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      minutes: 10
+  constraints:
+    - platform: state
+      entity_id: input_boolean.is_auto_light_enabled_dining_room
+      state: "on"
+  handlers:
+    - actions:
+        - platform: turn_off
+          entity_ids:
+            light.hue_dining_room_lamp:
+              force_off: false
+          constraints:
+            - platform: time
+              start_time: "23:00:00"
+              end_time: "15:00:00"
+
+        - platform: turn_on
+          entity_ids:
+            light.hue_dining_room_lamp:
+              force_on: false
+          constraints:
+            - platform: time
+              start_time: sunset + 00:30:00
+              end_time: "23:00:00"
+
+
+vacuum_dustbin_monitor:
+  debug: true
+  module: vacuum_dustbin_monitor
+  class: VacuumDustbinMonitor
+  runtime_entity_id: input_number.vacuum_cleaned_area_count
+  monitor_state_entity_id: input_select.vacuum_dustbin_monitor_state
+  vacuum_entity_id: vacuum.downstair
+  dumping_spot_x_coord: 27000
+  dumping_spot_y_coord: 38000

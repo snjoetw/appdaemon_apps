@@ -1,0 +1,34 @@
+garage_light_left_on:
+  module: automation
+  class: Automation
+  cancel_job_when_no_match: true
+  triggers:
+    - platform: state
+      entity_ids:
+        - sensor.zwave_garage_luminance
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: sensor.zwave_garage_luminance
+          state: ">=5"
+        - platform: time
+          start_time: sunset + 00:30:00
+          end_time: sunrise
+        - platform: has_scheduled_job
+          negate: true
+      actions:
+        - platform: repeat
+          repeat: 2700
+          delay: 900
+          actions:
+            - platform: sonos
+              tts_message: "There is light detected in the garage."
+    - constraints:
+        - platform: state
+          entity_id: sensor.zwave_garage_luminance
+          state: "<5"
+        - platform: time
+          start_time: sunset + 00:30:00
+          end_time: sunrise
+      actions:
+        - platform: cancel_job

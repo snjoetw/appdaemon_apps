@@ -1,0 +1,125 @@
+master_bathroom_lighting:
+  debug: true
+  module: motion_lighting
+  class: MotionLighting
+  enabler_entity_id: input_boolean.is_motion_enabled_master_bathroom
+  lighting_mode_entity_id: input_select.lighting_mode_master_bathroom
+  motion_entity_id: binary_sensor.zb_master_bathroom_motion
+  turn_off_delay: 3600
+  turn_on_constraints:
+    - platform: state
+      entity_id: switch.zwave_master_bathroom_ceiling_light
+      state: "off"
+    - platform: state
+      entity_id: light.zwave_master_bathroom_light
+      state: "off"
+  lighting_modes:
+    Dark:
+      - entity_id: switch.zwave_master_bathroom_ceiling_light
+      - entity_id: light.zwave_master_bathroom_light
+        brightness: 254
+    Sleeping:
+      - entity_id: light.zwave_master_bathroom_light
+        brightness: 125
+
+
+master_bathroom_shower_mode:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id:
+        - sensor.zb_master_bathroom_humidity
+        - sensor.zb_master_bathroom_temperature
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: sensor.zb_master_bathroom_humidity
+          state: ">=75"
+        - platform: state
+          entity_id: sensor.zb_master_bathroom_temperature
+          state: ">=26"
+        - platform: state
+          entity_id: input_select.master_bathroom_shower_mode
+          state: Not Showering
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.master_bathroom_shower_mode
+          option: About to Shower
+    - constraints:
+        - platform: state
+          entity_id: sensor.zb_master_bathroom_humidity
+          state: ">=85"
+        - platform: state
+          entity_id: sensor.zb_master_bathroom_temperature
+          state: ">=27"
+        - platform: state
+          entity_id: input_select.master_bathroom_shower_mode
+          state: About to Shower
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.master_bathroom_shower_mode
+          option: Showering
+    - constraints:
+        - platform: state
+          entity_id: sensor.zb_master_bathroom_humidity
+          state: "<75"
+        - platform: state
+          entity_id: sensor.zb_master_bathroom_temperature
+          state: "<26"
+        - platform: state
+          entity_id: input_select.master_bathroom_shower_mode
+          state: Not Showering
+          negate: true
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.master_bathroom_shower_mode
+          option: Not Showering
+
+
+master_bathroom_auto_fan:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: input_select.master_bathroom_shower_mode
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: About to Shower
+      actions:
+        - platform: turn_on
+          entity_ids:
+            - input_boolean.is_scene_shower_time
+    - constraints:
+        - platform: triggered_state
+          to: Showering
+      actions:
+        - platform: delay
+          delay: 1800
+          actions:
+            - platform: turn_on
+              entity_ids:
+                switch.zwave_master_bathroom_fan:
+    - constraints:
+        - platform: triggered_state
+          to: Not Showering
+      actions:
+        - platform: turn_off_media_player
+          entity_id: media_player.master_bathroom
+        - platform: delay
+          delay: 300
+          actions:
+            - platform: turn_off
+              entity_ids:
+                switch.zwave_master_bathroom_fan:
+
+
+walkin_closet_lighting:
+  module: motion_lighting
+  class: MotionLighting
+  motion_entity_id: binary_sensor.zb_master_bedroom_closet_motion
+  turn_off_delay: 20
+  lighting_modes:
+    Dark:
+      - switch.zwave_walkin_closet_light_switch

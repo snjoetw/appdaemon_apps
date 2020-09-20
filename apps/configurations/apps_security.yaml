@@ -1,0 +1,794 @@
+last_home_movement:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_door_sensors
+        - *var_motion_sensors
+      to: "on"
+  handlers:
+    - constraints:
+      actions:
+        - platform: set_value
+          entity_id: input_text.last_home_movement
+          value: "{{ friendly_name(trigger_info.data.entity_id) }}"
+
+
+zone_start_movement:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_motion_sensors
+      to: "on"
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          entity_id: *var_downstairs_motion_sensors
+      actions:
+        - platform: set_value
+          entity_id: input_text.last_home_movement_downstairs
+          value: "{{ friendly_name(trigger_info.data.entity_id) }}"
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_motion_detected_downstairs:
+    - constraints:
+        - platform: triggered_state
+          entity_id: *var_upstairs_motion_sensors
+      actions:
+        - platform: set_value
+          entity_id: input_text.last_home_movement_upstairs
+          value: "{{ friendly_name(trigger_info.data.entity_id) }}"
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_motion_detected_upstairs:
+
+zone_end_downstairs_movement:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_downstairs_motion_sensors
+      to: "off"
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: *var_downstairs_motion_sensors
+          state: "off"
+          match_all: true
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_motion_detected_downstairs:
+
+zone_end_upstairs_movement:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_upstairs_motion_sensors
+      to: "off"
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: *var_upstairs_motion_sensors
+          state: "off"
+          match_all: true
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_motion_detected_upstairs:
+
+
+###############################################################################
+# S E C U R I T Y - B E E P
+###############################################################################
+door_beep:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_door_sensors
+        - *var_window_sensors
+        - *var_garage_doors
+      attribute: state
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          entity_id: *var_door_sensors
+      actions:
+        - platform: sonos
+          tts_message: ''
+          prelude_name: door_beep
+          player_entity_id:
+            - media_player.gh_laundry_room
+            - media_player.gh_family_room
+          volume_mode: regular
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: home/alarm/notification
+            payload: door
+        - platform: alarm_notifier
+          trigger_entity_id: "{{ trigger_info.data.entity_id }}"
+          message: "{{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
+          messenger_types:
+            - ios
+
+    - constraints:
+        - platform: triggered_state
+          entity_id: *var_window_sensors
+      actions:
+        - platform: sonos
+          tts_message: ''
+          prelude_name: window_beep
+          player_entity_id:
+            - media_player.gh_laundry_room
+            - media_player.gh_family_room
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: home/alarm/notification
+            payload: window
+        - platform: alarm_notifier
+          trigger_entity_id: "{{ trigger_info.data.entity_id }}"
+          message: "{{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
+          messenger_types:
+            - ios
+
+    - constraints:
+        - platform: triggered_state
+          entity_id: *var_garage_doors
+      actions:
+        - platform: sonos
+          tts_message: ''
+          prelude_name: garage_beep
+          player_entity_id:
+            - media_player.gh_laundry_room
+            - media_player.gh_family_room
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: home/alarm/notification
+            payload: garage
+        - platform: alarm_notifier
+          trigger_entity_id: "{{ trigger_info.data.entity_id }}"
+          message: "{{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
+          messenger_types:
+            - ios
+
+
+###############################################################################
+# S E C U R I T Y - M O N I T O R
+###############################################################################
+alarm_monitor:
+  module: alarm_monitor
+  class: AlarmMonitor
+  motion_entity_id: *var_motion_sensors
+  door_entity_id: *var_door_sensors
+  window_entity_id: *var_window_sensors
+  alarm_entity_id: alarm_control_panel.home_alarm
+  alarm_triggered_entity_id: input_text.alarm_triggered_entity_id
+  motion_notify_message: 'WARNING: **{{ friendly_name(trigger_info.data.entity_id) | capitalize }}** detected while alarm is armed'
+  default_notify_message: 'WARNING: **{{ friendly_name(trigger_info.data.entity_id) | capitalize }}** is opened while alarm is armed'
+
+
+alarm_notifier:
+  module: alarm_notifier
+  class: AlarmNotifier
+  is_vacation_mode_entity_id: input_boolean.is_vacation_mode
+  presence_mode_entity_id: input_select.presence_mode
+  ios_recipients:
+    - all_ios
+  facebook_recipients: !secret facebook_recipients
+  facebook_access_token: !secret facebook_meesenger_page_access_token
+  external_base_url: !secret external_base_url
+  entity_settings:
+    binary_sensor.mqtt_kitchen_window:
+      camera_entity_id: camera.family_room_cam
+    binary_sensor.zb_kitchen_french_door:
+      camera_entity_id: camera.family_room_cam
+    binary_sensor.mqtt_family_room_window:
+      camera_entity_id: camera.family_room_cam
+    binary_sensor.mqtt_front_door:
+      camera_entity_id: camera.living_room_cam
+    binary_sensor.mqtt_living_room_window:
+      camera_entity_id: camera.living_room_cam
+    binary_sensor.mqtt_office_window:
+      camera_entity_id: camera.living_room_cam
+    binary_sensor.mqtt_garage_entry_door:
+      camera_entity_id: camera.laundry_room_cam
+    binary_sensor.mqtt_laundry_room_window:
+      camera_entity_id: camera.laundry_room_cam
+    binary_sensor.mqtt_workout_room_window:
+      camera_entity_id: camera.laundry_room_cam
+    binary_sensor.zb_laundry_room_motion:
+      camera_entity_id: camera.laundry_room_cam
+    binary_sensor.zb_master_bedroom_motion:
+      camera_entity_id: camera.master_bedroom_cam
+    binary_sensor.zb_kitchen_motion:
+      camera_entity_id: camera.family_room_cam
+    binary_sensor.zb_living_room_motion:
+      camera_entity_id: camera.living_room_cam
+    binary_sensor.zb_office_motion:
+      camera_entity_id: camera.living_room_cam
+    cover.myq_front_garage_door:
+      camera_entity_id: camera.front_yard
+    cover.myq_back_garage_door:
+      camera_entity_id: camera.rear_driveway
+
+
+alarm_state_announcer:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: alarm_control_panel.home_alarm
+  constraints:
+    - platform: state
+      entity_id: input_boolean.is_alarm_armable
+      state: "on"
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          entity_id: alarm_control_panel.home_alarm
+          from: "disarmed"
+          to: "pending"
+      actions:
+        - platform: sonos
+          tts_message: "Alarm is about to arm."
+    - constraints:
+        - platform: triggered_state
+          entity_id: alarm_control_panel.home_alarm
+          from: "disarmed"
+          to: "armed_home"
+      actions:
+        - platform: sonos
+          tts_message: "Alarm armed for stay."
+    - constraints:
+        - platform: triggered_state
+          entity_id: alarm_control_panel.home_alarm
+          from: "pending"
+          to: "armed_away"
+      actions:
+        - platform: sonos
+          tts_message: "Alarm armed for away."
+    - constraints:
+        - platform: triggered_state
+          entity_id: alarm_control_panel.home_alarm
+          to: "disarmed"
+      actions:
+        - platform: sonos
+          tts_message: "Alarm disarmed."
+    #    - constraints:
+    #        - platform: triggered_state
+    #          entity_id: alarm_control_panel.home_alarm
+    #          from: "armed_away"
+    #          to: "pending"
+    #      actions:
+    #        - platform: sonos
+    #          tts_message: "Alarm is about to trigger."
+    #    - constraints:
+    #        - platform: triggered_state
+    #          entity_id: alarm_control_panel.home_alarm
+    #          from: "armed_home"
+    #          to: "pending"
+    #      actions:
+    #        - platform: sonos
+    #          tts_message: "Alarm is about to trigger."
+    - constraints:
+        - platform: triggered_state
+          entity_id: alarm_control_panel.home_alarm
+          to: "triggered"
+        - platform: state
+          entity_id: input_boolean.is_vacation_mode
+          state: 'on'
+      actions:
+        - platform: sonos
+          tts_message: "Alarm is triggered.<break time=\".2s\" />You are being recorded.<break time=\".2s\" />Police have been contacted."
+          prelude_name: alarm_siren
+        - platform: notify
+          target: all_ios
+          title: "Alarm triggered."
+          message: "Alarm triggered."
+          data:
+            push:
+              sound:
+                name: default
+                critical: 1
+                volume: 0.8
+    - constraints:
+        - platform: triggered_state
+          entity_id: alarm_control_panel.home_alarm
+          to: "triggered"
+      actions:
+        - platform: sonos
+          tts_message: "Alarm triggered."
+
+
+door_left_open:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: *var_door_sensors
+      to: "on"
+    - platform: state
+      entity_ids: *var_door_sensors
+      to: "off"
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: repeat
+          delay: 600
+          repeat: 1800
+          actions:
+            - platform: sonos
+              tts_message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: cancel_job
+
+
+window_left_open:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_downstairs_window_sensors
+        - *var_basement_window_sensors
+      to: "on"
+    - platform: state
+      entity_ids:
+        - *var_downstairs_window_sensors
+        - *var_basement_window_sensors
+      to: "off"
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: repeat
+          delay: 1800
+          repeat: 3600
+          actions:
+            - platform: sonos
+              tts_message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: cancel_job
+
+
+garage_door_left_open:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: *var_garage_doors
+      to: "open"
+    - platform: state
+      entity_ids: *var_garage_doors
+      to: "closed"
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "open"
+      actions:
+        - platform: repeat
+          delay: 600
+          repeat: 600
+          actions:
+            - platform: sonos
+              tts_message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
+    - constraints:
+        - platform: triggered_state
+          to: "closed"
+      actions:
+        - platform: cancel_job
+
+
+lock_left_unlocked:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: *var_door_locks
+      to: "unlocked"
+    - platform: state
+      entity_ids: *var_door_locks
+      to: "locked"
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "unlocked"
+      actions:
+        - platform: repeat
+          delay: 600
+          repeat: 600
+          actions:
+            - platform: sonos
+              tts_message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} has been left unlocked for too long."
+    - constraints:
+        - platform: triggered_state
+          to: "locked"
+      actions:
+        - platform: cancel_job
+
+
+###############################################################################
+# S E C U R I T Y
+###############################################################################
+is_alarm_armable:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_door_sensors
+        - *var_downstairs_window_sensors
+        - *var_basement_window_sensors
+    - platform: time
+      seconds: 15
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_alarm_armable:
+              force_off: false
+    - constraints:
+      actions:
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_alarm_armable:
+              force_on: false
+
+
+is_alarm_armed:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: alarm_control_panel.home_alarm
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: alarm_control_panel.home_alarm
+          state: [armed_home, armed_away]
+      actions:
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_alarm_armed:
+              force_on: false
+    - constraints:
+        - platform: state
+          entity_id: alarm_control_panel.home_alarm
+          state: [armed_home, armed_away]
+          negate: true
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_alarm_armed:
+              force_on: false
+
+
+alarm_arm_checker:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: alarm_control_panel.home_alarm
+      from: disarmed
+      to: pending
+    - platform: state
+      entity_id: alarm_control_panel.home_alarm
+      from: disarmed
+      to: armed_home
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_boolean.is_alarm_armable
+          state: "off"
+      actions:
+        - platform: service
+          service: alarm_control_panel/alarm_disarm
+          data:
+            entity_id: alarm_control_panel.home_alarm
+        - platform: sonos
+          tts_message: "Unable to arm, window or door is still open."
+
+
+alarm_auto_arm:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: input_boolean.is_sleeping_time
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_ids:
+        - input_select.presence_mode
+      duration: 300
+  constraints:
+    - platform: state
+      entity_id: alarm_control_panel.home_alarm
+      state: [disarmed]
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          entity_id: input_select.presence_mode
+          to: No One is Home
+      actions:
+        - platform: service
+          service: alarm_control_panel/alarm_arm_away
+          data:
+            entity_id: alarm_control_panel.home_alarm
+    - constraints:
+        - platform: triggered_state
+          entity_id: input_boolean.is_sleeping_time
+      actions:
+        - platform: service
+          service: alarm_control_panel/alarm_arm_home
+          data:
+            entity_id: alarm_control_panel.home_alarm
+
+
+alarm_maintenance:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_door_sensors
+        - *var_window_sensors
+        - *var_motion_sensors
+      to: "on"
+  constraints:
+    - platform: state
+      entity_id: input_boolean.is_alarm_maintenance
+      state: "on"
+  handlers:
+    - constraints:
+      actions:
+        - platform: notify
+          target: mobile_app_joes_iphone
+          message: "{{ friendly_name(trigger_info.data.entity_id) }} is on"
+
+
+front_door_auto_lock:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - binary_sensor.mqtt_front_door
+        - lock.front_door_lock_locked
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.mqtt_front_door
+          state: "off"
+        - platform: state
+          entity_id: lock.front_door_lock_locked
+          state: "unlocked"
+      actions:
+        - platform: delay
+          delay: 600
+          actions:
+            - platform: lock
+              entity_id: lock.front_door_lock_locked
+              notify_target: all_ios
+              notify_message: "Front door auto locked"
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.mqtt_front_door
+          state: "on"
+      actions:
+        - platform: cancel_job
+          cancel_all: true
+
+
+entry_door_auto_lock:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - binary_sensor.mqtt_garage_entry_door
+        - lock.entry_door_lock_locked
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.mqtt_garage_entry_door
+          state: "off"
+        - platform: state
+          entity_id: lock.entry_door_lock_locked
+          state: "unlocked"
+      actions:
+        - platform: delay
+          delay: 180
+          actions:
+            - platform: lock
+              entity_id: lock.entry_door_lock_locked
+              notify_target: all_ios
+              notify_message: "Entry door auto locked"
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.mqtt_garage_entry_door
+          state: "on"
+      actions:
+        - platform: cancel_job
+          cancel_all: true
+
+
+entry_door_auto_unlock:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_select.joe_status
+        - input_select.yuyu_status
+      to: Just Arrived
+    - platform: state
+      entity_ids: *var_garage_doors
+      to: open
+  constraints:
+    - platform: state
+      entity_id: lock.entry_door_lock_locked
+      state: locked
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "open"
+        - platform: state
+          entity_id: input_select.joe_status
+          state: "Just Arrived"
+      actions:
+        - platform: unlock
+          entity_id: lock.entry_door_lock_locked
+          notify_target: all_ios
+          notify_message: "Entry door auto unlocked"
+    - constraints:
+        - platform: triggered_state
+          to: "open"
+        - platform: state
+          entity_id: input_select.yuyu_status
+          state: "Just Arrived"
+      actions:
+        - platform: unlock
+          entity_id: lock.entry_door_lock_locked
+          notify_target: all_ios
+          notify_message: "Entry door auto unlocked"
+    - constraints:
+        - platform: triggered_state
+          to: "Just Arrived"
+        - platform: state
+          entity_id: cover.myq_front_garage_door
+          state: open
+      actions:
+        - platform: unlock
+          entity_id: lock.entry_door_lock_locked
+          notify_target: all_ios
+          notify_message: "Entry door auto unlocked"
+    - constraints:
+        - platform: triggered_state
+          to: "Just Arrived"
+        - platform: state
+          entity_id: cover.myq_back_garage_door
+          state: open
+      actions:
+        - platform: unlock
+          entity_id: lock.entry_door_lock_locked
+          notify_target: all_ios
+          notify_message: "Entry door auto unlocked"
+
+
+
+downstairs_windows_monitor:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_downstairs_window_sensors
+        - *var_basement_window_sensors
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: add_input_select_option
+          entity_id: input_select.downstairs_windows_monitor
+          option: "{{ friendly_name(trigger_info.data.entity_id) }}"
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: remove_input_select_option
+          entity_id: input_select.downstairs_windows_monitor
+          option: "{{ friendly_name(trigger_info.data.entity_id) }}"
+
+
+upstairs_windows_monitor:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: *var_upstairs_window_sensors
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: add_input_select_option
+          entity_id: input_select.upstairs_windows_monitor
+          option: "{{ friendly_name(trigger_info.data.entity_id) }}"
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: remove_input_select_option
+          entity_id: input_select.upstairs_windows_monitor
+          option: "{{ friendly_name(trigger_info.data.entity_id) }}"
+
+
+power_outage_detector:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: sensor.nut_ups_input_voltage
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_boolean.is_out_of_power
+          state: "off"
+        - platform: state
+          entity_id: sensor.nut_ups_input_voltage
+          state: "<=80"
+      actions:
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_out_of_power:
+              force_off: false
+        - platform: alarm_notifier
+          message: "Looks like there's a power outage ..."
+    - constraints:
+        - platform: state
+          entity_id: input_boolean.is_out_of_power
+          state: "on"
+        - platform: state
+          entity_id: sensor.nut_ups_input_voltage
+          state: ">80"
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_out_of_power:
+              force_off: false
+        - platform: alarm_notifier
+          message: "Power is restored!"
+
+
+rfid_alarm_disarmer:
+  module: rfid_alarm_disarmer
+  class: RfidAlarmDisarmer
+  rfid_tag_ids:
+    - 0007835935
+  disarm_mqtt_topic: home/alarm/rfid_disarm
+  alarm_entity_id: alarm_control_panel.home_alarm

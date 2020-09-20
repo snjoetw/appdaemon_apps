@@ -1,0 +1,123 @@
+kitchen_lighting:
+  module: motion_lighting
+  class: MotionLighting
+  enabler_entity_id: input_boolean.is_motion_enabled_kitchen
+  lighting_mode_entity_id: input_select.lighting_mode_kitchen
+  motion_entity_id: binary_sensor.zb_kitchen_motion
+  turn_off_delay: 300
+  turn_on_constraints:
+    - platform: state
+      entity_id: light.zwave_kitchen_light
+      state: "off"
+  lighting_modes:
+    Dark:
+      - entity_id: light.hue_kitchen_lightstrip
+        brightness: 254
+        rgb_color: [255, 203, 114]
+      - entity_id: switch.zwave_kitchen_counter_light
+    Sleeping:
+      - entity_id: light.hue_kitchen_lightstrip
+        brightness: 254
+        rgb_color: [255, 203, 114]
+      - entity_id: switch.zwave_kitchen_counter_light
+
+
+kitchen_lighting_2:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: light.zwave_kitchen_light
+      to: "on"
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: switch.zwave_kitchen_counter_light
+          state: "on"
+      actions:
+        - platform: turn_off
+          entity_ids:
+            switch.zwave_kitchen_counter_light:
+            light.hue_kitchen_lightstrip:
+
+
+kitchen_lightstrip_lighting:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: switch.zwave_kitchen_counter_light
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: turn_on
+          entity_ids:
+            light.hue_kitchen_lightstrip:
+              brightness: 254
+              rgb_color: [255, 203, 114]
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: turn_off
+          entity_ids:
+            light.hue_kitchen_lightstrip:
+
+
+kitchen_pantry_lighting:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: binary_sensor.zb_kitchen_pantry_door
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: turn_on
+          entity_ids:
+            light.hue_kitchen_pantry_light:
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: turn_off
+          entity_ids:
+            light.hue_kitchen_pantry_light:
+
+
+kitchen_french_door_shade_auto_open:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: sunrise
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_select.presence_mode
+          state: No One is Home
+          negate: true
+      actions:
+        - platform: set_cover_position
+          entity_id: cover.zb_kitchen_shade
+          position: 100
+
+
+kitchen_french_door_shade_auto_close:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: sunset
+      offset: 600
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.zb_kitchen_french_door
+          state: "off"
+      actions:
+        - platform: set_cover_position
+          entity_id: cover.zb_kitchen_shade
+          position: 0

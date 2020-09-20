@@ -1,0 +1,106 @@
+var_door_locks: &var_door_locks
+  - lock.front_door_lock_locked
+  - lock.entry_door_lock_locked
+#  - lock.mqtt_garage_door_lock
+#  - lock.tesla_modelx_door
+
+
+var_door_sensors: &var_door_sensors
+  - binary_sensor.mqtt_front_door
+  - binary_sensor.mqtt_garage_entry_door
+  - binary_sensor.zb_kitchen_french_door
+
+
+var_downstairs_window_sensors: &var_downstairs_window_sensors
+  - binary_sensor.mqtt_laundry_room_window
+  - binary_sensor.mqtt_kitchen_window
+  - binary_sensor.mqtt_family_room_window
+  - binary_sensor.mqtt_living_room_window
+  - binary_sensor.mqtt_office_window
+
+
+var_upstairs_window_sensors: &var_upstairs_window_sensors
+  - binary_sensor.mqtt_annes_room_window
+  - binary_sensor.mqtt_dressing_room_window
+  - binary_sensor.mqtt_lynns_room_window
+
+
+var_basement_window_sensors: &var_basement_window_sensors
+  - binary_sensor.mqtt_workout_room_window
+
+
+var_window_sensors: &var_window_sensors
+  - *var_downstairs_window_sensors
+  - *var_upstairs_window_sensors
+  - *var_basement_window_sensors
+
+
+var_downstairs_motion_sensors: &var_downstairs_motion_sensors
+  - binary_sensor.zb_family_room_motion
+  - binary_sensor.zb_hallway_motion
+  - binary_sensor.zb_hallway_motion_2
+  - binary_sensor.zb_kitchen_motion
+  - binary_sensor.zb_laundry_room_motion
+  - binary_sensor.zb_living_room_motion
+  - binary_sensor.zb_lobby_motion
+  - binary_sensor.zb_office_motion
+  - binary_sensor.zb_stairway_motion
+  - binary_sensor.zb_washroom_motion
+
+
+var_upstairs_motion_sensors: &var_upstairs_motion_sensors
+  - binary_sensor.mqtt_upstairs_hallway_motion
+  - binary_sensor.zb_lynn_s_room_motion
+  - binary_sensor.zb_master_bathroom_motion
+  - binary_sensor.zb_master_bedroom_closet_motion
+  - binary_sensor.zb_master_bedroom_motion
+  - binary_sensor.zb_upstair_hallway_motion
+
+
+var_basement_motion_sensors: &var_basement_motion_sensors
+  - binary_sensor.zb_basement_stairway_motion
+
+
+var_motion_sensors: &var_motion_sensors
+  - *var_downstairs_motion_sensors
+  - *var_upstairs_motion_sensors
+  - *var_basement_motion_sensors
+
+var_downstairs_lights: &var_downstairs_lights
+  - light.hue_office_light
+  - light.hue_dining_room_lamp
+  - light.hue_kitchen_lightstrip
+  - light.hue_kitchen_pantry_light
+  - light.hue_family_room_light
+  - light.zb_basement_stairway_light
+  - light.xiaomi_office_light
+  - light.zwave_hallway_light
+  - light.zwave_kitchen_light
+  - light.zwave_lobby_light
+  - light.zwave_stairway_light
+  - switch.zwave_kitchen_counter_light
+  - switch.zwave_living_room_light
+  - switch.zwave_washroom_light
+
+var_upstairs_lights: &var_upstairs_lights
+  - light.hue_lynn_s_room_ceiling_light
+  - light.hue_lynn_s_room_lightstrip
+  - light.hue_upstairs_hallway_light
+  - light.hue_kids_bathroom_light
+  - light.yeelight_strip1_7811dc691196
+  - light.yeelight_lynn_s_room_bedside_lamp
+#  - switch.wink_master_bedroom_light
+#  - switch.wink_master_bedroom_wall_light
+  - light.zwave_master_bathroom_light
+  - switch.zwave_master_bathroom_ceiling_light
+  - switch.zwave_walkin_closet_light_switch
+
+var_outside_lights: &var_outside_lights
+  - light.hue_backyard_spot_light
+  - light.zwave_front_door_light
+  - light.zwave_front_yard_light
+  - switch.zwave_backyard_light
+
+var_garage_doors: &var_garage_doors
+  - cover.myq_front_garage_door
+  - cover.myq_back_garage_door

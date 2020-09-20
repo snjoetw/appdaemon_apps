@@ -1,0 +1,47 @@
+#family_room_lighting:
+#  debug: true
+#  module: motion_lighting
+#  class: MotionLighting
+#  enabler_entity_id: input_boolean.is_motion_enabled_family_room
+#  lighting_mode_entity_id: input_select.lighting_mode_family_room
+#  motion_entity_id: binary_sensor.zb_family_room_motion
+#  turn_off_delay: 600
+#  lighting_modes:
+#    Dark:
+#      - light.hue_family_room_light
+#    Sleeping:
+#      - light.hue_family_room_light
+#  image_processing:
+#    person_entity_id: binary_sensor.template_family_room_person
+#    enabler_entity_id: input_boolean.is_image_processing_enabled_family_room
+
+
+family_room_person_detection:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_boolean.is_image_processing_enabled_family_room
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: repeat
+          repeat: 60
+          delay: 0
+          actions:
+            - platform: service
+              service: image_processing/scan
+              data:
+                entity_id: image_processing.tf_family_room_person
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: set_state
+          entity_id: image_processing.tf_family_room_person
+          state: 0
+        - platform: cancel_job

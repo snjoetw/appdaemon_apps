@@ -1,0 +1,365 @@
+###############################################################################
+# C O M M O N
+###############################################################################
+
+is_midnight_time:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      minutes: 1
+  handlers:
+    - constraints:
+        - platform: time
+          start_time: "23:30:00"
+          end_time: "06:59:59"
+      actions:
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_midnight_time:
+              force_on: false
+    - constraints:
+        - platform: time
+          start_time: "06:00:00"
+          end_time: "23:29:59"
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_midnight_time:
+              force_off: false
+
+
+is_sleeping_time:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      minutes: 1
+  handlers:
+    - constraints:
+        - platform: time
+          start_time: "21:00:00"
+          end_time: "07:59:59"
+      actions:
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_sleeping_time:
+              force_on: false
+    - constraints:
+        - platform: time
+          start_time: "08:00:00"
+          end_time: "20:59:59"
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_sleeping_time:
+              force_off: false
+
+
+sonos_announcer:
+  debug: true
+  module: sonos_announcer
+  class: SonosAnnouncer
+  sleeping_time_entity_id: input_boolean.is_sleeping_time
+  api_base_url: !secret appdaemon_hass_api_base_url
+  api_token: !secret appdaemon_hass_api_token
+  enabler_entity_id: input_boolean.is_announcer_enabled
+  players:
+    - type: google
+      player_entity_id: media_player.gh_laundry_room
+      motion_entity_id: binary_sensor.zb_laundry_room_motion
+      keep_alive: true
+      volumes:
+        sleeping: 0.6
+        regular: 0.6
+        critical: 0.75
+    - type: google
+      player_entity_id: media_player.gh_family_room
+      motion_entity_id:
+        - binary_sensor.zb_family_room_motion
+        - binary_sensor.zb_kitchen_motion
+      keep_alive: true
+      volumes:
+        sleeping: 0.45
+        regular: 0.6
+        critical: 0.75
+    - type: sonos
+      player_entity_id: media_player.office
+      motion_entity_id: binary_sensor.zb_office_motion
+      volumes:
+        sleeping: 0.25
+        regular: 0.45
+        critical: 0.7
+    - type: sonos
+      player_entity_id: media_player.dining_room
+      motion_entity_id: binary_sensor.zb_living_room_motion
+      volumes:
+        sleeping: 0.25
+        regular: 0.45
+        critical: 0.7
+    - type: sonos
+      player_entity_id: media_player.master_bathroom
+      motion_entity_id: binary_sensor.zb_master_bedroom_motion
+      volumes:
+        sleeping: 0.35
+        regular: 0.45
+        critical: 0.45
+
+
+motion_announcer:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - binary_sensor.zb_family_room_motion
+        - binary_sensor.zb_kitchen_motion
+        - binary_sensor.zb_office_motion
+        - binary_sensor.zb_living_room_motion
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: motion_announcer
+          message_entity_id: input_text.motion_announcement_message
+          message_from_entity_id: input_select.motion_announcement_from
+        - platform: set_value
+          entity_id: input_text.motion_announcement_message
+          value: ""
+
+
+is_vacation_mode:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      minutes: 1
+  handlers:
+    - constraints:
+        - platform: time
+          start_time_entity_id: input_datetime.vacation_start_date
+          end_time_entity_id: input_datetime.vacation_end_date
+      actions:
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_vacation_mode:
+              force_on: false
+    - constraints:
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_vacation_mode:
+              force_off: false
+
+
+
+vacation_mode_notifier:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: input_boolean.is_vacation_mode
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          from: "off"
+          to: "on"
+      actions:
+        - platform: alarm_notifier
+          message: "Hello! We're going away and will be back on {{ format_date(state('input_datetime.vacation_end_date')) }}. Please look after our house for us :)"
+          messenger_types:
+            - facebook
+    - constraints:
+        - platform: triggered_state
+          from: "on"
+          to: "off"
+      actions:
+        - platform: alarm_notifier
+          message: "Hello! We're back, thanks for taking care of our house!"
+          messenger_types:
+            - facebook
+
+
+mqtt_sun:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      minutes: 30
+  handlers:
+    - constraints:
+      actions:
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: lobby/command
+            payload: "{'sun':'{{state('sun.sun')}}'}"
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: laundry_room/command
+            payload: "{'sun':'{{state('sun.sun')}}'}"
+
+
+# https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder
+# Lougheed Town Centre Station: ChIJO_DzbDt4hlQRLTw8oxdhBck
+# Braid Station: ChIJT9NHFQV4hlQReDxG330uMO8
+# Saperton Station: ChIJSYSNfP93hlQRwkTQf2d81D4
+# Columbia Station: ChIJCUsMnHLYhVQRSLPLTPRCdS4
+# Stadium-Chinatown Station: ChIJDRJikHtxhlQRC36gLHt3sJ8
+commute_time_monitor:
+  module: commute_time_monitor
+  class: CommuteTimeMonitor
+  google_travel_time_api_key: !secret google_travel_time_api_key
+  presence_status_entity_id: input_select.joe_status
+  notify_entity_id:
+    - mobile_app_joes_iphone
+  start_time: '08:00:00'
+  end_time: '10:00:00'
+  routes:
+    - name: Lougheed Mall Station
+      origin: !secret map_location_home
+      destinations:
+        - destination: place_id:ChIJT9NHFQV4hlQReDxG330uMO8
+          travel_mode: driving
+        - destination: place_id:ChIJDRJikHtxhlQRC36gLHt3sJ8
+          travel_mode: transit
+        - destination: place_id:ChIJX54l69ZzhlQRXX8Ln5xCxdQ
+          travel_mode: walking
+
+    - name: Braid Station
+      origin: !secret map_location_home
+      destinations:
+        - destination: place_id:ChIJO_DzbDt4hlQRLTw8oxdhBck
+          travel_mode: driving
+        - destination: place_id:ChIJDRJikHtxhlQRC36gLHt3sJ8
+          travel_mode: transit
+        - destination: place_id:ChIJX54l69ZzhlQRXX8Ln5xCxdQ
+          travel_mode: walking
+#
+#    - name: Saperton
+#      origin: !secret map_location_home
+#      destinations:
+#        - destination: place_id:ChIJSYSNfP93hlQRwkTQf2d81D4
+#          travel_mode: driving
+#        - destination: place_id:ChIJDRJikHtxhlQRC36gLHt3sJ8
+#          travel_mode: transit
+#        - destination: place_id:ChIJX54l69ZzhlQRXX8Ln5xCxdQ
+#          travel_mode: walking
+#
+#    - name: Columbia
+#      origin: !secret map_location_home
+#      destinations:
+#        - destination: place_id:ChIJCUsMnHLYhVQRSLPLTPRCdS4
+#          travel_mode: driving
+#        - destination: place_id:ChIJDRJikHtxhlQRC36gLHt3sJ8
+#          travel_mode: transit
+#        - destination: place_id:ChIJX54l69ZzhlQRXX8Ln5xCxdQ
+#          travel_mode: walking
+
+
+briefer:
+  debug: true
+  module: briefer
+  class: Briefer
+  motion_entity_id:
+    - binary_sensor.zb_office_motion
+    - binary_sensor.zb_family_room_motion
+    - binary_sensor.zb_kitchen_motion
+  on_demand_entity_id: input_boolean.is_on_demand_briefing_enabled
+  briefing_state_entity_id: input_select.briefing_state
+  briefing_state_period:
+    - state: EARLY_MORNING
+      start_time: '4:15:00'
+      end_time: '8:00:00'
+    - state: MORNING
+      start_time: '8:30:00'
+      end_time: '9:00:00'
+    - state: NOON
+      start_time: '12:00:00'
+      end_time: '15:00:00'
+  providers:
+    - provider: greet
+    - provider: weather_forecast
+
+    - provider: calendar
+      api_base_url: !secret appdaemon_hass_api_base_url
+      api_token: !secret appdaemon_hass_api_token
+      calendar_entity_id: calendar.google_home
+
+    - provider: reminder
+      api_base_url: !secret appdaemon_hass_api_base_url
+      api_token: !secret appdaemon_hass_api_token
+      waste_collection_calendar_entity_id: calendar.google_my_waste
+
+    - provider: commute_time
+      workday_entity_id: binary_sensor.workday_sensor
+      start_time: '08:00:00'
+      end_time: '10:00:00'
+
+    - provider: stock
+      api_key: !secret finhub_api_key
+      workday_entity_id: binary_sensor.workday_sensor
+      stock_symbols:
+        - AAPL
+        - TSLA
+        - SQ
+
+    - provider: low_battery_device
+
+
+reminder:
+  module: reminder
+  class: Reminder
+  presence_mode_entity_id: input_select.presence_mode
+  motion_entity_id:
+    - binary_sensor.zb_family_room_motion
+    - binary_sensor.zb_kitchen_motion
+    - binary_sensor.zb_office_motion
+    - binary_sensor.zb_living_room_motion
+  providers:
+    - provider: device_battery
+      trigger_method: motion
+      interval: 180
+
+    - provider: travel_time
+      interval: 5
+      calendar_api_base_url: !secret appdaemon_hass_api_base_url
+      calendar_api_token: !secret appdaemon_hass_api_token
+      calendar_entity_id: calendar.google_home
+      map_api_key: !secret google_travel_time_api_key
+      map_home_location: !secret map_location_home
+      buffer_time: 15
+
+    - provider: school_time
+      enabled: false
+      interval: 5
+      calendar_api_base_url: !secret appdaemon_hass_api_base_url
+      calendar_api_token: !secret appdaemon_hass_api_token
+      calendar_entity_id: calendar.google_elementary_school
+      workday_entity_id: binary_sensor.workday_sensor
+      start_time: '08:20:00'
+      end_time: '09:00:00'
+      school_time: '08:50:00'
+
+    - provider: drink_water
+      enabled: false
+      interval: 90
+      trigger_method: motion
+      start_time: '09:00:00'
+      end_time: '17:00:00'
+
+    - provider: bad_air_quality
+      interval: 60
+      trigger_method: motion
+      bad_air_quality_mode_entity_id: input_boolean.is_bad_air_quality_mode
+
+#school_day_monitor:
+#  module: school_day_monitor
+#  class: SchoolDayMonitor
+#  calendar_api_base_url: !secret appdaemon_hass_api_base_url
+#  calendar_api_token: !secret appdaemon_hass_api_token
+#  calendar_entity_id: calendar.google_elementary_school
+#  workday_entity_id: binary_sensor.workday_sensor
+#  school_day_entity_id: input_boolean.is_school_day

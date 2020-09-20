@@ -1,0 +1,62 @@
+###############################################################################
+# T E S L A
+###############################################################################
+
+
+tesla_proxy:
+  debug: true
+  module: tesla_proxy
+  class: TeslaProxy
+  tesla_username: !secret tesla_username
+  tesla_password: !secret tesla_password
+  player_entity_id: media_player.gh_laundry_room
+  motion_entity_id: binary_sensor.zb_laundry_room_motion
+
+
+tesla_auto_scheduled_charging:
+  debug: true
+  module: tesla_auto_scheduled_charging
+  class: TeslaAutoScheduledCharging
+  calendar_api_base_url: !secret appdaemon_hass_api_base_url
+  calendar_api_token: !secret appdaemon_hass_api_token
+  calendar_entity_id: calendar.google_home
+  map_api_key: !secret google_travel_time_api_key
+  map_home_location: !secret map_location_home
+  auto_charge_state_entity_id: input_select.tesla_auto_charging_state
+  tesla_state_entity_id: sensor.tesla_state
+  tesla_plugged_in_entity_id: sensor.tesla_plugged_in
+  tesla_location_entity_id: sensor.tesla_plugged_in
+  tesla_charge_limit_entity_id: sensor.tesla_charge_limit
+  tesla_resume_logging_url: http://192.168.86.20:4000/api/car/1/logging/resume
+  work_day_entity_id: binary_sensor.workday_sensor
+  school_day_entity_id: input_boolean.is_school_day
+  school_time: '08:50:00'
+
+#
+#tesla_morning_auto_unlock:
+#  debug: true
+#  module: automation
+#  class: Automation
+#  triggers:
+#    - platform: state
+#      entity_ids:
+#        - binary_sensor.mqtt_garage_entry_door
+#        - lock.entry_door_lock_locked
+#  handlers:
+#    - constraints:
+#        - platform: triggered_state
+#          to: [unlocked, 'on']
+#        - platform: state
+#          entity_id: sensor.tesla_plugged_in
+#          state: 'true'
+#        - platform: state
+#          entity_id: lock.tesla_modelx_door
+#          state: 'locked'
+#        - platform: state
+#          entity_id: input_select.presence_mode
+#          state: Everyone is Home
+#      actions:
+#        - platform: unlock
+#          entity_id: lock.tesla_modelx_door
+#          notify_target: all_ios
+#          notify_message: "Tesla auto unlocked"

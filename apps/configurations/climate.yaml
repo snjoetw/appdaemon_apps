@@ -1,0 +1,313 @@
+###############################################################################
+# C L I M A T E
+###############################################################################
+climate_comfort_mode:
+  module: climate_comfort_mode_monitor
+  class: ClimateComfortModeMonitor
+  climate_entity_id: climate.main_floor
+  mode_entity_id: input_select.climate_comfort_mode
+
+
+climate_auto_fan_min_on_time:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      seconds: 60
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_boolean.is_bad_air_quality_mode
+          state: 'on'
+      actions:
+        - platform: set_fan_min_on_time
+          entity_id: climate.main_floor
+          fan_min_on_time: 0
+    - constraints:
+        - platform: attribute
+          entity_id: climate.main_floor
+          attribute: preset_mode
+          value: "Away"
+      actions:
+        - platform: set_fan_min_on_time
+          entity_id: climate.main_floor
+          fan_min_on_time: 0
+    - constraints:
+        - platform: time
+          start_time: "04:00:00"
+          end_time: "08:00:00"
+      actions:
+        - platform: set_fan_min_on_time
+          entity_id: climate.main_floor
+          fan_min_on_time: 0
+    - constraints:
+        - platform: state
+          entity_id: input_select.climate_comfort_mode
+          state: Hot
+      actions:
+        - platform: set_fan_min_on_time
+          entity_id: climate.main_floor
+          fan_min_on_time: 30
+    - constraints:
+        - platform: state
+          entity_id: input_select.climate_comfort_mode
+          state: Warm
+      actions:
+        - platform: set_fan_min_on_time
+          entity_id: climate.main_floor
+          fan_min_on_time: 15
+    - constraints:
+        - platform: state
+          entity_id: input_select.climate_comfort_mode
+          state: Comfort
+      actions:
+        - platform: set_fan_min_on_time
+          entity_id: climate.main_floor
+          fan_min_on_time: 5
+    - constraints:
+        - platform: state
+          entity_id: input_select.climate_comfort_mode
+          state: [Cool, Cold]
+      actions:
+        - platform: set_fan_min_on_time
+          entity_id: climate.main_floor
+          fan_min_on_time: 0
+
+
+auto_fan_vent:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - climate.main_floor
+  constraints:
+    - platform: state
+      entity_id: input_boolean.is_auto_vent_enabled
+      state: "on"
+    - platform: attribute
+      entity_id: climate.main_floor
+      attribute: fan
+      value: 'on'
+  handlers:
+    - constraints:
+      actions:
+        - platform: set_cover_position
+          entity_id:
+            - cover.zb_anne_s_room_vent
+            - cover.zb_kitchen_vent
+            - cover.zb_lynn_s_room_vent
+            - cover.zb_office_vent
+            - cover.zb_master_bedroom_vent_1
+            - cover.zb_master_bedroom_vent_2
+          position: 100
+
+
+auto_thermostat_mode:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_select.presence_mode
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_select.presence_mode
+          state: No One is Home
+      actions:
+        - platform: service
+          service: climate/set_preset_mode
+          data:
+            entity_id: climate.main_floor
+            preset_mode: away
+    - constraints:
+        - platform: state
+          entity_id: input_select.presence_mode
+          state: No One is Home
+          negate: true
+      actions:
+        - platform: service
+          service: ecobee/resume_program
+          data:
+            entity_id: climate.main_floor
+            resume_all: true
+
+
+#auto_cooling_fan:
+#  module: cooling_fan_runner
+#  class: CoolingFanRunner
+#  climate_entity_id: climate.main_floor
+#  presence_mode_entity_id: input_select.presence_mode
+#  monitors:
+#    - temperature_entity_id: sensor.office_temperature
+#      fan_entity_id: fan.template_office_fan
+#      fan_on_temperature_offset: -0.1
+#      fan_off_temperature_offset: -0.3
+#      ignore_presence_mode: true
+#      enabler_entity_id: input_boolean.is_auto_fan_enabled_office
+#    - temperature_entity_id: sensor.lynn_s_room_temperature
+#      fan_entity_id: fan.lynns_room
+#      fan_on_temperature_offset: 0
+#      fan_off_temperature_offset: -0.3
+#      enabler_entity_id: input_boolean.is_auto_fan_enabled_lynns_room
+#    - temperature_entity_id: sensor.master_bedroom_temperature
+#      fan_entity_id: fan.master_bedroom
+#      fan_on_temperature_offset: 0
+#      fan_off_temperature_offset: -0.3
+#      enabler_entity_id: input_boolean.is_auto_fan_enabled_master_bedroom
+
+
+
+auto_climate_vent_monitor:
+  debug: true
+  module: auto_climate_vent_monitor
+  class: AutoClimateVentMonitor
+  enabler_entity_id: input_boolean.is_auto_vent_enabled
+  climate_entity_id: climate.main_floor
+  zones:
+    - temperature_entity_id: sensor.master_bedroom_temperature
+      vent_entity_ids:
+        - cover.zb_master_bedroom_vent_1
+        - cover.zb_master_bedroom_vent_2
+      cooling_temp_offset_high: 0.1
+      cooling_temp_offset_low: -0.5
+      heating_temp_offset_high: 0
+      heating_temp_offset_low: -0.8
+
+    - temperature_entity_id: sensor.kitchen_temperature
+      vent_entity_ids:
+        - cover.zb_kitchen_vent
+      cooling_temp_offset_high: 0.2
+      cooling_temp_offset_low: -0.5
+      heating_temp_offset_high: 0
+      heating_temp_offset_low: -0.8
+
+    - temperature_entity_id: sensor.lynn_s_room_temperature
+      vent_entity_ids:
+        - cover.zb_lynn_s_room_vent
+      cooling_temp_offset_high: 0
+      cooling_temp_offset_low:  -0.5
+      heating_temp_offset_high: 0.5
+      heating_temp_offset_low: 0
+      min_open_percent: 0.2
+
+    - temperature_entity_id: sensor.office_temperature
+      vent_entity_ids:
+        - cover.zb_office_vent
+      cooling_temp_offset_high: -0.5
+      cooling_temp_offset_low:  -1
+      heating_temp_offset_high: 0
+      heating_temp_offset_low: -0.8
+
+    - temperature_entity_id: sensor.anne_s_room_temperature
+      vent_entity_ids:
+        - cover.zb_anne_s_room_vent
+      cooling_temp_offset_high: 1
+      cooling_temp_offset_low:  0.5
+      heating_temp_offset_high: 0
+      heating_temp_offset_low: -0.8
+
+
+bad_air_quality_monitor:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - air_quality.dyson_master_bedroom
+        - air_quality.dyson_lynn_s_room
+        - sensor.dyson_office_dust
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id:
+            - air_quality.dyson_lynn_s_room
+            - air_quality.dyson_master_bedroom
+            - sensor.dyson_office_dust
+          state: ">=10"
+      actions:
+        - platform: turn_on
+          entity_ids:
+            input_boolean.is_bad_air_quality_mode:
+              force_on: false
+
+        - platform: service
+          service: dyson/set_auto_mode
+          data:
+            entity_id: fan.living_room
+            auto_mode: true
+          constraints:
+            - platform: state
+              entity_id: air_quality.dyson_lynn_s_room
+              state: ">=10"
+
+        - platform: service
+          service: dyson/set_auto_mode
+          data:
+            entity_id: fan.master_bedroom
+            auto_mode: true
+          constraints:
+            - platform: state
+              entity_id: air_quality.dyson_master_bedroom
+              state: ">=10"
+
+        - platform: service
+          service: dyson/set_auto_mode
+          data:
+            entity_id: fan.lynns_room
+            auto_mode: true
+          constraints:
+            - platform: state
+              entity_id: sensor.dyson_office_dust
+              state: ">=5"
+
+    - constraints:
+      actions:
+        - platform: turn_off
+          entity_ids:
+            input_boolean.is_bad_air_quality_mode:
+              force_on: false
+
+
+fan_auto_night_mode:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: fan.lynns_room
+    - platform: state
+      entity_ids: input_boolean.is_sleeping_time
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_boolean.is_sleeping_time
+          state: "on"
+      actions:
+        - platform: service
+          service: dyson/set_night_mode
+          data:
+            entity_id: fan.living_room
+            night_mode: true
+        - platform: service
+          service: dyson/set_night_mode
+          data:
+            entity_id: fan.lynns_room
+            night_mode: true
+
+    - constraints:
+        - platform: state
+          entity_id: input_boolean.is_sleeping_time
+          state: "off"
+      actions:
+        - platform: service
+          service: dyson/set_night_mode
+          data:
+            entity_id: fan.living_room
+            night_mode: false
+        - platform: service
+          service: dyson/set_night_mode
+          data:
+            entity_id: fan.lynns_room
+            night_mode: false

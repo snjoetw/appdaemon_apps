@@ -1,0 +1,84 @@
+washer_mode:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: sensor.template_washer_watts
+    - platform: state
+      entity_id: binary_sensor.zb_washer_door
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_select.washer_status
+          state: Done
+        - platform: state
+          entity_id: binary_sensor.zb_washer_door
+          state: "on"
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.washer_status
+          option: Idle
+
+    - constraints:
+        - platform: state
+          entity_id: sensor.template_washer_watts
+          state: ">=2"
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.washer_status
+          option: Running
+
+    - constraints:
+        - platform: state
+          entity_id: sensor.template_washer_watts
+          state: "<2"
+        - platform: state
+          entity_id: input_select.washer_status
+          state: Running
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.washer_status
+          option: Done
+
+    - constraints:
+        - platform: state
+          entity_id: sensor.template_washer_watts
+          state: "<2"
+        - platform: state
+          entity_id: input_select.washer_status
+          state: [Running, Done]
+          negate: true
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.washer_status
+          option: Idle
+
+    - constraints:
+        - platform: state
+          entity_id: sensor.template_washer_watts
+          state: "<1"
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.washer_status
+          option: "Off"
+
+
+washer_is_done_announement:
+  module: automation
+  class: Automation
+  cancel_job_when_no_match: true
+  triggers:
+    - platform: state
+      entity_id: input_select.washer_status
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_select.washer_status
+          state: Done
+      actions:
+        - platform: repeat
+          repeat: 1800
+          delay: 300
+          actions:
+            - platform: sonos
+              tts_message: "Washer has finished and is ready to be emptied."

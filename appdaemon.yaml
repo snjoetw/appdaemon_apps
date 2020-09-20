@@ -1,0 +1,24 @@
+appdaemon:
+  latitude: !secret homeassistant_latitude
+  longitude: !secret homeassistant_longitude
+  elevation: !secret homeassistant_elevation
+  time_zone: !secret homeassistant_time_zone
+  app_dir: /conf/apps
+  secrets: /conf/secrets.yaml
+  threadpool_workers: 20
+  exclude_dirs:
+    - configurations
+    - lib
+    - test
+  plugins:
+    HASS:
+      type: hass
+      ha_url: http://192.168.86.53:8123
+      token: !secret appdaemon_token
+      cert_verify: False
+      certpath: False
+    MQTT:
+      type: mqtt
+      client_id: appdaemon_v4
+      client_host: !secret homeassistant_internal_host
+      namespace: mqtt

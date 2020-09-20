@@ -1,0 +1,156 @@
+lynns_room_lighting:
+  debug: true
+  module: motion_lighting2
+  class: MotionLighting
+  enabler_entity_id: input_boolean.is_motion_enabled_lynns_room
+  scene_entity_id: input_select.lighting_mode_upstairs
+  motion_entity_id: binary_sensor.zb_lynn_s_room_motion
+  turn_off_delay: 60
+  lighting_scenes:
+    Dark:
+      - entity_id: light.hue_lynn_s_room_lightstrip
+        brightness: 75
+        rgb_color: [255, 203, 114]
+    Sleeping:
+      - entity_id: light.hue_lynn_s_room_lightstrip
+        brightness: 75
+        rgb_color: [255, 203, 114]
+    Midnight:
+      - entity_id: light.hue_lynn_s_room_lightstrip
+        brightness: 40
+        rgb_color: [255, 203, 114]
+
+
+lynns_room_button:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: zha_event
+  constraints:
+    - platform: triggered_event
+      device_ieee: '00:15:8d:00:01:5a:a7:32'
+      cluster_id: 6
+      command: 'click'
+  handlers:
+    - constraints:
+        - platform: triggered_event
+          args:
+            click_type: double
+      actions:
+        - platform: turn_on
+          entity_ids:
+            - entity_id: light.hue_lynn_s_room_lightstrip
+              brightness: 10
+              rgb_color: [255, 203, 114]
+        - platform: turn_off
+          entity_ids:
+            - input_boolean.is_motion_enabled_lynns_room
+        - platform: delay
+          delay: 3600
+          actions:
+            - platform: turn_on
+              entity_ids:
+                - input_boolean.is_motion_enabled_lynns_room
+    - constraints:
+        - platform: triggered_event
+          args:
+            click_type: triple
+      actions:
+        - platform: turn_on
+          entity_ids:
+            - entity_id: light.hue_lynn_s_room_ceiling_light
+              brightness: 255
+              rgb_color: [255, 203, 114]
+        - platform: turn_off
+          entity_ids:
+            - input_boolean.is_motion_enabled_lynns_room
+        - platform: delay
+          delay: 3600
+          actions:
+            - platform: turn_on
+              entity_ids:
+                - input_boolean.is_motion_enabled_lynns_room
+    - constraints:
+        - platform: state
+          entity_id: light.hue_lynn_s_room_lightstrip
+          state: "off"
+        - platform: triggered_event
+          args:
+            click_type: single
+      actions:
+        - platform: turn_on
+          entity_ids:
+            - entity_id: light.hue_lynn_s_room_lightstrip
+              brightness: 65
+              rgb_color: [255, 203, 114]
+        - platform: turn_off
+          entity_ids:
+            - input_boolean.is_motion_enabled_lynns_room
+        - platform: delay
+          delay: 600
+          actions:
+            - platform: turn_on
+              entity_ids:
+                - input_boolean.is_motion_enabled_lynns_room
+    - constraints:
+        - platform: state
+          entity_id: light.hue_lynn_s_room_lightstrip
+          state: "on"
+        - platform: triggered_event
+          args:
+            click_type: single
+      actions:
+        - platform: turn_off
+          dim_light_before_turn_off: false
+          entity_ids:
+            - light.hue_lynn_s_room_lightstrip
+            - light.hue_lynn_s_room_ceiling_light
+            - light.hue_kids_bathroom_light
+            - light.yeelight_strip1_7811dc691196
+            - light.yeelight_lynn_s_room_bedside_lamp
+            - light.xiaomi_upstairs_hallway_night_light
+            - light.hue_upstairs_hallway_light
+        - platform: turn_on
+          entity_ids:
+            - input_boolean.is_motion_enabled_lynns_room
+
+
+lynns_room_wakeup_lighting:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      time: "07:50:00"
+  handlers:
+    - constraints:
+      actions:
+        - platform: turn_on
+          entity_ids:
+            - entity_id: light.yeelight_lynn_s_room_bedside_lamp
+              brightness: 10
+              rgb_color: [255, 203, 114]
+
+
+lynns_room_fan_auto_off:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: sensor.thermal_comfort_lynn_s_room_heatindex
+  constraints:
+    - platform: state
+      entity_id: fan.living_room
+      state: "on"
+    - platform: state
+      entity_id: sensor.thermal_comfort_lynn_s_room_heatindex
+      state: "<=24.8"
+  handlers:
+    - constraints:
+      actions:
+      - platform: service
+        service: fan/turn_off
+        data:
+          entity_id: fan.living_room

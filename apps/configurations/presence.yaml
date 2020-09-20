@@ -1,0 +1,69 @@
+###############################################################################
+# P R E S E N C E
+###############################################################################
+presence_status_automation:
+  module: presence_automation_status
+  class: PresenceStatusAutomation
+  device_entity_ids:
+    - sensor.template_presence_joe_s_iphone:
+        status_entity_id: input_select.joe_status
+        proximity_entity_id: proximity.home_joe
+    - sensor.template_presence_yuyu_s_iphone:
+        status_entity_id: input_select.yuyu_status
+        proximity_entity_id: proximity.home_yuyu
+
+
+presence_mode_updater:
+  module: presence_mode_updater
+  class: PresenceModeUpdater
+  person_entity_id:
+    - input_select.joe_status
+    - input_select.yuyu_status
+  presence_mode_entity_id: input_select.presence_mode
+
+
+
+turn_off_devices_when_nobody_is_home:
+  module: automation
+  class: Automation
+  cancel_job_when_no_match: true
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_select.presence_mode
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: input_select.presence_mode
+          state: No One is Home
+      actions:
+        - platform: delay
+          delay: 300
+          actions:
+            - platform: turn_off_media_player
+              entity_id:
+                - media_player.apple_tv
+                - media_player.lynns_room
+                - media_player.dining_room
+                - media_player.family_room
+                - media_player.office
+                - media_player.family_room_display
+                - media_player.master_bathroom
+                - media_player.master_bedroom
+            - platform: turn_off
+              entity_ids:
+                - *var_downstairs_lights
+                - *var_upstairs_lights
+        - platform: set_cover_position
+          entity_id: cover.zb_kitchen_shade
+          position: 0
+
+
+zone_change_notification:
+  module: notification_automation_zone_change
+  class: ZoneChangeNotificationAutomation
+  notify_entity_ids:
+    - mobile_app_joes_iphone
+  device_entity_ids:
+    - device_tracker.ios_joe
+    - device_tracker.ios_yuyu

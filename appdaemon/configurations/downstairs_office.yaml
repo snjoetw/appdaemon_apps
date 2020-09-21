@@ -54,8 +54,10 @@ office_mac_lighting:
       actions:
         - platform: turn_on
           entity_ids:
-            - light.xiaomi_office_light
-            - light.hue_office_light
+            - entity_id: light.xiaomi_office_light
+              brightness: 254
+            - entity_id: light.hue_office_light
+              brightness: 254
     - constraints:
         - platform: triggered_state
           from: "on"

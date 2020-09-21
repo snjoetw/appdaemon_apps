@@ -102,7 +102,7 @@ def has_scheduled_job(app):
                     continue
 
             return True
-        except ValueError:
+        except (ValueError, TypeError):
             app.debug('Unknown handle: {} in {}\n{}'.format(handle, jobs, traceback.format_exc()))
 
     return False

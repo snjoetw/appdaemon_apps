@@ -3,7 +3,7 @@ appdaemon:
   longitude: !secret homeassistant_longitude
   elevation: !secret homeassistant_elevation
   time_zone: !secret homeassistant_time_zone
-  app_dir: /conf/apps
+  app_dir: /conf/appdaemon
   secrets: /conf/secrets.yaml
   threadpool_workers: 20
   exclude_dirs:

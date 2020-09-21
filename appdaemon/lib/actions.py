@@ -368,8 +368,7 @@ class TurnOnAction(Action):
         if "brightness" not in config:
             return False
 
-        current_brightness = to_int(
-            self.get_state(entity_id, attribute="brightness"), 0)
+        current_brightness = to_int(self.get_state(entity_id, attribute="brightness"), 0)
         brightness = to_int(config["brightness"])
 
         self.debug({

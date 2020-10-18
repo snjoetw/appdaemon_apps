@@ -127,59 +127,6 @@ runtime_accumulator:
   reset_start_time: '00:00:00'
   reset_end_time: '00:00:59'
   accumulators:
-    - accumulate_entity_id: input_number.runtime_kwh_family_room_light
-      accumulator_type: WATTAGE
-      target_attribute: operation
-      target_entity_id: light.hue_family_room_light
-      running_state_value: 'on'
-      # 9W * 4
-      wattage: 36
-
-    - accumulate_entity_id: input_number.runtime_kwh_kitchen_light
-      accumulator_type: WATTAGE
-      target_attribute: operation
-      target_entity_id: light.zwave_kitchen_light
-      running_state_value: 'on'
-      # 16W * 7
-      wattage: 112
-
-    - accumulate_entity_id: input_number.runtime_climate_cooling
-      target_entity_id: climate.main_floor
-      target_attribute: hvac_action
-      running_attribute_value: cooling
-
-    - accumulate_entity_id: input_number.runtime_climate_heating
-      target_entity_id: climate.main_floor
-      target_attribute: hvac_action
-      running_attribute_value: heating
-
-    - accumulate_entity_id: input_number.runtime_climate_fan
-      target_entity_id: climate.main_floor
-      target_attribute: fan
-      running_attribute_value: 'on'
-
-    - accumulate_entity_id: input_number.runtime_kwh_family_room_tv
-      accumulator_type: WATTAGE
-      target_entity_id: media_player.family_room
-      target_attribute: source
-      running_state_value: playing
-      running_attribute_value: TV
-      wattage: 225
-
-    - accumulate_entity_id: input_number.runtime_kwh_sonos
-      accumulator_type: WATTAGE
-      always_running: true
-      # 3.8*3+2.1+5.8+3.6
-      wattage: 22.9
-
-    - accumulate_entity_id: input_number.runtime_kwh_tesla
-      accumulator_type: TESLA
-      location_home_name: home
-      charging_state_name: charging
-      charging_state_entity_id: sensor.tesla_state
-      location_entity_id: device_tracker.tesla_model_x_lan
-      charge_energy_added_entity_id: sensor.tesla_charge_energy_added
-
     - accumulate_entity_id: input_number.runtime_kwh_enery_bridge
       accumulator_type: WATTAGE
       always_running: true
@@ -200,7 +147,7 @@ noise_level_monitor:
         xy_color:
           - 0.326
           - 0.175
-  sleeping_time_entity_id: input_boolean.is_sleeping_time
+  sleeping_time_entity_id: binary_sensor.sleeping_time
   light_settings:
     - light_entity_id: light.hue_office_light
     - light_entity_id: light.zwave_kitchen_light

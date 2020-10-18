@@ -1,16 +1,54 @@
 office_lighting:
-  module: motion_lighting2
-  class: MotionLighting
+  debug: true
+  module: image_processing_motion_lighting
+  class: ImageProcessingMotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_office
   scene_entity_id: input_select.lighting_mode_office
-  motion_entity_id: binary_sensor.zb_office_motion
-  turn_off_delay: 1800
+  motion_entity_id:
+    - binary_sensor.zb_office_motion
+    - binary_sensor.joes_imac_pro_3_active
+  turn_off_delay: 300
+  image_processing_settings:
+    enabler_entity_id: input_boolean.is_image_processing_enabled_office
+    person_detected_entity_id: binary_sensor.template_office_person
   lighting_scenes:
     Dark:
       - entity_id: light.xiaomi_office_light
         brightness: 254
       - entity_id: light.hue_office_light
         brightness: 254
+
+
+office_person_detection:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_boolean.is_image_processing_enabled_office
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: repeat
+          repeat: 30
+          delay: 0
+          actions:
+            - platform: service
+              service: image_processing/scan
+              data:
+                entity_id: image_processing.tf_office_person
+    - do_parallel_actions: false
+      constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: cancel_job
+        - platform: set_state
+          entity_id: image_processing.tf_office_person
+          state: 0
 
 
 office_monitor_random_lighting:
@@ -38,40 +76,6 @@ office_monitor_random_lighting:
             - Savanna sunset
 
 
-office_mac_lighting:
-  debug: true
-  log_level: DEBUG
-  module: automation
-  class: Automation
-  triggers:
-    - platform: state
-      entity_ids: binary_sensor.joes_imac_pro_active
-  handlers:
-    - constraints:
-        - platform: triggered_state
-          from: "off"
-          to: "on"
-      actions:
-        - platform: turn_on
-          entity_ids:
-            - entity_id: light.xiaomi_office_light
-              brightness: 254
-            - entity_id: light.hue_office_light
-              brightness: 254
-    - constraints:
-        - platform: triggered_state
-          from: "on"
-          to: "off"
-      actions:
-        - platform: delay
-          delay: 1
-          actions:
-            - platform: turn_off
-              entity_ids:
-                - light.xiaomi_office_light
-                - light.hue_office_light
-
-
 office_wall_switch:
   module: automation
   class: Automation
@@ -83,6 +87,10 @@ office_wall_switch:
       device_ieee: '00:15:8d:00:01:1c:11:45'
       cluster_id: 6
       endpoint_id: [1, 2]
+      args:
+        attribute_id: 0
+        attribute_name: on_off
+        value: 1
   handlers:
     - constraints:
         - platform: state
@@ -94,13 +102,6 @@ office_wall_switch:
           entity_ids:
             - light.xiaomi_office_light
             - light.hue_office_light
-            - input_boolean.is_motion_enabled_office
-        - platform: delay
-          delay: 3600
-          actions:
-            - platform: turn_on
-              entity_ids:
-                - input_boolean.is_motion_enabled_office
 
     - constraints:
         - platform: state
@@ -113,9 +114,4 @@ office_wall_switch:
               brightness: 254
             - entity_id: light.hue_office_light
               brightness: 254
-        - platform: delay
-          delay: 3600
-          actions:
-            - platform: turn_on
-              entity_ids:
-                - input_boolean.is_motion_enabled_office
+

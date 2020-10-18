@@ -1,0 +1,9 @@
+vacuum_dustbin_monitor:
+  debug: true
+  module: vacuum_dustbin_monitor
+  class: VacuumDustbinMonitor
+  runtime_entity_id: input_number.vacuum_cleaned_area_count
+  monitor_state_entity_id: input_select.vacuum_dustbin_monitor_state
+  vacuum_entity_id: vacuum.downstair
+  dumping_spot_x_coord: 27000
+  dumping_spot_y_coord: 38000

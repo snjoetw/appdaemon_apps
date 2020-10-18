@@ -17,6 +17,7 @@ tesla_auto_scheduled_charging:
   debug: true
   module: tesla_auto_scheduled_charging
   class: TeslaAutoScheduledCharging
+  enabler_entity_id: input_boolean.is_tesla_auto_scheduled_charging_enabled
   calendar_api_base_url: !secret appdaemon_hass_api_base_url
   calendar_api_token: !secret appdaemon_hass_api_token
   calendar_entity_id: calendar.google_home
@@ -31,32 +32,3 @@ tesla_auto_scheduled_charging:
   work_day_entity_id: binary_sensor.workday_sensor
   school_day_entity_id: input_boolean.is_school_day
   school_time: '08:50:00'
-
-#
-#tesla_morning_auto_unlock:
-#  debug: true
-#  module: automation
-#  class: Automation
-#  triggers:
-#    - platform: state
-#      entity_ids:
-#        - binary_sensor.mqtt_garage_entry_door
-#        - lock.entry_door_lock_locked
-#  handlers:
-#    - constraints:
-#        - platform: triggered_state
-#          to: [unlocked, 'on']
-#        - platform: state
-#          entity_id: sensor.tesla_plugged_in
-#          state: 'true'
-#        - platform: state
-#          entity_id: lock.tesla_modelx_door
-#          state: 'locked'
-#        - platform: state
-#          entity_id: input_select.presence_mode
-#          state: Everyone is Home
-#      actions:
-#        - platform: unlock
-#          entity_id: lock.tesla_modelx_door
-#          notify_target: all_ios
-#          notify_message: "Tesla auto unlocked"

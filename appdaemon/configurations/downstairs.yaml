@@ -86,15 +86,15 @@ living_room_lighting:
   class: ImageProcessingMotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_living_room
   scene_entity_id: input_select.lighting_mode_living_room
-  image_processing_enabler_entity_id: input_boolean.is_image_processing_enabled_living_room
   motion_entity_id:
     - binary_sensor.zb_living_room_motion
-    - binary_sensor.template_living_room_person
   turn_off_delay: 300
+  image_processing_settings:
+    enabler_entity_id: input_boolean.is_image_processing_enabled_living_room
+    person_detected_entity_id: binary_sensor.template_living_room_person
   lighting_scenes:
     Dark:
       - entity_id: switch.zwave_living_room_light
-        brightness: 254
 
 
 living_room_person_detection:
@@ -129,6 +129,34 @@ living_room_person_detection:
           state: 0
 
 
+xmas_lighting:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      minutes: 10
+  constraints:
+  handlers:
+    - actions:
+        - platform: turn_off
+          entity_ids: switch.xmas_light
+          constraints:
+            - platform: time
+              start_time: "23:00:00"
+              end_time: "15:00:00"
+
+        - platform: turn_on
+          entity_ids: switch.xmas_light
+          constraints:
+            - platform: time
+              start_time: sunset + 00:30:00
+              end_time: "23:00:00"
+
+
+
+###############################################################################
+# D I N I N G  R O O M
+###############################################################################
 dining_room_lighting:
   module: automation
   class: Automation
@@ -158,14 +186,3 @@ dining_room_lighting:
             - platform: time
               start_time: sunset + 00:30:00
               end_time: "23:00:00"
-
-
-vacuum_dustbin_monitor:
-  debug: true
-  module: vacuum_dustbin_monitor
-  class: VacuumDustbinMonitor
-  runtime_entity_id: input_number.vacuum_cleaned_area_count
-  monitor_state_entity_id: input_select.vacuum_dustbin_monitor_state
-  vacuum_entity_id: vacuum.downstair
-  dumping_spot_x_coord: 27000
-  dumping_spot_y_coord: 38000

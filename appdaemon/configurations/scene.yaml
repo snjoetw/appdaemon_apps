@@ -155,5 +155,4 @@ workout_time_scene:
           delay: 10
           actions:
             - platform: turn_off
-              entity_ids:
-                input_boolean.is_scene_workout_time:
+              entity_ids: input_boolean.is_scene_workout_time

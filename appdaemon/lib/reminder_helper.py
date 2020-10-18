@@ -290,4 +290,10 @@ class BadAirQualityReminder(ReminderProvider):
         return True
 
     def provide(self, context):
-        return 'Attention, air quality is bad, please turn on fan in auto mode.'
+        names = self.app.get_app('air_quality_monitor').bad_air_quality_names()
+
+        if not names:
+            return
+
+        name = concat_list(names)
+        return 'Attention, air quality is bad in {}'.format(name)

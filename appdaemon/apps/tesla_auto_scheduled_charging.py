@@ -23,24 +23,22 @@ AUTO_CHARGE_PERCENT = 10
 class TeslaAutoScheduledCharging(BaseAutomation):
 
     def initialize(self):
-        self.events_fetcher = CalendarEventFetcher(
-            self,
-            self.arg('calendar_api_base_url'),
-            self.arg('calendar_api_token'))
+        self.events_fetcher = CalendarEventFetcher(self,
+                                                   self.arg('calendar_api_base_url'),
+                                                   self.arg('calendar_api_token'))
         self.travel_time_fetcher = TravelTimeFetcher(self, self.arg('map_api_key'))
         self.buffer_time = self.int_arg('buffer_time', 10)
         self.home_location = self.arg('map_home_location')
 
+        self.enabler_entity_id = self.arg('enabler_entity_id')
         self.auto_charge_state_entity_id = self.arg('auto_charge_state_entity_id')
         self.calendar_entity_id = self.arg('calendar_entity_id')
         self.school_day_entity_id = self.arg('school_day_entity_id')
         self.work_day_entity_id = self.arg('work_day_entity_id')
         self.tesla_state_entity_id = self.arg('tesla_state_entity_id')
-        self.tesla_plugged_in_entity_id = self.arg(
-            'tesla_plugged_in_entity_id')
+        self.tesla_plugged_in_entity_id = self.arg('tesla_plugged_in_entity_id')
         self.tesla_location_entity_id = self.arg('tesla_location_entity_id')
-        self.tesla_charge_limit_entity_id = self.arg(
-            'tesla_charge_limit_entity_id')
+        self.tesla_charge_limit_entity_id = self.arg('tesla_charge_limit_entity_id')
         self.tesla_resume_logging_url = self.arg('tesla_resume_logging_url')
         self.school_time = self.arg('school_time')
 
@@ -85,11 +83,10 @@ class TeslaAutoScheduledCharging(BaseAutomation):
         tesla_proxy = self.get_app('tesla_proxy')
         tesla_proxy.set_charge_limit(auto_charge_limit)
 
-        self.debug(
-            'About to charge, original_charge_limit={}, auto_charge_limit={}'.format(
-                self.original_charge_limit,
-                auto_charge_limit,
-            ))
+        self.debug('About to charge, original_charge_limit={}, auto_charge_limit={}'.format(
+            self.original_charge_limit,
+            auto_charge_limit,
+        ))
 
     def handle_charging_state(self):
         tesla_state = self.get_state(self.tesla_state_entity_id)
@@ -97,9 +94,7 @@ class TeslaAutoScheduledCharging(BaseAutomation):
             self.debug('Skipping ... still charging')
             return
 
-        current_charge_limit = to_float(self.get_state(
-            self.tesla_charge_limit_entity_id))
-
+        current_charge_limit = to_float(self.get_state(self.tesla_charge_limit_entity_id))
         if current_charge_limit == self.original_charge_limit:
             self.debug('Auto charge limit not being set, fixing ...')
             self.handle_idle_state()
@@ -146,6 +141,11 @@ class TeslaAutoScheduledCharging(BaseAutomation):
         self.debug('Reset state to waiting from skipped')
 
     def should_auto_charge(self):
+        is_enabled = self.get_state(self.enabler_entity_id)
+        if is_enabled != 'on':
+            self.debug('Skipping ... auto charging not enabled')
+            return False
+
         plugged_in = self.get_state(self.tesla_plugged_in_entity_id)
         if plugged_in != 'true':
             self.debug('Skipping ... not plugged in')
@@ -154,6 +154,11 @@ class TeslaAutoScheduledCharging(BaseAutomation):
         tesla_state = self.get_state(self.tesla_state_entity_id)
         if tesla_state == 'charging':
             self.debug('Skipping ... already charging')
+            return False
+
+        charge_limit = to_float(self.get_state(self.tesla_charge_limit_entity_id))
+        if charge_limit >= 85:
+            self.debug('Skipping ... charge limit is {}'.format(charge_limit))
             return False
 
         location = self.get_state(self.tesla_location_entity_id)

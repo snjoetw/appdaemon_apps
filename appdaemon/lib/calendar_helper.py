@@ -68,12 +68,8 @@ class CalendarEventFetcher(Component):
         }
         self.api_url = "{}/api/calendars/".format(api_base_url)
 
-    def fetch_upcoming_event(self, calendar_entity_id, start_date,
-                             end_date=None):
-        regular_events = self.fetch_regular_events(
-            calendar_entity_id,
-            start_date,
-            end_date)
+    def fetch_upcoming_event(self, calendar_entity_id, start_date, end_date=None):
+        regular_events = self.fetch_regular_events(calendar_entity_id, start_date, end_date)
 
         self.debug('Found {} events'.format(len(regular_events)))
         now = datetime.now()
@@ -87,8 +83,7 @@ class CalendarEventFetcher(Component):
 
         return filtered[0]
 
-    def fetch_regular_events(self, calendar_entity_id, start_date,
-                             end_date=None):
+    def fetch_regular_events(self, calendar_entity_id, start_date, end_date=None):
         events = self.fetch_events(calendar_entity_id, start_date, end_date)
         events.sort(key=lambda e: e.start_time)
 

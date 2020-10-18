@@ -52,8 +52,7 @@ def _check(app, config):
                                         attribute='all')
 
     if light_sensor_entity is None:
-        app.error('Unable to get light_sensor_entity={}'.format(
-            config.get(LIGHT_SENSOR_ENTITY_ID)))
+        app.error('Unable to get light_sensor_entity={}'.format(config.get(LIGHT_SENSOR_ENTITY_ID)))
         return
 
     light_sensor_changed_at = light_sensor_entity['last_changed']
@@ -78,8 +77,7 @@ def _check(app, config):
     light_level = to_int(light_sensor_entity['state'], -1)
 
     if light_level == -1:
-        app.warn('Unable to parse light level value: {}'.format(
-            light_sensor_entity))
+        app.warn('Unable to parse light level value: {}'.format(light_sensor_entity))
         return
 
     thresholds = config.get(THRESHOLDS)

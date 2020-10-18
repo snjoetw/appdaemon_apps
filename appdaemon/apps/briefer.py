@@ -64,7 +64,8 @@ class Briefer(ConfigurableAutomation):
                     traceback.format_exc()))
 
         if len(briefing_texts) == 1:
-            return None
+            return
+
 
         return '{}'.format(
             sanitize_briefing_text(MEDIUM_PAUSE.join(briefing_texts)))

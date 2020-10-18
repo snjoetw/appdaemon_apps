@@ -11,6 +11,8 @@ class AutoClimateVentMonitor(BaseAutomation):
         self.climate_entity_id = self.arg('climate_entity_id')
         self.zone_configs = [ZoneConfig(z) for z in self.list_arg('zones')]
 
+        self.listen_state(self.temperature_change_handler, self.climate_entity_id, attribute="all")
+
         for config in self.zone_configs:
             self.listen_state(self.temperature_change_handler, config.temperature_entity_id)
 
@@ -75,10 +77,10 @@ class AutoClimateVentMonitor(BaseAutomation):
         return current
 
     def target_offset_high(self, zone_config):
-        return zone_config.cooling_temp_offset_high if self.is_heating_mode() else zone_config.heating_temp_offset_high
+        return zone_config.heating_temp_offset_high if self.is_heating_mode() else zone_config.cooling_temp_offset_high
 
     def target_offset_low(self, zone_config):
-        return zone_config.cooling_temp_offset_low if self.is_heating_mode() else zone_config.heating_temp_offset_low
+        return zone_config.heating_temp_offset_low if self.is_heating_mode() else zone_config.cooling_temp_offset_low
 
     def target_offset_scale(self, zone_config):
         return 1 / (self.target_offset_high(zone_config) - self.target_offset_low(zone_config))

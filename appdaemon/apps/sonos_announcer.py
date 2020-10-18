@@ -354,7 +354,7 @@ SPEECH_FILE_FORMAT = 'mp3'
 MEDIA_TYPE_CACHED = 'cache'
 MEDIA_TYPE_TEMP = 'temp'
 # should be '/local/library/sound/{}' but looks like 404 also keeps speaker alive
-LIBRARY_URL_PATH = '/local/library/{}'
+LIBRARY_URL_PATH = '/local/library/sound/{}'
 MEDIA_URL_PATH = '/local/library/tts/{}'
 TEMP_MEDIA_URL_PATH = '/local/library/tts/tmp/{}'
 

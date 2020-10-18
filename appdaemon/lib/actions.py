@@ -3,6 +3,7 @@ import time
 from datetime import timedelta, datetime
 
 from jinja2 import Environment
+
 from lib.briefing_helper import SHORT_PAUSE
 from lib.component import Component
 from lib.constraints import get_constraint
@@ -308,8 +309,11 @@ def figure_light_settings(entity_ids):
     if isinstance(entity_ids, dict):
         return entity_ids
 
+    if isinstance(entity_ids, str):
+        entity_ids = [entity_ids]
+
     if not isinstance(entity_ids, list):
-        raise TypeError('entity_ids can only be dict or list')
+        raise TypeError('entity_ids can only be str, dict or list: {}'.format(type(entity_ids)))
     else:
         entity_ids = list_value(entity_ids)
 

@@ -1,7 +1,8 @@
+from base_automation import BaseAutomation
 from lib.actions import TurnOnAction, get_action, TurnOffAction
 from lib.actions import figure_light_settings
-
-from base_automation import BaseAutomation
+from lib.constraints import get_constraint
+from lib.triggers import TriggerInfo
 
 DEFAULT_SCENE = 'Default'
 
@@ -34,6 +35,10 @@ class MotionLighting(BaseAutomation):
         self.lighting_scenes = self.arg('lighting_scenes')
         self.turn_off_delay = self.arg('turn_off_delay')
 
+        self.turn_on_constraints = []
+        for constraint in self.list_arg('turn_on_constraints', []):
+            self.turn_on_constraints.append(get_constraint(self, constraint))
+
         self.light_entity_ids = light_settings_to_entity_ids(self.lighting_scenes)
         self.turn_off_lights_handle = None
 
@@ -60,15 +65,32 @@ class MotionLighting(BaseAutomation):
 
         self.debug('Motion triggered by entity_id={}, new={}, old={}'.format(entity, new, old))
 
-        if self.should_turn_on_lights(new):
+        trigger_info = TriggerInfo("state", {
+            "entity_id": entity,
+            "attribute": attribute,
+            "from": old,
+            "to": new,
+        })
+
+        if self.should_turn_on_lights(trigger_info):
             self.turn_on_lights()
-        elif self.should_turn_off_lights(new):
+        elif self.should_turn_off_lights(trigger_info):
             self.turn_off_lights()
 
-    def should_turn_on_lights(self, motion_state):
-        return motion_state == 'on'
+    def should_turn_on_lights(self, trigger_info):
+        motion_state = trigger_info.data.get('to')
+        if motion_state != 'on':
+            return False
 
-    def should_turn_off_lights(self, motion_state):
+        for constraint in self.turn_on_constraints:
+            if not constraint.check(trigger_info):
+                return False
+
+        return True
+
+    def should_turn_off_lights(self, trigger_info):
+        motion_state = trigger_info.data.get('to')
+
         if len(self.motion_entity_ids) == 1:
             return motion_state != 'on'
 
@@ -79,17 +101,30 @@ class MotionLighting(BaseAutomation):
         return True
 
     def turn_on_lights(self):
-        scene = DEFAULT_SCENE if self.scene_entity_id is None else self.get_state(self.scene_entity_id)
-        light_settings = self.lighting_scenes.get(scene)
-
+        light_settings = self.figure_light_settings()
         if light_settings is None:
-            self.debug('No scene settings defined for scene={}'.format(scene))
             return
-
-        self.debug('Scene is {}, using light_settings={}'.format(scene, light_settings))
 
         actions = [TurnOnAction(self, {'entity_ids': [light_setting]}) for light_setting in light_settings]
         self.do_actions(actions)
+
+    def figure_light_settings(self):
+        for scene, light_settings in self.lighting_scenes.items():
+            if not scene.startswith('sun') and not scene[0].isdigit():
+                continue
+
+            start, end = scene.split('-')
+            if not start or not end:
+                continue
+
+            if self.now_is_between(start, end):
+                return light_settings
+
+        scene = DEFAULT_SCENE if self.scene_entity_id is None else self.get_state(self.scene_entity_id)
+        light_settings = self.lighting_scenes.get(scene)
+        self.debug('Scene is {}, using light_settings={}'.format(scene, light_settings))
+
+        return light_settings
 
     def turn_off_lights(self):
         if self.turn_off_delay is None:

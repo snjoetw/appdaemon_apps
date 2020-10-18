@@ -113,14 +113,11 @@ class TimeTrigger(Trigger):
         seconds = self._config.get("seconds", 0)
         interval_in_seconds = minutes * 60 + seconds
         if interval_in_seconds > 0:
-            self._app.debug(
-                'Scheduled time trigger to run every {} sec'.format(
-                    interval_in_seconds))
+            self._app.debug('Scheduled time trigger to run every {} sec'.format(interval_in_seconds))
             now = datetime.now() + timedelta(seconds=2)
             self._app.run_every(self._run_every_handler, now, interval_in_seconds)
         elif self._config.get("time") is not None:
-            time = datetime.strptime(self._config.get("time"),
-                                     '%H:%M:%S').time()
+            time = datetime.strptime(self._config.get("time"), '%H:%M:%S').time()
             self._app.debug('Scheduled time trigger to run at {}'.format(time))
             self._app.run_daily(self._run_every_handler, time)
 

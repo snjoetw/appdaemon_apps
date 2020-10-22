@@ -2,65 +2,11 @@
 # C O M M O N
 ###############################################################################
 
-is_midnight_time:
-  module: automation
-  class: Automation
-  triggers:
-    - platform: time
-      minutes: 1
-  handlers:
-    - constraints:
-        - platform: time
-          start_time: "23:30:00"
-          end_time: "06:59:59"
-      actions:
-        - platform: turn_on
-          entity_ids:
-            input_boolean.is_midnight_time:
-              force_on: false
-    - constraints:
-        - platform: time
-          start_time: "06:00:00"
-          end_time: "23:29:59"
-      actions:
-        - platform: turn_off
-          entity_ids:
-            input_boolean.is_midnight_time:
-              force_off: false
-
-
-is_sleeping_time:
-  module: automation
-  class: Automation
-  triggers:
-    - platform: time
-      minutes: 1
-  handlers:
-    - constraints:
-        - platform: time
-          start_time: "21:00:00"
-          end_time: "07:59:59"
-      actions:
-        - platform: turn_on
-          entity_ids:
-            input_boolean.is_sleeping_time:
-              force_on: false
-    - constraints:
-        - platform: time
-          start_time: "08:00:00"
-          end_time: "20:59:59"
-      actions:
-        - platform: turn_off
-          entity_ids:
-            input_boolean.is_sleeping_time:
-              force_off: false
-
-
 sonos_announcer:
   debug: true
   module: sonos_announcer
   class: SonosAnnouncer
-  sleeping_time_entity_id: input_boolean.is_sleeping_time
+  sleeping_time_entity_id: binary_sensor.sleeping_time
   api_base_url: !secret appdaemon_hass_api_base_url
   api_token: !secret appdaemon_hass_api_token
   enabler_entity_id: input_boolean.is_announcer_enabled
@@ -74,7 +20,7 @@ sonos_announcer:
         regular: 0.6
         critical: 0.75
     - type: google
-      player_entity_id: media_player.gh_family_room
+      player_entity_id: media_player.gh_family_room2
       motion_entity_id:
         - binary_sensor.zb_family_room_motion
         - binary_sensor.zb_kitchen_motion
@@ -181,25 +127,25 @@ vacation_mode_notifier:
             - facebook
 
 
-mqtt_sun:
-  module: automation
-  class: Automation
-  triggers:
-    - platform: time
-      minutes: 30
-  handlers:
-    - constraints:
-      actions:
-        - platform: service
-          service: mqtt/publish
-          data:
-            topic: lobby/command
-            payload: "{'sun':'{{state('sun.sun')}}'}"
-        - platform: service
-          service: mqtt/publish
-          data:
-            topic: laundry_room/command
-            payload: "{'sun':'{{state('sun.sun')}}'}"
+#mqtt_sun:
+#  module: automation
+#  class: Automation
+#  triggers:
+#    - platform: time
+#      minutes: 30
+#  handlers:
+#    - constraints:
+#      actions:
+#        - platform: service
+#          service: mqtt/publish
+#          data:
+#            topic: lobby/command
+#            payload: "{'sun':'{{state('sun.sun')}}'}"
+#        - platform: service
+#          service: mqtt/publish
+#          data:
+#            topic: laundry_room/command
+#            payload: "{'sun':'{{state('sun.sun')}}'}"
 
 
 # https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder

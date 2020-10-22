@@ -33,7 +33,7 @@ office_person_detection:
           to: "on"
       actions:
         - platform: repeat
-          repeat: 30
+          repeat: 10
           delay: 0
           actions:
             - platform: service

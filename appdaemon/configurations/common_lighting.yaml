@@ -25,18 +25,20 @@ lighting_mode_monitor:
   module: lighting_mode_monitor
   class: LightingModeMonitor
   check_frequency: 15
-  sleeping_time_entity_id: input_boolean.is_sleeping_time
-  midnight_time_entity_id: input_boolean.is_midnight_time
+  sleeping_time_entity_id: binary_sensor.sleeping_time
+  midnight_time_entity_id: binary_sensor.midnight_time
   lighting_modes:
     - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_backyard
       participate_sleeping_time: false
+      participate_sunset_time: false
       thresholds:
         8: Not Dark
         0: Dark
     - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_front_yard
       participate_sleeping_time: false
+      participate_sunset_time: false
       thresholds:
         10: Not Dark
         0: Dark
@@ -89,7 +91,7 @@ lighting_mode_monitor:
       thresholds:
         35: Not Dark
         0: Dark
-    - light_sensor_entity_id: sensor.xiaomi_upstairs_hallway_illuminance
+    - light_sensor_entity_id: sensor.zb_stairway_motion_illuminance
       mode_entity_id: input_select.lighting_mode_upstairs
       participate_midnight_time: true
       exclude_entity_ids:

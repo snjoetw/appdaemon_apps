@@ -1,6 +1,5 @@
 kids_bathroom_lighting:
-  debug: true
-  module: motion_lighting2
+  module: motion_lighting
   class: MotionLighting
   scene_entity_id: input_select.lighting_mode_upstairs
   motion_entity_id: binary_sensor.template_kids_bathroom_motion

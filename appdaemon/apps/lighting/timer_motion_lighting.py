@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from lighting.motion_lighting2 import MotionLighting
+from lighting.motion_lighting import MotionLighting
 
 CHECK_FREQUENCY = 300
 

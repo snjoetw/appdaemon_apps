@@ -1,6 +1,5 @@
 basement_stairway_lighting:
-  debug: true
-  module: motion_lighting2
+  module: motion_lighting
   class: MotionLighting
   motion_entity_id: binary_sensor.zb_basement_stairway_motion
   turn_off_delay: 30

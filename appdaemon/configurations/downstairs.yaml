@@ -2,7 +2,7 @@
 # S T A I R W A Y
 ###############################################################################
 stairway_lighting:
-  module: motion_lighting2
+  module: motion_lighting
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_stairway
   scene_entity_id: input_select.lighting_mode_stairway
@@ -21,7 +21,7 @@ stairway_lighting:
 # W A S H R O O M
 ###############################################################################
 washroom_lighting:
-  module: motion_lighting2
+  module: motion_lighting
   class: MotionLighting
   motion_entity_id: binary_sensor.zb_washroom_motion
   turn_off_delay: 600
@@ -34,7 +34,7 @@ washroom_lighting:
 # H A L L W A Y
 ###############################################################################
 hallway_lighting:
-  module: motion_lighting2
+  module: motion_lighting
   class: MotionLighting
   motion_entity_id:
     - binary_sensor.zb_hallway_motion
@@ -111,7 +111,7 @@ living_room_person_detection:
           to: "on"
       actions:
         - platform: repeat
-          repeat: 60
+          repeat: 10
           delay: 0
           actions:
             - platform: service

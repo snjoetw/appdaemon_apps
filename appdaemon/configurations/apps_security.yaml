@@ -107,7 +107,7 @@ door_beep:
           prelude_name: door_beep
           player_entity_id:
             - media_player.gh_laundry_room
-            - media_player.gh_family_room
+            - media_player.gh_family_room2
           volume_mode: regular
         - platform: service
           service: mqtt/publish
@@ -129,7 +129,7 @@ door_beep:
           prelude_name: window_beep
           player_entity_id:
             - media_player.gh_laundry_room
-            - media_player.gh_family_room
+            - media_player.gh_family_room2
         - platform: service
           service: mqtt/publish
           data:
@@ -150,7 +150,7 @@ door_beep:
           prelude_name: garage_beep
           player_entity_id:
             - media_player.gh_laundry_room
-            - media_player.gh_family_room
+            - media_player.gh_family_room2
         - platform: service
           service: mqtt/publish
           data:
@@ -517,7 +517,7 @@ alarm_auto_arm:
   class: Automation
   triggers:
     - platform: state
-      entity_ids: input_boolean.is_sleeping_time
+      entity_ids: binary_sensor.sleeping_time
       from: 'off'
       to: 'on'
     - platform: state
@@ -540,7 +540,7 @@ alarm_auto_arm:
             entity_id: alarm_control_panel.home_alarm
     - constraints:
         - platform: triggered_state
-          entity_id: input_boolean.is_sleeping_time
+          entity_id: binary_sensor.sleeping_time
       actions:
         - platform: service
           service: alarm_control_panel/alarm_arm_home

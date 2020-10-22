@@ -1,9 +1,8 @@
 master_bathroom_lighting:
-  debug: true
   module: motion_lighting
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_master_bathroom
-  lighting_mode_entity_id: input_select.lighting_mode_master_bathroom
+  scene_entity_id: input_select.lighting_mode_master_bathroom
   motion_entity_id: binary_sensor.zb_master_bathroom_motion
   turn_off_delay: 3600
   turn_on_constraints:
@@ -13,7 +12,7 @@ master_bathroom_lighting:
     - platform: state
       entity_id: light.zwave_master_bathroom_light
       state: "off"
-  lighting_modes:
+  lighting_scenes:
     Dark:
       - entity_id: switch.zwave_master_bathroom_ceiling_light
       - entity_id: light.zwave_master_bathroom_light
@@ -120,6 +119,6 @@ walkin_closet_lighting:
   class: MotionLighting
   motion_entity_id: binary_sensor.zb_master_bedroom_closet_motion
   turn_off_delay: 20
-  lighting_modes:
-    Dark:
+  lighting_scenes:
+    Default:
       - switch.zwave_walkin_closet_light_switch

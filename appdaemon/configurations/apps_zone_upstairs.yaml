@@ -2,8 +2,7 @@
 # U P S T A I R S  H A L L W A Y
 ###############################################################################
 upstairs_hallway_lighting:
-  debug: true
-  module: motion_lighting2
+  module: motion_lighting
   class: MotionLighting
   scene_entity_id: input_select.lighting_mode_upstairs
   motion_entity_id:

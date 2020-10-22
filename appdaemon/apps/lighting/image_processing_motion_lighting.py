@@ -1,6 +1,6 @@
 from lib.actions import TurnOnAction, TurnOffAction
 from lib.triggers import TriggerInfo
-from lighting.motion_lighting2 import MotionLighting
+from lighting.motion_lighting import MotionLighting
 
 
 class ImageProcessingMotionLighting(MotionLighting):

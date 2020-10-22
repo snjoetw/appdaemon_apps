@@ -2,14 +2,14 @@ kitchen_lighting:
   module: motion_lighting
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_kitchen
-  lighting_mode_entity_id: input_select.lighting_mode_kitchen
+  scene_entity_id: input_select.lighting_mode_kitchen
   motion_entity_id: binary_sensor.zb_kitchen_motion
   turn_off_delay: 300
   turn_on_constraints:
     - platform: state
       entity_id: light.zwave_kitchen_light
       state: "off"
-  lighting_modes:
+  lighting_scenes:
     Dark:
       - entity_id: light.hue_kitchen_lightstrip
         brightness: 254

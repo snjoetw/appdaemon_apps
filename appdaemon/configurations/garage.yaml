@@ -32,3 +32,36 @@ garage_light_left_on:
           end_time: sunrise
       actions:
         - platform: cancel_job
+
+
+garage_bench_light:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - lock.entry_door_lock_locked
+        - binary_sensor.mqtt_garage_entry_door
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to:
+            - unlocked
+            - 'on'
+      actions:
+        - platform: turn_on
+          entity_ids:
+            light.wled_garage_bench_light:
+              brightness: 254
+              rgb_color: [255, 159, 0]
+
+    - constraints:
+        - platform: triggered_state
+          to: locked
+      actions:
+        - platform: delay
+          delay: 300
+          actions:
+            - platform: turn_off
+              entity_ids:
+                - light.wled_garage_bench_light

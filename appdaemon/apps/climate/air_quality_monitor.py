@@ -88,7 +88,7 @@ class AirQualityMonitor(BaseAutomation):
     def mark_bad_air_quality_fan(self, latest_snapshot):
         existing = self.existing_bad_air_quality_fan(latest_snapshot.entity_id)
         if existing:
-            self.bad_air_quality_fans.remove(existing)
+            return
 
         self.bad_air_quality_fans.append(latest_snapshot)
 

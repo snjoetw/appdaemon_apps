@@ -11,6 +11,8 @@ def get_trigger(app, config, callback):
         return TimeTrigger(app, config, callback)
     elif platform == "event":
         return EventTrigger(app, config, callback)
+    elif platform == "action":
+        return ActionTrigger(app, config, callback)
     elif platform == "sunrise":
         return SunriseTrigger(app, config, callback)
     elif platform == "sunset":
@@ -131,6 +133,8 @@ class EventTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
+        self._event_data = self._config.get("event_data", {})
+
         event_type = self._config.get("event_type")
         entity_ids = self.list_config('entity_ids', [])
 
@@ -143,6 +147,15 @@ class EventTrigger(Trigger):
             self._app.listen_event(self._event_change_handler, event_type)
 
     def _event_change_handler(self, event_name, data, kwargs):
+        for data_key, data_value in self._event_data.items():
+            if data.get(data_key) != data_value:
+                self.debug('Event data ({}) does not match constraint ({}/{} - {}), skipping'.format(
+                    data,
+                    data_key,
+                    data_value,
+                    self._event_data))
+                return
+
         self._callback(TriggerInfo("event", {
             "event_name": event_name,
             "data": data,
@@ -172,4 +185,17 @@ class SunsetTrigger(Trigger):
     def _run_at_sunset_handler(self, kwargs):
         self._app.log(kwargs)
         self._callback(TriggerInfo("sunset", {
+        }))
+
+
+class ActionTrigger(Trigger):
+    def __init__(self, app, trigger_config, callback):
+        super().__init__(app, trigger_config, callback)
+
+        self._app.listen_event(self._event_change_handler, 'ios.action_fired')
+
+    def _event_change_handler(self, event_name, data, kwargs):
+        self._callback(TriggerInfo('action', {
+            'action_name': data.get('actionName'),
+            'data': data,
         }))

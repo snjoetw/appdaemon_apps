@@ -15,6 +15,8 @@ def get_constraint(app, config):
         return TriggeredStateConstraint(app, config)
     elif platform == 'triggered_event':
         return TriggeredEventConstraint(app, config)
+    elif platform == 'triggered_action':
+        return TriggeredActionConstraint(app, config)
     elif platform == 'attribute':
         return AttributeConstraint(app, config)
     elif platform == 'darkness_level':
@@ -25,6 +27,8 @@ def get_constraint(app, config):
         return HasScheduledJobConstraint(app, config)
     elif platform == 'day_of_week':
         return DayOfWeekConstraint(app, config)
+    elif platform == 'template':
+        return TemplateConstraint(app, config)
     else:
         raise ValueError("Invalid constraint config: " + config)
 
@@ -46,9 +50,10 @@ class StateConstraint(Constraint):
         state = self._config['state']
         negate = self._config.get('negate', False)
         match_all = self._config.get('match_all', False)
-        return self._check_entity_state(entity_ids, state, negate, match_all)
+        last_changed_seconds = self._config.get('last_changed_seconds')
+        return self._check_entity_state(entity_ids, state, negate, match_all, last_changed_seconds)
 
-    def _check_entity_state(self, entity_ids, target_state, negate, match_all):
+    def _check_entity_state(self, entity_ids, target_state, negate, match_all, last_changed_seconds):
         for entity_id in entity_ids:
             current_state = self.get_state(entity_id)
             condition = matches_value(target_state, current_state)
@@ -58,6 +63,11 @@ class StateConstraint(Constraint):
 
             if match_all and not condition:
                 return False
+
+            if condition and last_changed_seconds is not None:
+                last_changed = self.get_state(entity_id, attribute='last_changed')
+                delta = datetime.now() - last_changed
+                condition = matches_value(last_changed_seconds, delta.total_seconds)
 
             if not match_all and condition:
                 self.debug('state constraint matched, entity_id={} '
@@ -73,6 +83,25 @@ class StateConstraint(Constraint):
                    'negate={}'.format(entity_ids, target_state, negate))
 
         return False
+
+
+class TemplateConstraint(Constraint):
+    def __init__(self, app, constraint_config):
+        super().__init__(app, constraint_config)
+
+    def check(self, trigger_info):
+        template = self._config['template']
+        expected_value = self._config['expected_value']
+        actual_value = self.render_template(template, trigger_info=trigger_info)
+        matched = matches_value(expected_value, actual_value)
+
+        self.debug('Evaluating template={} with \n expected_value={} and \n actual_value={}, \n matching={}'.format(
+            template,
+            expected_value,
+            actual_value,
+            matched))
+
+        return matched
 
 
 class TriggeredStateConstraint(Constraint):
@@ -123,8 +152,7 @@ class TriggeredEventConstraint(Constraint):
             return False
 
         click_type = self.list_config('click_type', [])
-        if click_type and event.get('data', {}).get(
-                'click_type') not in click_type:
+        if click_type and event.get('data', {}).get('click_type') not in click_type:
             return False
 
         if not self.check_attribute(event, 'device_ieee'):
@@ -141,6 +169,16 @@ class TriggeredEventConstraint(Constraint):
 
         if not self.check_attribute(event, 'args'):
             return False
+
+        event_data = self.config("event_data", {})
+        for data_key, data_value in event_data.items():
+            if event.get(data_key) != data_value:
+                self.debug('Event data ({}) does not match constraint ({}/{} - {}), skipping'.format(
+                    event,
+                    data_key,
+                    data_value,
+                    self._event_data))
+                return False
 
         return True
 
@@ -159,6 +197,20 @@ class TriggeredEventConstraint(Constraint):
 
         self.debug('eval: {}'.format(attribute_value in attribute_constrains))
         return attribute_value in attribute_constrains
+
+
+class TriggeredActionConstraint(Constraint):
+    def __init__(self, app, constraint_config):
+        super().__init__(app, constraint_config)
+
+    def check(self, trigger_info):
+        if trigger_info.platform != 'action':
+            return False
+
+        action = trigger_info.data
+
+        action_name = self.config('action_name')
+        return action_name == action['action_name']
 
 
 class AttributeConstraint(Constraint):

@@ -107,7 +107,7 @@ door_beep:
           prelude_name: door_beep
           player_entity_id:
             - media_player.gh_laundry_room
-            - media_player.gh_family_room2
+            - media_player.gh_family_room
           volume_mode: regular
         - platform: service
           service: mqtt/publish
@@ -129,7 +129,7 @@ door_beep:
           prelude_name: window_beep
           player_entity_id:
             - media_player.gh_laundry_room
-            - media_player.gh_family_room2
+            - media_player.gh_family_room
         - platform: service
           service: mqtt/publish
           data:
@@ -150,7 +150,7 @@ door_beep:
           prelude_name: garage_beep
           player_entity_id:
             - media_player.gh_laundry_room
-            - media_player.gh_family_room2
+            - media_player.gh_family_room
         - platform: service
           service: mqtt/publish
           data:
@@ -588,7 +588,7 @@ front_door_auto_lock:
           state: "unlocked"
       actions:
         - platform: delay
-          delay: 600
+          delay: 180
           actions:
             - platform: lock
               entity_id: lock.front_door_lock_locked
@@ -783,12 +783,3 @@ power_outage_detector:
               force_off: false
         - platform: alarm_notifier
           message: "Power is restored!"
-
-
-rfid_alarm_disarmer:
-  module: rfid_alarm_disarmer
-  class: RfidAlarmDisarmer
-  rfid_tag_ids:
-    - 0007835935
-  disarm_mqtt_topic: home/alarm/rfid_disarm
-  alarm_entity_id: alarm_control_panel.home_alarm

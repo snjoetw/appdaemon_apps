@@ -20,6 +20,7 @@ master_bathroom_lighting:
     Sleeping:
       - entity_id: light.zwave_master_bathroom_light
         brightness: 125
+    Midnight:
 
 
 master_bathroom_shower_mode:
@@ -36,8 +37,8 @@ master_bathroom_shower_mode:
           entity_id: sensor.zb_master_bathroom_humidity
           state: ">=75"
         - platform: state
-          entity_id: sensor.zb_master_bathroom_temperature
-          state: ">=26"
+          entity_id: binary_sensor.trend_temp_rising_sensor_master_bathroom_temperature
+          state: "on"
         - platform: state
           entity_id: input_select.master_bathroom_shower_mode
           state: Not Showering
@@ -50,8 +51,8 @@ master_bathroom_shower_mode:
           entity_id: sensor.zb_master_bathroom_humidity
           state: ">=85"
         - platform: state
-          entity_id: sensor.zb_master_bathroom_temperature
-          state: ">=27"
+          entity_id: binary_sensor.trend_temp_rising_sensor_master_bathroom_temperature
+          state: "on"
         - platform: state
           entity_id: input_select.master_bathroom_shower_mode
           state: About to Shower
@@ -63,9 +64,6 @@ master_bathroom_shower_mode:
         - platform: state
           entity_id: sensor.zb_master_bathroom_humidity
           state: "<75"
-        - platform: state
-          entity_id: sensor.zb_master_bathroom_temperature
-          state: "<26"
         - platform: state
           entity_id: input_select.master_bathroom_shower_mode
           state: Not Showering
@@ -122,3 +120,38 @@ walkin_closet_lighting:
   lighting_scenes:
     Default:
       - switch.zwave_walkin_closet_light_switch
+
+
+master_bedroom_sleep_music_auto_play:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      time: "20:45:00"
+  handlers:
+    - constraints:
+        - platform: state
+          entity: media_player.master_bedroom
+          state: playing
+          negate: true
+      actions:
+        - platform: turn_on_media_player
+          entity_id: media_player.master_bedroom
+          volume: 0.06
+          source: 'Always Near - A Romantic Collection'
+
+
+master_bedroom_sleep_music_auto_stop:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      time: "09:00:00"
+  handlers:
+    - constraints:
+        - platform: state
+          entity: media_player.master_bedroom
+          state: playing
+      actions:
+        - platform: turn_on_media_player
+          entity_id: media_player.master_bedroom

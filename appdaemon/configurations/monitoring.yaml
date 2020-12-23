@@ -66,8 +66,10 @@ mail_delivered_notifier:
           delay: 120
           actions:
             - platform: alarm_notifier
-              message: "Looks like mail was just delivered"
+              message: "Mail was just delivered"
               image_filename: mailbox_notifier.jpg
+            - platform: sonos
+              tts_message: "Mail was just delivered"
     - constraints:
         - platform: triggered_state
           # either input_boolean.is_mail_delivered or binary_sensor.mqtt_front_door

@@ -42,7 +42,6 @@ var_downstairs_motion_sensors: &var_downstairs_motion_sensors
   - binary_sensor.zb_kitchen_motion
   - binary_sensor.zb_laundry_room_motion
   - binary_sensor.zb_living_room_motion
-  - binary_sensor.zb_lobby_motion
   - binary_sensor.zb_office_motion
   - binary_sensor.zb_stairway_motion
   - binary_sensor.zb_washroom_motion
@@ -72,7 +71,7 @@ var_downstairs_lights: &var_downstairs_lights
   - light.hue_kitchen_lightstrip
   - light.hue_kitchen_pantry_light
   - light.hue_family_room_light
-  - light.zb_basement_stairway_light
+  - light.hue_basement_stairway_light
   - light.xiaomi_office_light
   - light.zwave_hallway_light
   - light.zwave_kitchen_light

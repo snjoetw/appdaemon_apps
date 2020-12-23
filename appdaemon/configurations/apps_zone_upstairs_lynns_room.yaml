@@ -123,6 +123,9 @@ lynns_room_wakeup_lighting:
       time: "08:30:00"
   handlers:
     - constraints:
+        - platform: state
+          entity_id: binary_sensor.zb_lynn_s_room_door
+          state: 'off'
       actions:
         - platform: turn_on
           entity_ids:
@@ -131,46 +134,126 @@ lynns_room_wakeup_lighting:
               rgb_color: [255, 203, 114]
 
 
-lynns_room_heater:
+lynns_room_temperature_difference_heater_booster:
   debug: true
   module: automation
   class: Automation
   triggers:
     - platform: state
-      entity_ids: sensor.template_climate_main_floor_hvac_action
-      to: heating
+      entity_ids:
+        - sensor.template_lynn_s_room_temperature
+        - sensor.template_master_bedroom_temperature
+  constraints:
+    - platform: time
+      start_time: "02:00:00"
+      end_time: "06:30:00"
     - platform: state
-      entity_ids: sensor.lynn_s_room_temperature
+      entity_id: input_select.last_climate_hvac_action
+      state: heating
+    - platform: state
+      entity_id: input_boolean.is_auto_fan_enabled_lynns_room
+      state: 'on'
   handlers:
     - constraints:
-        - platform: time
-          start_time: "06:30:00"
-          end_time: "07:15:00"
-        - platform: triggered_state
-          to: heating
         - platform: state
           entity_id: climate.lynns_room
           state: heat
           negate: true
+        - platform: template
+          template: >
+            {{ (state('sensor.template_master_bedroom_temperature') | float) - (state('sensor.template_lynn_s_room_temperature') | float) }}
+          expected_value: '>=0.5'
       actions:
         - platform: service
           service: climate/set_temperature
           data:
             entity_id: climate.lynns_room
-            temperature: 26
+            temperature: 25
             hvac_mode: heat
         - platform: service
           service: climate/turn_on
           data:
             entity_id: climate.lynns_room
+        - platform: delay
+          delay: 900
+          actions:
+            - platform: service
+              service: climate/turn_off
+              data:
+                entity_id: climate.lynns_room
+
+    - constraints:
+        - platform: state
+          entity_id: climate.lynns_room
+          state: heat
+        - platform: template
+          template: >
+            {{ (state('sensor.template_master_bedroom_temperature') | float) - (state('sensor.template_lynn_s_room_temperature') | float) }}
+          expected_value: '<=0'
+      actions:
+        - platform: service
+          service: climate/turn_off
+          data:
+            entity_id: climate.lynns_room
+
+
+
+lynns_room_morning_heater_booster:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - sensor.template_lynn_s_room_temperature
+  constraints:
+    - platform: state
+      entity_id: input_select.last_climate_hvac_action
+      state: heating
+    - platform: state
+      entity_id: input_boolean.is_auto_fan_enabled_lynns_room
+      state: 'on'
+  handlers:
+    - constraints:
+        - platform: time
+          start_time: "06:50:00"
+          end_time: "07:30:00"
+        - platform: state
+          entity_id: climate.lynns_room
+          state: heat
+          negate: true
+        - platform: state
+          entity_id: sensor.template_lynn_s_room_temperature
+          state: '<25'
+        - platform: state
+          entity_id: binary_sensor.zb_lynn_s_room_door
+          state: 'off'
+      actions:
+        - platform: service
+          service: climate/set_temperature
+          data:
+            entity_id: climate.lynns_room
+            temperature: 25
+            hvac_mode: heat
+        - platform: service
+          service: climate/turn_on
+          data:
+            entity_id: climate.lynns_room
+        - platform: delay
+          delay: 1800
+          actions:
+            - platform: service
+              service: climate/turn_off
+              data:
+                entity_id: climate.lynns_room
 
     - constraints:
         - platform: state
           entity_id: climate.lynns_room
           state: heat
         - platform: state
-          entity_id: sensor.lynn_s_room_temperature
-          state: '>26'
+          entity_id: sensor.template_lynn_s_room_temperature
+          state: '>25'
       actions:
         - platform: service
           service: climate/turn_off

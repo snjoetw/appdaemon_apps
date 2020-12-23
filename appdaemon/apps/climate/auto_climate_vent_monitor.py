@@ -9,6 +9,8 @@ class AutoClimateVentMonitor(BaseAutomation):
     def initialize(self):
         self.enabler_entity_id = self.arg('enabler_entity_id')
         self.climate_entity_id = self.arg('climate_entity_id')
+        self.hvac_action_entity_id = self.arg('hvac_action_entity_id')
+        self.last_hvac_action_entity_id = self.arg('last_hvac_action_entity_id')
         self.zone_configs = [ZoneConfig(z) for z in self.list_arg('zones')]
 
         self.listen_state(self.temperature_change_handler, self.climate_entity_id, attribute="all")
@@ -34,7 +36,7 @@ class AutoClimateVentMonitor(BaseAutomation):
             self.debug('Skipping ... vacation mode')
             return
 
-        if self.get_state(self.climate_entity_id, attribute='hvac_action') not in ('heating', 'cooling'):
+        if self.get_state(self.hvac_action_entity_id) not in ('heating', 'cooling'):
             self.debug('Skipping ... hvac not running')
             return
 
@@ -106,7 +108,7 @@ class AutoClimateVentMonitor(BaseAutomation):
         return open_percent
 
     def is_heating_mode(self):
-        hvac_action = self.get_state(self.climate_entity_id, attribute='hvac_action')
+        hvac_action = self.get_state(self.last_hvac_action_entity_id)
         return hvac_action == 'heating'
 
 

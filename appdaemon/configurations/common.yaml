@@ -16,11 +16,11 @@ sonos_announcer:
       motion_entity_id: binary_sensor.zb_laundry_room_motion
       keep_alive: true
       volumes:
-        sleeping: 0.6
+        sleeping: 0.45
         regular: 0.6
         critical: 0.75
     - type: google
-      player_entity_id: media_player.gh_family_room2
+      player_entity_id: media_player.gh_family_room
       motion_entity_id:
         - binary_sensor.zb_family_room_motion
         - binary_sensor.zb_kitchen_motion
@@ -29,16 +29,17 @@ sonos_announcer:
         sleeping: 0.45
         regular: 0.6
         critical: 0.75
+    - type: google
+      player_entity_id: media_player.gh_dining_room
+      motion_entity_id: binary_sensor.zb_living_room_motion
+      keep_alive: true
+      volumes:
+        sleeping: 0.45
+        regular: 0.6
+        critical: 0.75
     - type: sonos
       player_entity_id: media_player.office
       motion_entity_id: binary_sensor.zb_office_motion
-      volumes:
-        sleeping: 0.25
-        regular: 0.45
-        critical: 0.7
-    - type: sonos
-      player_entity_id: media_player.dining_room
-      motion_entity_id: binary_sensor.zb_living_room_motion
       volumes:
         sleeping: 0.25
         regular: 0.45
@@ -309,3 +310,41 @@ reminder:
 #  calendar_entity_id: calendar.google_elementary_school
 #  workday_entity_id: binary_sensor.workday_sensor
 #  school_day_entity_id: input_boolean.is_school_day
+
+
+home_status_action_handler:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: action
+  handlers:
+    - constraints:
+        - platform: triggered_action
+          action_name: home_status
+      actions:
+        - platform: notify
+          target: mobile_app_joes_iphone
+          message: |
+            🐘: {{ state('sensor.lynn_s_room_temperature') }}/{{ state('sensor.zb_lynn_s_room_temperature') }}°C
+            🛏️: {{ state('sensor.master_bedroom_temperature') }}/{{ state('sensor.zb_master_bedroom_temperature') }}°C
+            🔪: {{ state('sensor.kitchen_temperature') }}°C
+            Last motion in {{ state('input_text.last_home_movement') | lower | replace(' motion', '') | replace(' 2', '') }} {{ relative_time(state_attr('input_text.last_home_movement', 'last_updated')) }}
+          data:
+            push:
+              sound:
+                name: default
+                critical: 1
+                volume: 0.0
+
+shower_time_action_handler:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: action
+  handlers:
+    - constraints:
+        - platform: triggered_action
+          action_name: shower_time
+      actions:
+        - platform: turn_on
+          entity_ids: input_boolean.is_scene_shower_time

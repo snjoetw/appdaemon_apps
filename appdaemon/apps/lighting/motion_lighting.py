@@ -39,7 +39,8 @@ class MotionLighting(BaseAutomation):
         for constraint in self.list_arg('turn_on_constraints', []):
             self.turn_on_constraints.append(get_constraint(self, constraint))
 
-        self.light_entity_ids = light_settings_to_entity_ids(self.lighting_scenes)
+        light_entity_ids = light_settings_to_entity_ids(self.lighting_scenes)
+        self.turn_off_light_entity_ids = self.list_arg('turn_off_light_entity_ids', light_entity_ids)
         self.turn_off_lights_handle = None
 
         self.register_motion_state_change_event()
@@ -113,12 +114,22 @@ class MotionLighting(BaseAutomation):
             if not scene.startswith('sun') and not scene[0].isdigit():
                 continue
 
-            start, end = scene.split('-')
+            period, scene = scene.split(',')
+            if not period or not scene:
+                continue
+
+            start, end = period.split('-')
             if not start or not end:
                 continue
 
-            if self.now_is_between(start, end):
-                return light_settings
+            if not self.now_is_between(start, end):
+                continue
+
+            current_scene = DEFAULT_SCENE if self.scene_entity_id is None else self.get_state(self.scene_entity_id)
+            if current_scene != scene:
+                continue
+
+            return light_settings
 
         scene = DEFAULT_SCENE if self.scene_entity_id is None else self.get_state(self.scene_entity_id)
         light_settings = self.lighting_scenes.get(scene)
@@ -140,5 +151,5 @@ class MotionLighting(BaseAutomation):
             self.debug('Cancelled turn off delay timer')
 
     def turn_off_lights_handler(self, kwargs={}):
-        actions = [TurnOffAction(self, {'entity_ids': self.light_entity_ids})]
+        actions = [TurnOffAction(self, {'entity_ids': self.turn_off_light_entity_ids})]
         self.do_actions(actions)

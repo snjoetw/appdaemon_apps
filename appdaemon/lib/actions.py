@@ -2,9 +2,6 @@ import random
 import time
 from datetime import timedelta, datetime
 
-from jinja2 import Environment
-
-from lib.briefing_helper import SHORT_PAUSE
 from lib.component import Component
 from lib.constraints import get_constraint
 from lib.helper import to_float, to_int, list_value
@@ -176,55 +173,6 @@ class Action(Component):
 
         self._constraints = [get_constraint(app, c) for c in self.list_config('constraints', [])]
 
-        self._jinja_env = Environment()
-
-        def get_state(entity_id, overrides={}):
-            state = self.get_state(entity_id)
-            return overrides.get(state, state)
-
-        def get_state_attribute(entity_id, attribute):
-            return self.get_state(entity_id, attribute=attribute)
-
-        def is_state_attribute(entity_id, attribute, expected):
-            value = get_state_attribute(entity_id, attribute)
-
-            if value is None:
-                return False
-
-            return value == expected
-
-        def get_friendly_name(entity_id):
-            return self.get_state(entity_id, attribute="friendly_name")
-
-        def format_date(date, format='%b %d'):
-            if not isinstance(date, datetime):
-                date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-
-            return date.strftime(format)
-
-        self._jinja_env.globals['state'] = get_state
-        self._jinja_env.globals['state_attr'] = get_state_attribute
-        self._jinja_env.globals['is_state_attr'] = is_state_attribute
-        self._jinja_env.globals['friendly_name'] = get_friendly_name
-        self._jinja_env.globals['format_date'] = format_date
-
-    def render_template(self, message, **kwargs):
-        if isinstance(message, str) and ("{{" in message or "{%" in message):
-            template = self._jinja_env.from_string(message)
-            return template.render(**kwargs)
-
-        return message
-
-    def apply_template(self, d, **kwargs):
-        applied = {}
-        for k, v in d.items():
-            if isinstance(v, dict):
-                applied[k] = self.apply_template(v)
-            else:
-                applied[k] = self.render_template(v, **kwargs)
-
-        return applied
-
     def check_action_constraints(self, trigger_info):
         if not self._constraints:
             return True
@@ -306,6 +254,9 @@ class RepeatableAction(Action):
 
 
 def figure_light_settings(entity_ids):
+    if entity_ids is None:
+        return {}
+
     if isinstance(entity_ids, dict):
         return entity_ids
 
@@ -789,10 +740,7 @@ class MotionAnnouncementAction(Action):
         if not triggered_entity_id or not message or not message_from:
             return
 
-        message = 'Incoming message from {}:{} {}'.format(
-            message_from,
-            SHORT_PAUSE,
-            message)
+        message = 'Incoming message from {}: {}'.format(message_from, message)
 
         self.log('Announcing motion message: {}'.format(message))
 

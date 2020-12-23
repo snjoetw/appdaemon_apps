@@ -8,6 +8,29 @@ climate_comfort_mode:
   mode_entity_id: input_select.climate_comfort_mode
 
 
+last_climate_hvac_action:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: sensor.template_climate_main_floor_hvac_action
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: heating
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.last_climate_hvac_action
+          option: heating
+    - constraints:
+        - platform: triggered_state
+          to: cooling
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.last_climate_hvac_action
+          option: cooling
+
+
 climate_auto_fan_min_on_time:
   module: automation
   class: Automation
@@ -110,6 +133,8 @@ auto_thermostat_mode:
     - platform: state
       entity_ids:
         - input_select.presence_mode
+    - platform: time
+      minutes: 15
   handlers:
     - constraints:
         - platform: state
@@ -126,6 +151,10 @@ auto_thermostat_mode:
           entity_id: input_select.presence_mode
           state: No One is Home
           negate: true
+        - platform: attribute
+          entity_id: climate.main_floor
+          attribute: preset_mode
+          value: "Away"
       actions:
         - platform: service
           service: ecobee/resume_program
@@ -146,12 +175,12 @@ auto_thermostat_mode:
 #      fan_off_temperature_offset: -0.3
 #      ignore_presence_mode: true
 #      enabler_entity_id: input_boolean.is_auto_fan_enabled_office
-#    - temperature_entity_id: sensor.lynn_s_room_temperature
+#    - temperature_entity_id: sensor.template_lynn_s_room_temperature
 #      fan_entity_id: fan.lynns_room
 #      fan_on_temperature_offset: 0
 #      fan_off_temperature_offset: -0.3
 #      enabler_entity_id: input_boolean.is_auto_fan_enabled_lynns_room
-#    - temperature_entity_id: sensor.master_bedroom_temperature
+#    - temperature_entity_id: sensor.template_master_bedroom_temperature
 #      fan_entity_id: fan.master_bedroom
 #      fan_on_temperature_offset: 0
 #      fan_off_temperature_offset: -0.3
@@ -165,8 +194,10 @@ auto_climate_vent_monitor:
   class: AutoClimateVentMonitor
   enabler_entity_id: input_boolean.is_auto_vent_enabled
   climate_entity_id: climate.main_floor
+  last_hvac_action_entity_id: input_select.last_climate_hvac_action
+  hvac_action_entity_id: sensor.template_climate_main_floor_hvac_action
   zones:
-    - temperature_entity_id: sensor.master_bedroom_temperature
+    - temperature_entity_id: sensor.template_master_bedroom_temperature
       vent_entity_ids:
         - cover.zb_master_bedroom_vent_1
         - cover.zb_master_bedroom_vent_2
@@ -183,7 +214,7 @@ auto_climate_vent_monitor:
       heating_temp_offset_high: 0
       heating_temp_offset_low: -0.8
 
-    - temperature_entity_id: sensor.lynn_s_room_temperature
+    - temperature_entity_id: sensor.template_lynn_s_room_temperature
       vent_entity_ids:
         - cover.zb_lynn_s_room_vent
       cooling_temp_offset_high: 0
@@ -208,66 +239,26 @@ auto_climate_vent_monitor:
       heating_temp_offset_high: 0
       heating_temp_offset_low: -0.8
 
+air_quality_monitor:
+  debug: true
+  module: air_quality_monitor
+  class: AirQualityMonitor
+  bad_air_quality_mode_entity_id: input_boolean.is_bad_air_quality_mode
+  monitors:
+    - air_quality_entity_id: air_quality.dyson_master_bedroom
+      fan_entity_id: fan.master_bedroom
+      threshold: 10
+      name: Master Bedroom
 
-bad_air_quality_monitor:
-  module: automation
-  class: Automation
-  triggers:
-    - platform: state
-      entity_ids:
-        - air_quality.dyson_master_bedroom
-        - air_quality.dyson_lynn_s_room
-        - sensor.dyson_office_dust
-  handlers:
-    - constraints:
-        - platform: state
-          entity_id:
-            - air_quality.dyson_lynn_s_room
-            - air_quality.dyson_master_bedroom
-            - sensor.dyson_office_dust
-          state: ">=10"
-      actions:
-        - platform: turn_on
-          entity_ids:
-            input_boolean.is_bad_air_quality_mode:
-              force_on: false
+    - air_quality_entity_id: air_quality.dyson_lynn_s_room
+      fan_entity_id: fan.lynns_room
+      threshold: 10
+      name: Lynn's Room
 
-        - platform: service
-          service: dyson/set_auto_mode
-          data:
-            entity_id: fan.living_room
-            auto_mode: true
-          constraints:
-            - platform: state
-              entity_id: air_quality.dyson_lynn_s_room
-              state: ">=10"
-
-        - platform: service
-          service: dyson/set_auto_mode
-          data:
-            entity_id: fan.master_bedroom
-            auto_mode: true
-          constraints:
-            - platform: state
-              entity_id: air_quality.dyson_master_bedroom
-              state: ">=10"
-
-        - platform: service
-          service: dyson/set_auto_mode
-          data:
-            entity_id: fan.lynns_room
-            auto_mode: true
-          constraints:
-            - platform: state
-              entity_id: sensor.dyson_office_dust
-              state: ">=5"
-
-    - constraints:
-      actions:
-        - platform: turn_off
-          entity_ids:
-            input_boolean.is_bad_air_quality_mode:
-              force_on: false
+    - air_quality_entity_id: sensor.dyson_office_dust
+      fan_entity_id: fan.office
+      threshold: 5
+      name: Office
 
 
 fan_auto_night_mode:
@@ -276,19 +267,21 @@ fan_auto_night_mode:
   class: Automation
   triggers:
     - platform: state
-      entity_ids: fan.lynns_room
+      entity_ids:
+        - fan.lynns_room
+        - fan.master_bedroom
     - platform: state
-      entity_ids: input_boolean.is_sleeping_time
+      entity_ids: binary_sensor.sleeping_time
   handlers:
     - constraints:
         - platform: state
-          entity_id: input_boolean.is_sleeping_time
+          entity_id: binary_sensor.sleeping_time
           state: "on"
       actions:
         - platform: service
           service: dyson/set_night_mode
           data:
-            entity_id: fan.living_room
+            entity_id: fan.master_bedroom
             night_mode: true
         - platform: service
           service: dyson/set_night_mode
@@ -298,13 +291,13 @@ fan_auto_night_mode:
 
     - constraints:
         - platform: state
-          entity_id: input_boolean.is_sleeping_time
+          entity_id: binary_sensor.sleeping_time
           state: "off"
       actions:
         - platform: service
           service: dyson/set_night_mode
           data:
-            entity_id: fan.living_room
+            entity_id: fan.master_bedroom
             night_mode: false
         - platform: service
           service: dyson/set_night_mode

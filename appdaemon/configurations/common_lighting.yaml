@@ -5,7 +5,7 @@ light_runtime_monitor:
   thresholds:
     - entity_id: light.hue_kitchen_pantry_light
       threshold_in_minute: 15
-    - entity_id: light.zb_basement_stairway_light
+    - entity_id: light.hue_basement_stairway_light
       threshold_in_minute: 15
     - entity_id: light.hue_lynn_s_room_lightstrip
       threshold_in_minute: 60
@@ -70,9 +70,8 @@ lighting_mode_monitor:
         0: Dark
     - light_sensor_entity_id: sensor.zb_kitchen_motion_illuminance
       mode_entity_id: input_select.lighting_mode_kitchen
-      participate_sleeping_time: false
+      participate_sleeping_time: true
       exclude_entity_ids:
-        - light.zwave_kitchen_light
       thresholds:
         35: Not Dark
         0: Dark
@@ -102,6 +101,7 @@ lighting_mode_monitor:
         0: Dark
     - light_sensor_entity_id: sensor.zb_master_bathroom_motion_illuminance
       mode_entity_id: input_select.lighting_mode_master_bathroom
+      participate_midnight_time: true
       exclude_entity_ids:
         - switch.zwave_master_bathroom_ceiling_light
         - light.zwave_master_bathroom_light

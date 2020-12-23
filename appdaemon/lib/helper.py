@@ -103,3 +103,7 @@ def to_datetime(str):
         return datetime.strptime(str, '%Y-%m-%dT%H:%M:%S.%f%z')
 
     return None
+
+
+def to_time(str):
+    return datetime.strptime(str, '%H:%M:%S').time()

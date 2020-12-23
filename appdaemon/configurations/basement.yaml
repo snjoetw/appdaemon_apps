@@ -5,4 +5,5 @@ basement_stairway_lighting:
   turn_off_delay: 30
   lighting_scenes:
     Default:
-      - light.zb_basement_stairway_light
+      - light.hue_basement_stairway_light
+

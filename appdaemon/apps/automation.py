@@ -29,10 +29,12 @@ class Automation(ConfigurableAutomation):
             trigger = get_trigger(self, trigger_config, self.trigger_handler)
             self.debug('Registered trigger={}'.format(trigger))
 
+        # keep all template variables so they can be used in component where jinja template is initialized
+        self._variables = self.args.get("variables", {})
+
         constraint_configs = self.args.get("constraints") or []
         for constraint_config in constraint_configs:
-            self._global_constraints.append(
-                get_constraint(self, constraint_config))
+            self._global_constraints.append(get_constraint(self, constraint_config))
 
         for handler_config in self.args["handlers"]:
             handler = create_handler(self, handler_config)
@@ -46,3 +48,7 @@ class Automation(ConfigurableAutomation):
                     "platform": "cancel_job"
                 }]
             }))
+
+    @property
+    def variables(self):
+        return self._variables

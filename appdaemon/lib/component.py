@@ -2,7 +2,7 @@ from datetime import datetime
 
 from jinja2 import Environment
 
-from lib.helper import to_int, to_float, to_datetime
+from lib.helper import to_int, to_float, to_datetime, is_float, is_int
 
 
 class Component:
@@ -80,10 +80,29 @@ class Component:
         self._jinja_env.globals['format_date'] = format_date
         self._jinja_env.globals['relative_time'] = get_age
 
+        if hasattr(self._app, 'variables'):
+            for name, value in self._app.variables.items():
+                if name in self._jinja_env.globals:
+                    raise ValueError('Variable {} already defined in template'.format(name))
+
+                self._jinja_env.globals[name] = value
+
     def render_template(self, message, **kwargs):
         if isinstance(message, str) and ("{{" in message or "{%" in message):
             template = self._jinja_env.from_string(message)
-            return template.render(**kwargs)
+            rendered = template.render(**kwargs)
+
+            if is_int(rendered):
+                rendered = to_int(rendered)
+                self.debug('Template rendered in int: {}'.format(rendered))
+                return rendered
+            elif is_float(rendered):
+                rendered = to_float(rendered)
+                self.debug('Template rendered in float: {}'.format(rendered))
+                return rendered
+            else:
+                self.debug('Template rendered in str: {}'.format(rendered))
+                return rendered
 
         return message
 
@@ -124,11 +143,7 @@ class Component:
 
     def config(self, key, default=None):
         value = self._config.get(key, default)
-
-        if str(value).startswith("state:"):
-            value = self.get_state(value.split(':')[1])
-
-        return value
+        return self.render_template(value)
 
     def int_config(self, key, default=None):
         return to_int(self.float_config(key, default))

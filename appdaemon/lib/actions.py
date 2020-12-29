@@ -195,7 +195,7 @@ class DelayableAction(Action):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
-        self.delay = self._config.get("delay", 0)
+        self.delay = self.config("delay", 0)
 
     def do_action(self, trigger_info):
         delay = self.get_delay()
@@ -229,8 +229,8 @@ class RepeatableAction(Action):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
-        self.repeat = self._config.get("repeat", 0)
-        self.delay = self._config.get("delay", self.repeat)
+        self.repeat = self.config("repeat", 0)
+        self.delay = self.config("delay", self.repeat)
 
     def do_action(self, trigger_info):
         self.debug({
@@ -835,7 +835,8 @@ class DebugAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        self.log("Debugging, trigger_info={}".format(trigger_info))
+        template_value = self.render_template(self._config.get('template'))
+        self.log("Debugging, trigger_info={}, template_value={}".format(trigger_info, template_value))
 
 
 class IncrementInputNumberAction(Action):

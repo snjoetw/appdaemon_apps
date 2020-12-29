@@ -24,6 +24,22 @@ def _flatten_list_arg(arg_value):
     return values
 
 
+def is_int(str):
+    try:
+        value = to_int(str)
+        return value is not None
+    except ValueError:
+        return False
+
+
+def is_float(str):
+    try:
+        value = to_float(str)
+        return value is not None
+    except ValueError:
+        return False
+
+
 def to_int(str, default_value=None):
     if str is None:
         return default_value

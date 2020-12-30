@@ -22,6 +22,8 @@ def get_reminder_provider(app, config):
         return DrinkWaterReminder(app, config)
     elif provider == 'bad_air_quality':
         return BadAirQualityReminder(app, config)
+    elif provider == 'climate_away_mode':
+        return ClimateAwayModeReminder(app, config)
     else:
         raise ValueError("Invalid reminder provider config: " + config)
 
@@ -297,3 +299,19 @@ class BadAirQualityReminder(ReminderProvider):
 
         name = concat_list(names)
         return 'Attention, air quality is bad in {}'.format(name)
+
+
+class ClimateAwayModeReminder(ReminderProvider):
+    def __init__(self, app, reminder_config):
+        super().__init__(app, reminder_config)
+        self.climate_entity_id = self.config('climate_entity_id')
+
+    def can_provide(self, context):
+        if not super().can_provide(context):
+            return False
+
+        preset_mode = self.app.get_state(self.climate_entity_id, attribute='preset_mode')
+        return preset_mode == 'Away'
+
+    def provide(self, context):
+        return 'Ecobee is still in away mode'

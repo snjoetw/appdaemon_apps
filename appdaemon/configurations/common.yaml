@@ -302,6 +302,11 @@ reminder:
       trigger_method: motion
       bad_air_quality_mode_entity_id: input_boolean.is_bad_air_quality_mode
 
+    - provider: climate_away_mode
+      interval: 60
+      trigger_method: motion
+      climate_entity_id: climate.main_floor
+
 #school_day_monitor:
 #  module: school_day_monitor
 #  class: SchoolDayMonitor

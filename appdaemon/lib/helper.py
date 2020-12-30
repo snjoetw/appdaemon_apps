@@ -24,35 +24,35 @@ def _flatten_list_arg(arg_value):
     return values
 
 
-def is_int(str):
+def is_int(raw):
     try:
-        value = to_int(str)
+        value = to_int(raw)
         return value is not None
     except ValueError:
         return False
 
 
-def is_float(str):
+def is_float(raw):
     try:
-        value = to_float(str)
+        value = to_float(raw)
         return value is not None
     except ValueError:
         return False
 
 
-def to_int(str, default_value=None):
-    if str is None:
+def to_int(raw, default_value=None):
+    if raw is None:
         return default_value
 
-    return int(round(to_float(str, default_value)))
+    return int(round(to_float(raw, default_value)))
 
 
-def to_float(str, default_value=None):
-    if str is None:
+def to_float(raw, default_value=None):
+    if raw is None:
         return default_value
 
     try:
-        return float(str)
+        return float(raw)
     except ValueError:
         if default_value is None:
             raise
@@ -88,8 +88,7 @@ def concat_list(items, concat_str=', '):
     if length == 1:
         return items[0]
     else:
-        return concat_str.join(items[:-1]) + concat_str + " and " + str(
-            items[-1])
+        return concat_str.join(items[:-1]) + concat_str + " and " + str(items[-1])
 
 
 def figure_parts_of_day():
@@ -104,22 +103,21 @@ def figure_parts_of_day():
         return PartsOfDay.NIGHT
 
 
-def today_at(hour, min):
-    return datetime.now().replace(hour=hour, minute=min, second=0,
-                                  microsecond=0)
+def today_at(hour, minute):
+    return datetime.now().replace(hour=hour, minute=minute, second=0, microsecond=0)
 
 
-def to_datetime(str):
-    if str is None:
+def to_datetime(raw):
+    if raw is None:
         return None
 
-    if len(str) == 32:
+    if len(raw) == 32:
         # 2019-12-02T19:02:07.776968+00:00
-        str = str[::-1].replace(':', '', 1)[::-1]
-        return datetime.strptime(str, '%Y-%m-%dT%H:%M:%S.%f%z')
+        raw = raw[::-1].replace(':', '', 1)[::-1]
+        return datetime.strptime(raw, '%Y-%m-%dT%H:%M:%S.%f%z')
 
     return None
 
 
-def to_time(str):
-    return datetime.strptime(str, '%H:%M:%S').time()
+def to_time(raw):
+    return datetime.strptime(raw, '%H:%M:%S').time()

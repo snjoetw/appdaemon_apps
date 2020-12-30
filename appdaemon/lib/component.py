@@ -174,18 +174,21 @@ class Component:
         return self._app.now_is_between(start_time_str, end_time_str, name)
 
     def now_is_after(self, time_str):
-        now = self._app.get_now()
-        datetime = self.parse_time(time_str)
-        return datetime < now
+        now = self.get_now()
+        time = self.parse_time(time_str)
+        return time < now
 
     def now_is_before(self, time_str):
-        now = self._app.get_now()
-        datetime = self.parse_time(time_str)
-        return now < datetime
+        now = self.get_now()
+        time = self.parse_time(time_str)
+        return now < time
+
+    def get_now(self):
+        return self._app.get_now().astimezone(self._app.AD.tz)
 
     def parse_time(self, time_str):
         time = self._app.parse_time(time_str)
-        now = self._app.get_now()
+        now = self.get_now()
         return now.replace(
             hour=time.hour,
             minute=time.minute,

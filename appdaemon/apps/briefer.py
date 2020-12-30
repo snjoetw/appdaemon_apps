@@ -1,5 +1,6 @@
-import traceback
 from datetime import time
+
+import traceback
 from enum import Enum
 
 from configurable_automation import ConfigurableAutomation
@@ -41,8 +42,7 @@ class Briefer(ConfigurableAutomation):
         self.run_daily(self.run_daily_handler, midnight)
 
     def run_daily_handler(self, time=None, **kwargs):
-        self.select_option(self.briefing_state_entity_id,
-                           BriefingState.EARLY_MORNING.name)
+        self.select_option(self.briefing_state_entity_id, BriefingState.EARLY_MORNING.name)
 
     def build_briefing_text(self):
         parts_of_day = figure_parts_of_day()
@@ -65,7 +65,6 @@ class Briefer(ConfigurableAutomation):
 
         if len(briefing_texts) == 1:
             return
-
 
         return '{}'.format(
             sanitize_briefing_text(MEDIUM_PAUSE.join(briefing_texts)))
@@ -121,10 +120,7 @@ class BrieferAnnouncementAction(Action):
         current_state = self.get_current_briefing_state()
 
         for p in self.briefing_state_periods:
-            self.debug('Checking {} and {}'.format(
-                p['state'],
-                current_state.name
-            ))
+            self.debug('Checking {} and {}'.format(p['state'], current_state.name))
             if p['state'] == current_state.name:
                 return self.now_is_between(p['start_time'], p['end_time'])
 
@@ -136,27 +132,28 @@ class BrieferAnnouncementAction(Action):
             return BriefingState.NONE
 
         periods_iterator = iter(self.briefing_state_periods)
-        current_state_period = self.locate_current_briefing_state_period(
-            periods_iterator,
-            current_state)
+        current_state_period = self.locate_current_briefing_state_period(periods_iterator, current_state)
 
         if current_state_period is None:
             return BriefingState.NONE
 
         if self.now_is_before(current_state_period['start_time']):
+            self.debug('Next briefing state => period={} (current={})'.format(current_state_period, current_state))
             return current_state
 
         period = next(periods_iterator, None)
         while period is not None:
+            self.debug('Checking period={}'.format(period))
+
             if self.now_is_before(period['end_time']):
+                self.debug('Next briefing state => period={} (current={})'.format(period, current_state))
                 return BriefingState[period['state']]
 
             period = next(periods_iterator, None)
 
         return BriefingState.NONE
 
-    def locate_current_briefing_state_period(self, periods_iterator,
-                                             current_state):
+    def locate_current_briefing_state_period(self, periods_iterator, current_state):
         period = next(periods_iterator, None)
         if period is None:
             return None
@@ -164,8 +161,7 @@ class BrieferAnnouncementAction(Action):
         if period['state'] == current_state.name:
             return period
 
-        return self.locate_current_briefing_state_period(periods_iterator,
-                                                         current_state)
+        return self.locate_current_briefing_state_period(periods_iterator, current_state)
 
     def get_current_briefing_state(self):
         return BriefingState[self.get_state(self.briefing_state_entity_id)]

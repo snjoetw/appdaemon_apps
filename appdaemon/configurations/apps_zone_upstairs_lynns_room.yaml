@@ -220,6 +220,8 @@ lynns_room_morning_heater_booster:
     - platform: state
       entity_ids:
         - sensor.template_lynn_s_room_temperature
+  variables:
+    temperature_threshold: 25
   constraints:
     - platform: state
       entity_id: input_select.last_climate_hvac_action
@@ -227,6 +229,9 @@ lynns_room_morning_heater_booster:
     - platform: state
       entity_id: input_boolean.is_auto_fan_enabled_lynns_room
       state: 'on'
+    - platform: state
+      entity_id: media_player.lynns_room
+      state: playing
   handlers:
     - constraints:
         - platform: time
@@ -238,7 +243,7 @@ lynns_room_morning_heater_booster:
           negate: true
         - platform: state
           entity_id: sensor.template_lynn_s_room_temperature
-          state: '<25'
+          state: '<{{temperature_threshold}}'
         - platform: state
           entity_id: binary_sensor.zb_lynn_s_room_door
           state: 'off'
@@ -247,7 +252,7 @@ lynns_room_morning_heater_booster:
           service: climate/set_temperature
           data:
             entity_id: climate.lynns_room
-            temperature: 25
+            temperature: '{{temperature_threshold}}'
             hvac_mode: heat
         - platform: service
           service: climate/turn_on
@@ -267,7 +272,7 @@ lynns_room_morning_heater_booster:
           state: heat
         - platform: state
           entity_id: sensor.template_lynn_s_room_temperature
-          state: '>25'
+          state: '>={{temperature_threshold}}'
       actions:
         - platform: service
           service: climate/turn_off

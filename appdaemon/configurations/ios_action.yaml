@@ -1,0 +1,56 @@
+###############################################################################
+# I O S   A C T I O N
+###############################################################################
+
+home_status_action_handler:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: action
+  handlers:
+    - constraints:
+        - platform: triggered_action
+          action_name: home_status
+      actions:
+        - platform: notify
+          target: mobile_app_joes_iphone
+          message: |
+            🐘: {{ state('sensor.lynn_s_room_temperature') }}/{{ state('sensor.zb_lynn_s_room_temperature') }}°C
+            🛏️: {{ state('sensor.master_bedroom_temperature') }}/{{ state('sensor.zb_master_bedroom_temperature') }}°C
+            🔪: {{ state('sensor.kitchen_temperature') }}°C
+            Last motion in {{ state('input_text.last_home_movement') | lower | replace(' motion', '') | replace(' 2', '') }} {{ relative_time(state_attr('input_text.last_home_movement', 'last_updated')) }}
+          data:
+            push:
+              sound:
+                name: default
+                critical: 1
+                volume: 0.0
+
+
+shower_time_action_handler:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: action
+  handlers:
+    - constraints:
+        - platform: triggered_action
+          action_name: shower_time
+      actions:
+        - platform: turn_on
+          entity_ids: input_boolean.is_scene_shower_time
+
+
+unlock_entry_door_action_handler:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: action
+      action_name: unlock_entry_door
+  handlers:
+    - constraints:
+      actions:
+        - platform: unlock
+          entity_id: lock.entry_door_lock_locked
+          notify_target: all_ios
+          notify_message: "Entry door auto unlocked"

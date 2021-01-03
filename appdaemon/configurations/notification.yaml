@@ -1,0 +1,54 @@
+###############################################################################
+# N O T I F I C A T I O N   A U T O M A T I O N
+###############################################################################
+music_notification_action_handler:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: ios.notification_action_fired
+  handlers:
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            actionName: SONOS_PIANO_CHILL
+      actions:
+        - platform: turn_on_media_player
+          entity_id: media_player.master_bathroom
+          volume: 0.45
+          source: 'Piano Chill'
+          shuffle: true
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            actionName: SONOS_CHILL_MIX
+      actions:
+        - platform: turn_on_media_player
+          entity_id: media_player.master_bathroom
+          volume: 0.45
+          source: 'Chill Mix'
+          shuffle: true
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            actionName: SONOS_K_POP_CHILL
+      actions:
+        - platform: turn_on_media_player
+          entity_id: media_player.master_bathroom
+          volume: 0.45
+          source: 'K-Pop Chill'
+          shuffle: true
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            actionName: SONOS_K_POP_ESSENTIALS
+      actions:
+        - platform: turn_on_media_player
+          entity_id: media_player.master_bathroom
+          volume: 0.45
+          source: 'K-Pop Essentials'
+          shuffle: true

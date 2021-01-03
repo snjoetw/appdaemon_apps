@@ -137,7 +137,7 @@ master_bedroom_sleep_music_auto_play:
       actions:
         - platform: turn_on_media_player
           entity_id: media_player.master_bedroom
-          volume: 0.06
+          volume: 0.05
           source: 'Always Near - A Romantic Collection'
 
 

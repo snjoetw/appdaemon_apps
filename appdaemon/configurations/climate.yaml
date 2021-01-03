@@ -189,7 +189,6 @@ auto_thermostat_mode:
 
 
 auto_climate_vent_monitor:
-  debug: true
   module: auto_climate_vent_monitor
   class: AutoClimateVentMonitor
   enabler_entity_id: input_boolean.is_auto_vent_enabled
@@ -240,19 +239,18 @@ auto_climate_vent_monitor:
       heating_temp_offset_low: -0.8
 
 air_quality_monitor:
-  debug: true
   module: air_quality_monitor
   class: AirQualityMonitor
   bad_air_quality_mode_entity_id: input_boolean.is_bad_air_quality_mode
   monitors:
     - air_quality_entity_id: air_quality.dyson_master_bedroom
       fan_entity_id: fan.master_bedroom
-      threshold: 10
+      threshold: 15
       name: Master Bedroom
 
     - air_quality_entity_id: air_quality.dyson_lynn_s_room
       fan_entity_id: fan.lynns_room
-      threshold: 10
+      threshold: 15
       name: Lynn's Room
 
     - air_quality_entity_id: sensor.dyson_office_dust
@@ -262,7 +260,6 @@ air_quality_monitor:
 
 
 fan_auto_night_mode:
-  debug: true
   module: automation
   class: Automation
   triggers:

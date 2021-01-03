@@ -81,7 +81,6 @@ hallway_night_light:
 # L I V I N G  R O O M
 ###############################################################################
 living_room_lighting:
-  debug: true
   module: image_processing_motion_lighting
   class: ImageProcessingMotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_living_room

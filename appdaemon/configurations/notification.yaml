@@ -2,7 +2,6 @@
 # N O T I F I C A T I O N   A U T O M A T I O N
 ###############################################################################
 music_notification_action_handler:
-  debug: true
   module: automation
   class: Automation
   triggers:

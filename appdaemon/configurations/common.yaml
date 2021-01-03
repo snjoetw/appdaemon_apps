@@ -207,7 +207,6 @@ commute_time_monitor:
 
 
 briefer:
-  debug: true
   module: briefer
   class: Briefer
   motion_entity_id:

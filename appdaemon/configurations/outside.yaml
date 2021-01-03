@@ -1,5 +1,4 @@
 front_yard_lighting:
-  debug: true
   module: timer_motion_lighting
   class: TimerMotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_front_yard
@@ -68,7 +67,6 @@ front_door_lighting_on_door_open:
 
 
 backyard_lighting:
-  debug: true
   module: timer_motion_lighting
   class: TimerMotionLighting
   scene_entity_id: input_select.lighting_mode_backyard

@@ -1,3 +1,4 @@
+import collections
 from datetime import datetime
 
 from lib.context import PartsOfDay
@@ -121,3 +122,15 @@ def to_datetime(raw):
 
 def to_time(raw):
     return datetime.strptime(raw, '%H:%M:%S').time()
+
+
+def flatten_dict(d, parent_key=''):
+    sep = '.'
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten_dict(v, new_key).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)

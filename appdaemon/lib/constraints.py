@@ -1,9 +1,10 @@
-import calendar
 import operator
 from datetime import datetime, date
 
+import calendar
+
 from lib.component import Component
-from lib.helper import to_float
+from lib.helper import to_float, flatten_dict
 from lib.schedule_job import has_scheduled_job
 
 
@@ -151,52 +152,24 @@ class TriggeredEventConstraint(Constraint):
         if event_name and event.get('event_name') not in event_name:
             return False
 
-        click_type = self.list_config('click_type', [])
-        if click_type and event.get('data', {}).get('click_type') not in click_type:
+        if not self.check_event_data(event.get('data', {})):
             return False
-
-        if not self.check_attribute(event, 'device_ieee'):
-            return False
-
-        if not self.check_attribute(event, 'cluster_id'):
-            return False
-
-        if not self.check_attribute(event, 'endpoint_id'):
-            return False
-
-        if not self.check_attribute(event, 'command'):
-            return False
-
-        if not self.check_attribute(event, 'args'):
-            return False
-
-        event_data = self.config("event_data", {})
-        for data_key, data_value in event_data.items():
-            if event.get(data_key) != data_value:
-                self.debug('Event data ({}) does not match constraint ({}/{} - {}), skipping'.format(
-                    event,
-                    data_key,
-                    data_value,
-                    self._event_data))
-                return False
 
         return True
 
-    def check_attribute(self, event, attribute_name):
-        self.debug('attribute_name: {}'.format(attribute_name))
-        attribute_constrains = [str(a) for a in
-                                self.list_config(attribute_name, [])]
-        self.debug('attribute_constrains: {}'.format(attribute_constrains))
-        if not attribute_constrains:
+    def check_event_data(self, event_data):
+        target_event_data = flatten_dict(self.config("event_data", {}))
+        if not target_event_data:
             return True
 
-        attribute_value = str(event.get('data', {}).get(attribute_name))
-        self.debug('attribute_value: {}'.format(attribute_value))
-        if not attribute_value:
-            return True
+        event_data = flatten_dict(event_data)
 
-        self.debug('eval: {}'.format(attribute_value in attribute_constrains))
-        return attribute_value in attribute_constrains
+        for key, value in target_event_data.items():
+            if event_data.get(key) != value:
+                self.debug('Key={} has mismatched value => {} != {}'.format(key, event_data.get(key), value))
+                return False
+
+        return True
 
 
 class TriggeredActionConstraint(Constraint):

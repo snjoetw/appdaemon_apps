@@ -140,9 +140,7 @@ class EventTrigger(Trigger):
 
         if entity_ids:
             for entity_id in entity_ids:
-                self._app.listen_event(self._event_change_handler,
-                                       event_type,
-                                       entity_id=entity_id)
+                self._app.listen_event(self._event_change_handler, event_type, entity_id=entity_id)
         else:
             self._app.listen_event(self._event_change_handler, event_type)
 
@@ -193,9 +191,14 @@ class ActionTrigger(Trigger):
         super().__init__(app, trigger_config, callback)
 
         self._app.listen_event(self._event_change_handler, 'ios.action_fired')
+        self._target_name = self.config('action_name')
 
     def _event_change_handler(self, event_name, data, kwargs):
+        action_name = data.get('actionName')
+        if self._target_name is not None and self._target_name != action_name:
+            return
+
         self._callback(TriggerInfo('action', {
-            'action_name': data.get('actionName'),
+            'action_name': action_name,
             'data': data,
         }))

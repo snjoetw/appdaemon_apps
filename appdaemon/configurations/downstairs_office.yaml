@@ -84,13 +84,14 @@ office_wall_switch:
       event_type: zha_event
   constraints:
     - platform: triggered_event
-      device_ieee: '00:15:8d:00:01:1c:11:45'
-      cluster_id: 6
-      endpoint_id: [1, 2]
-      args:
-        attribute_id: 0
-        attribute_name: on_off
-        value: 1
+      event_data:
+        device_ieee: '00:15:8d:00:01:1c:11:45'
+        cluster_id: 6
+#        endpoint_id: [1, 2]
+        args:
+          attribute_id: 0
+          attribute_name: on_off
+          value: 1
   handlers:
     - constraints:
         - platform: state

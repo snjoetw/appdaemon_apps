@@ -22,16 +22,13 @@ class NoiseLevelMonitor(BaseAutomation):
             self.light_settings.append(LightSetting(config))
 
         for setting in self.monitor_settings:
-            self.listen_state(self.noise_state_change_handler,
-                              setting.noise_entity_id)
+            self.listen_state(self.noise_state_change_handler, setting.noise_entity_id)
 
         for setting in self.light_settings:
-            self.listen_state(self.light_state_change_handler,
-                              setting.light_entity_id)
+            self.listen_state(self.light_state_change_handler, setting.light_entity_id)
 
             if setting.light_entity_id != setting.delegate_light_entity_id:
-                self.listen_state(self.light_state_change_handler,
-                                  setting.delegate_light_entity_id)
+                self.listen_state(self.light_state_change_handler, setting.delegate_light_entity_id)
 
     def noise_state_change_handler(self, entity, attribute, old, new, kwargs):
         if new != 'on':

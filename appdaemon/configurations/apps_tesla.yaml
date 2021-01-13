@@ -18,7 +18,7 @@ tesla_auto_scheduled_charging:
   module: tesla_auto_scheduled_charging
   class: TeslaAutoScheduledCharging
   enabler_entity_id: input_boolean.is_tesla_auto_scheduled_charging_enabled
-  calendar_api_base_url: !secret appdaemon_hass_api_base_url
+  calendar_api_base_url: !secret homeassistant_internal_url
   calendar_api_token: !secret appdaemon_hass_api_token
   calendar_entity_id: calendar.google_home
   map_api_key: !secret google_travel_time_api_key

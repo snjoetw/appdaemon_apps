@@ -85,9 +85,11 @@ def turn_on_entity(app, entity_id, config={}):
     attributes = {}
 
     if entity_type == "light" or entity_type == "group":
-        attributes["brightness"] = config.get("brightness", DEFAULT_BRIGHTNESS)
-        attributes["transition"] = config.get("transition",
-                                              DEFAULT_TRANSITION_TIME)
+        brightness = config.get("brightness", DEFAULT_BRIGHTNESS)
+        full_transition_time = config.get("transition", DEFAULT_TRANSITION_TIME)
+
+        attributes["brightness"] = brightness
+        attributes["transition"] = figure_transition_time(app, entity_id, brightness, full_transition_time)
 
         if "rgb_color" in config:
             attributes["rgb_color"] = config.get("rgb_color")
@@ -103,9 +105,8 @@ def turn_off_entity(app, entity_id, config={}):
     attributes = {}
 
     if entity_type == "light" or entity_type == "group":
-        transition = config.get("transition", DEFAULT_TRANSITION_TIME)
-        if transition > 0:
-            attributes["transition"] = transition
+        full_transition_time = config.get("transition", DEFAULT_TRANSITION_TIME)
+        attributes["transition"] = figure_transition_time(app, entity_id, 0, full_transition_time)
 
     app.log("Turning off {} with {}".format(entity_id, attributes))
     app.turn_off(entity_id, **attributes)
@@ -116,17 +117,27 @@ def toggle_entity(app, entity_id, config={}):
     attributes = {}
 
     if entity_type == "light" or entity_type == "group":
-        attributes["transition"] = config.get("transition",
-                                              DEFAULT_TRANSITION_TIME)
+        attributes["transition"] = config.get("transition", DEFAULT_TRANSITION_TIME)
 
     app.log("Toggling on {} with {}".format(entity_id, attributes))
     app.toggle(entity_id, **attributes)
 
 
+def figure_transition_time(app, entity_id, target_brightness, full_transition_time):
+    current_brightness = app.get_state(entity_id, attribute='brightness')
+    if current_brightness is None:
+        current_brightness = 0
+
+    if current_brightness == target_brightness:
+        return 0
+
+    difference = abs(target_brightness - current_brightness)
+    return round(difference / 255 * full_transition_time, 1)
+
+
 def notify(app, target, message, recipient_target=None, data={}):
     app.log("Notifying {} with {}".format(target, message))
-    app.call_service("notify/" + target, message=message,
-                     target=recipient_target, data=data)
+    app.call_service("notify/" + target, message=message, target=recipient_target, data=data)
 
 
 def set_cover_position(app, entity_id, position, difference_threshold=0):
@@ -152,19 +163,13 @@ def set_cover_position(app, entity_id, position, difference_threshold=0):
                                                    difference_threshold))
         return
 
-    app.log('Updating {} with position={} (from position={})'.format(
-        entity_id,
-        position,
-        current_position))
+    app.log('Updating {} with position={} (from position={})'.format(entity_id, position, current_position))
 
     if position == 0:
-        app.call_service("cover/close_cover",
-                         entity_id=entity_id)
+        app.call_service("cover/close_cover", entity_id=entity_id)
         return
 
-    app.call_service("cover/set_cover_position",
-                     entity_id=entity_id,
-                     position=position)
+    app.call_service("cover/set_cover_position", entity_id=entity_id, position=position)
 
 
 class Action(Component):
@@ -251,6 +256,17 @@ class RepeatableAction(Action):
 
     def job_runner(self, kwargs={}):
         raise NotImplementedError()
+
+
+class NotifiableAction(Action):
+    def __init__(self, app, action_config):
+        super().__init__(app, action_config)
+        self.notify_target = self.config("notify_target")
+        self.notify_message = self.config("notify_message")
+
+    def do_action(self, trigger_info):
+        if self.notify_target and self.notify_message:
+            notify(self._app, self.notify_target, self.notify_message)
 
 
 def figure_light_settings(entity_ids):
@@ -449,39 +465,32 @@ class SetCoverPositionAction(Action):
                                self.position_difference_threshold)
 
 
-class LockAction(Action):
+class LockAction(NotifiableAction):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
-        self.entity_id = self._config["entity_id"]
-        self.notify_target = self._config.get("notify_target")
-        self.notify_message = self._config.get("notify_message")
-        self.force_lock = self._config.get("force_lock", False)
+        self.entity_id = self.config("entity_id")
+        self.force_lock = self.config("force_lock", False)
 
     def do_action(self, trigger_info):
-        self.log("Locking {}".format(self.entity_id))
+        if self.get_state(self.entity_id) == 'locked' and not self.force_lock:
+            return
 
-        if self.force_lock or self.get_state(self.entity_id) != 'locked':
-            self.call_service("lock/lock", entity_id=self.entity_id)
+        self.call_service("lock/lock", entity_id=self.entity_id)
 
-        if self.notify_target:
-            notify(self._app, self.notify_target, self.notify_message)
+        super().do_action(trigger_info)
 
 
-class UnlockAction(Action):
+class UnlockAction(NotifiableAction):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
-        self.entity_id = self._config["entity_id"]
-        self.notify_target = self._config.get("notify_target")
-        self.notify_message = self._config.get("notify_message")
+        self.entity_id = self.config("entity_id")
 
     def do_action(self, trigger_info):
-        self.log("Unlocking {}".format(self.entity_id))
         self.call_service("lock/unlock", entity_id=self.entity_id)
 
-        if self.notify_target:
-            notify(self._app, self.notify_target, self.notify_message)
+        super().do_action(trigger_info)
 
 
 class TurnOffMediaPLayerAction(Action):
@@ -882,13 +891,16 @@ class CameraSnapshotAction(Action):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
-        self.entity_id = self._config["entity_id"]
-        self.filename = self._config["filename"]
+        self.entity_id = self.config("entity_id")
 
     def do_action(self, trigger_info):
+        filename = self.cfg("filename").template(trigger_info=trigger_info)
+        if not filename.startswith('/'):
+            filename = '/config/www/snapshot/{}'.format(filename)
+
         data = {
             'entity_id': self.entity_id,
-            'filename': '/config/www/snapshot/{}'.format(self.filename)
+            'filename': filename
         }
 
         self.log('Adding snapshot with {}'.format(data))

@@ -26,7 +26,7 @@ music_notification_action_handler:
       actions:
         - platform: turn_on_media_player
           entity_id: media_player.master_bathroom
-          volume: 0.45
+          volume: 0.3
           source: 'Chill Mix'
           shuffle: true
 
@@ -37,7 +37,7 @@ music_notification_action_handler:
       actions:
         - platform: turn_on_media_player
           entity_id: media_player.master_bathroom
-          volume: 0.45
+          volume: 0.3
           source: 'K-Pop Chill'
           shuffle: true
 
@@ -48,6 +48,6 @@ music_notification_action_handler:
       actions:
         - platform: turn_on_media_player
           entity_id: media_player.master_bathroom
-          volume: 0.45
+          volume: 0.3
           source: 'K-Pop Essentials'
           shuffle: true

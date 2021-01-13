@@ -187,7 +187,7 @@ alarm_notifier:
     - all_ios
   facebook_recipients: !secret facebook_recipients
   facebook_access_token: !secret facebook_meesenger_page_access_token
-  external_base_url: !secret external_base_url
+  external_base_url: !secret homeassistant_external_url
   entity_settings:
     binary_sensor.mqtt_kitchen_window:
       camera_entity_id: camera.family_room_cam

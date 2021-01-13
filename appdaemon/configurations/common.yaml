@@ -7,7 +7,7 @@ sonos_announcer:
   module: sonos_announcer
   class: SonosAnnouncer
   sleeping_time_entity_id: binary_sensor.sleeping_time
-  api_base_url: !secret appdaemon_hass_api_base_url
+  api_base_url: !secret homeassistant_internal_url
   api_token: !secret appdaemon_hass_api_token
   enabler_entity_id: input_boolean.is_announcer_enabled
   players:
@@ -230,12 +230,12 @@ briefer:
     - provider: weather_forecast
 
     - provider: calendar
-      api_base_url: !secret appdaemon_hass_api_base_url
+      api_base_url: !secret homeassistant_internal_url
       api_token: !secret appdaemon_hass_api_token
       calendar_entity_id: calendar.google_home
 
     - provider: reminder
-      api_base_url: !secret appdaemon_hass_api_base_url
+      api_base_url: !secret homeassistant_internal_url
       api_token: !secret appdaemon_hass_api_token
       waste_collection_calendar_entity_id: calendar.google_my_waste
 
@@ -271,7 +271,7 @@ reminder:
 
     - provider: travel_time
       interval: 5
-      calendar_api_base_url: !secret appdaemon_hass_api_base_url
+      calendar_api_base_url: !secret homeassistant_internal_url
       calendar_api_token: !secret appdaemon_hass_api_token
       calendar_entity_id: calendar.google_home
       map_api_key: !secret google_travel_time_api_key
@@ -281,7 +281,7 @@ reminder:
     - provider: school_time
       enabled: false
       interval: 5
-      calendar_api_base_url: !secret appdaemon_hass_api_base_url
+      calendar_api_base_url: !secret homeassistant_internal_url
       calendar_api_token: !secret appdaemon_hass_api_token
       calendar_entity_id: calendar.google_elementary_school
       workday_entity_id: binary_sensor.workday_sensor
@@ -309,7 +309,7 @@ reminder:
 #school_day_monitor:
 #  module: school_day_monitor
 #  class: SchoolDayMonitor
-#  calendar_api_base_url: !secret appdaemon_hass_api_base_url
+#  calendar_api_base_url: !secret homeassistant_internal_url
 #  calendar_api_token: !secret appdaemon_hass_api_token
 #  calendar_entity_id: calendar.google_elementary_school
 #  workday_entity_id: binary_sensor.workday_sensor

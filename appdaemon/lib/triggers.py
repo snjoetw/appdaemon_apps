@@ -25,7 +25,6 @@ class TriggerInfo:
     def __init__(self, platform, data={}):
         self._platform = platform
         self._data = data
-        self._matched_constraints = []
         self._time = datetime.now()
 
     @property
@@ -37,10 +36,6 @@ class TriggerInfo:
         return self._data
 
     @property
-    def matched_constraints(self):
-        return self._matched_constraints
-
-    @property
     def trigger_time(self):
         return self._time
 
@@ -50,11 +45,10 @@ class TriggerInfo:
         return cpyobj
 
     def __repr__(self):
-        return "{}(platform={}, data={}, matched_constraints={})".format(
+        return "{}(platform={}, data={})".format(
             self.__class__.__name__,
             self._platform,
-            self._data,
-            self._matched_constraints)
+            self._data)
 
 
 class Trigger(Component):
@@ -74,19 +68,19 @@ class StateTrigger(Trigger):
         settings = {}
 
         if "from" in self._config:
-            settings["old"] = self._config["from"]
+            settings["old"] = self.config("from")
 
         if "to" in self._config:
-            settings["new"] = self._config["to"]
+            settings["new"] = self.config("to")
 
         if "duration" in self._config:
-            settings["duration"] = self._config["duration"]
+            settings["duration"] = self.config("duration")
 
         if "immediate" in self._config:
-            settings["immediate"] = self._config["immediate"]
+            settings["immediate"] = self.config("immediate")
 
         if "attribute" in self._config:
-            settings["attribute"] = self._config["attribute"]
+            settings["attribute"] = self.config("attribute")
 
         entity_ids = self.list_config('entity_ids', [])
         if not entity_ids:
@@ -111,15 +105,15 @@ class TimeTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        minutes = self._config.get("minutes", 0)
-        seconds = self._config.get("seconds", 0)
+        minutes = self.config("minutes", 0)
+        seconds = self.config("seconds", 0)
         interval_in_seconds = minutes * 60 + seconds
         if interval_in_seconds > 0:
             self._app.debug('Scheduled time trigger to run every {} sec'.format(interval_in_seconds))
             now = datetime.now() + timedelta(seconds=2)
             self._app.run_every(self._run_every_handler, now, interval_in_seconds)
-        elif self._config.get("time") is not None:
-            time = datetime.strptime(self._config.get("time"), '%H:%M:%S').time()
+        elif self.config("time") is not None:
+            time = datetime.strptime(self.config("time"), '%H:%M:%S').time()
             self._app.debug('Scheduled time trigger to run at {}'.format(time))
             self._app.run_daily(self._run_every_handler, time)
 
@@ -133,9 +127,9 @@ class EventTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        self._event_data = self._config.get("event_data", {})
+        self._event_data = self.config("event_data", {})
 
-        event_type = self._config.get("event_type")
+        event_type = self.config("event_type")
         entity_ids = self.list_config('entity_ids', [])
 
         if entity_ids:
@@ -164,7 +158,7 @@ class SunriseTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        offset = self._config.get("offset", 0)
+        offset = self.config("offset", 0)
         self._app.run_at_sunrise(self._run_at_sunrise_handler, offset=offset)
 
     def _run_at_sunrise_handler(self, kwargs):
@@ -177,7 +171,7 @@ class SunsetTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        offset = self._config.get("offset", 0)
+        offset = self.config("offset", 0)
         self._app.run_at_sunset(self._run_at_sunset_handler, offset=offset)
 
     def _run_at_sunset_handler(self, kwargs):

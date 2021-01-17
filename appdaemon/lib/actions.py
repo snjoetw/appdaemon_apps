@@ -187,8 +187,6 @@ class Action(Component):
                 self._app.debug('Action constraint does not match {}'.format(constraint))
                 return False
 
-            trigger_info.matched_constraints.append(constraint)
-
         self._app.debug('All action constraints passed')
         return True
 

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from jinja2 import Environment
 
+from lib.config import Config
 from lib.helper import to_int, to_float, to_datetime, is_float, is_int
 
 
@@ -9,6 +10,7 @@ class Component:
     def __init__(self, app, config):
         self._app = app
         self._config = config
+        self._config_wrapper = Config(app, config)
         self._jinja_env = Environment()
 
         def get_state(entity_id, overrides={}):
@@ -141,24 +143,25 @@ class Component:
     def error(self, msg):
         return self._app.error(msg)
 
-    def config(self, key, default=None):
+    @property
+    def config_wrapper(self):
+        return self._config_wrapper
+
+    def cfg(self, key, default=None):
         value = self._config.get(key, default)
-        return self.render_template(value)
+        return ConfigValue(self.render_template, value)
+
+    def config(self, key, default=None):
+        return self.config_wrapper.value(key, default)
 
     def int_config(self, key, default=None):
-        return to_int(self.float_config(key, default))
+        return self.config_wrapper.int(key, default)
 
     def float_config(self, key, default=None):
-        value = self.config(key, default)
-        return to_float(value, default)
+        return self.config_wrapper.float(key, default)
 
     def list_config(self, key, default=None):
-        value = self._config.get(key, default)
-
-        if isinstance(value, list):
-            return self._flatten_list_config(value)
-
-        return [value]
+        return self.config_wrapper.list(key, default)
 
     def _flatten_list_config(self, config_value):
         values = []
@@ -199,3 +202,48 @@ class Component:
         return "{}(config={})".format(
             self.__class__.__name__,
             self._config)
+
+
+class ConfigValue:
+    def __init__(self, template_renderer, raw_value):
+        self._template_renderer = template_renderer
+        self._raw_value = raw_value
+
+    def raw(self):
+        return self._raw_value
+
+    def value(self, default=None):
+        raw = self.raw()
+        if raw is None:
+            return default
+        return self._template_renderer(raw)
+
+    def int(self, default=None):
+        value = self.value()
+        return to_int(value, default)
+
+    def float(self, default=None):
+        value = self.value()
+        return to_float(value, default)
+
+    def list(self, default=None):
+        value = self.value()
+        if value is None:
+            return default
+        if isinstance(value, list):
+            return self._flatten_list_config(value)
+        return [value]
+
+    def template(self, **kwargs):
+        raw = self.raw()
+        return self._template_renderer(raw, **kwargs)
+
+    def _flatten_list_config(self, config_value):
+        values = []
+        for value in config_value:
+            if isinstance(value, list):
+                values.extend(self._flatten_list_config(value))
+            else:
+                values.append(value)
+
+        return values

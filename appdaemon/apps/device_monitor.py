@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+
 from enum import Enum
 
 from configurable_automation import ConfigurableAutomation
@@ -76,16 +77,10 @@ def create_checker(app, config):
 class Checker(Component):
 
     def __init__(self, app, config):
+        super().__init__(app, config)
+
         self._app = app
         self._config = config
-
-    @property
-    def app(self):
-        return self._app
-
-    @property
-    def config(self):
-        return self._config
 
     def check(self):
         raise NotImplementedError()

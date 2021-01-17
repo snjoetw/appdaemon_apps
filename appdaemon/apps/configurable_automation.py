@@ -1,4 +1,5 @@
 import concurrent
+
 import traceback
 
 from base_automation import BaseAutomation
@@ -32,8 +33,7 @@ class ConfigurableAutomation(BaseAutomation):
         self._handlers.append(handler)
 
     def create_handler(self, constraints, actions, do_parallel_actions=True):
-        return Handler(self, constraints, actions,
-                       do_parallel_actions=do_parallel_actions)
+        return Handler(self, constraints, actions, do_parallel_actions=do_parallel_actions)
 
     def trigger_handler(self, trigger_info):
         self.debug('Triggered with trigger_info={}'.format(trigger_info))
@@ -66,8 +66,6 @@ class Handler:
                     self._app.debug(
                         'Constraint does not match {}'.format(constraint))
                     return False
-
-                trigger_info.matched_constraints.append(constraint)
 
         self._app.debug('All constraints match')
         return True

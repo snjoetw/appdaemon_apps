@@ -3,21 +3,21 @@ lynns_room_lighting:
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_lynns_room
   scene_entity_id: input_select.lighting_mode_upstairs
-  motion_entity_id: binary_sensor.zb_lynn_s_room_motion
+  motion_entity_id: binary_sensor.zb_lynn_s_room_under_bed_motion
   turn_off_delay: 60
   lighting_scenes:
     Dark:
       - entity_id: light.hue_lynn_s_room_lightstrip
         brightness: 75
-        rgb_color: [255, 203, 114]
+        rgb_color: [ 255, 203, 114 ]
     Sleeping:
       - entity_id: light.hue_lynn_s_room_lightstrip
         brightness: 75
-        rgb_color: [255, 203, 114]
+        rgb_color: [ 255, 203, 114 ]
     Midnight:
       - entity_id: light.hue_lynn_s_room_lightstrip
         brightness: 40
-        rgb_color: [255, 203, 114]
+        rgb_color: [ 255, 203, 114 ]
 
 
 lynns_room_button:
@@ -43,7 +43,7 @@ lynns_room_button:
           entity_ids:
             - entity_id: light.hue_lynn_s_room_lightstrip
               brightness: 10
-              rgb_color: [255, 203, 114]
+              rgb_color: [ 255, 203, 114 ]
         - platform: turn_off
           entity_ids:
             - input_boolean.is_motion_enabled_lynns_room
@@ -63,7 +63,7 @@ lynns_room_button:
           entity_ids:
             - entity_id: light.hue_lynn_s_room_ceiling_light
               brightness: 255
-              rgb_color: [255, 203, 114]
+              rgb_color: [ 255, 203, 114 ]
         - platform: turn_off
           entity_ids:
             - input_boolean.is_motion_enabled_lynns_room
@@ -86,7 +86,7 @@ lynns_room_button:
           entity_ids:
             - entity_id: light.hue_lynn_s_room_lightstrip
               brightness: 65
-              rgb_color: [255, 203, 114]
+              rgb_color: [ 255, 203, 114 ]
         - platform: turn_off
           entity_ids:
             - input_boolean.is_motion_enabled_lynns_room
@@ -120,6 +120,62 @@ lynns_room_button:
             - input_boolean.is_motion_enabled_lynns_room
 
 
+lynns_room_occupancy_monitor:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id:
+        - binary_sensor.zb_lynn_s_room_door
+        - binary_sensor.zb_lynn_s_room_motion
+        - binary_sensor.zb_lynn_s_room_under_bed_motion
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          entity_id: binary_sensor.zb_lynn_s_room_door
+          to: "on"
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.occupancy_lynn_s_room
+          option: UNKNOWN
+
+    - constraints:
+        - platform: triggered_state
+          entity_id: binary_sensor.zb_lynn_s_room_door
+          to: "off"
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.occupancy_lynn_s_room
+          option: OCCUPIED
+          constraints:
+            - platform: state
+              entity_id: media_player.lynns_room
+              state: playing
+        - platform: select_input_select_option
+          entity_id: input_select.occupancy_lynn_s_room
+          option: UNOCCUPIED
+          constraints:
+            - platform: state
+              entity_id: media_player.lynns_room
+              state: playing
+              negate: true
+
+    - constraints:
+        - platform: triggered_state
+          entity_id:
+            - binary_sensor.zb_lynn_s_room_motion
+            - binary_sensor.zb_lynn_s_room_under_bed_motion
+          to: "on"
+        - platform: state
+          entity_id: binary_sensor.zb_lynn_s_room_door
+          state: 'off'
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.occupancy_lynn_s_room
+          option: OCCUPIED
+
+
 lynns_room_wakeup_lighting:
   module: automation
   class: Automation
@@ -129,21 +185,17 @@ lynns_room_wakeup_lighting:
   handlers:
     - constraints:
         - platform: state
-          entity_id: binary_sensor.zb_lynn_s_room_door
-          state: 'off'
-        - platform: state
-          entity_id: media_player.lynns_room
-          state: playing
+          entity_id: input_select.occupancy_lynn_s_room
+          state: OCCUPIED
       actions:
         - platform: turn_on
           entity_ids:
             - entity_id: light.yeelight_lynn_s_room_bedside_lamp
               brightness: 10
-              rgb_color: [255, 203, 114]
+              rgb_color: [ 255, 203, 114 ]
 
 
 lynns_room_temperature_difference_heater_booster:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -161,9 +213,6 @@ lynns_room_temperature_difference_heater_booster:
     - platform: state
       entity_id: input_boolean.is_auto_fan_enabled_lynns_room
       state: 'on'
-    - platform: state
-      entity_id: media_player.lynns_room
-      state: playing
   handlers:
     - constraints:
         - platform: state
@@ -175,8 +224,8 @@ lynns_room_temperature_difference_heater_booster:
             {{ (state('sensor.template_master_bedroom_temperature') | float) - (state('sensor.template_lynn_s_room_temperature') | float) }}
           expected_value: '>=0.5'
         - platform: state
-          entity_id: binary_sensor.zb_lynn_s_room_door
-          state: 'off'
+          entity_id: input_select.occupancy_lynn_s_room
+          state: OCCUPIED
       actions:
         - platform: service
           service: climate/set_temperature
@@ -213,7 +262,6 @@ lynns_room_temperature_difference_heater_booster:
 
 
 lynns_room_morning_heater_booster:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -229,14 +277,11 @@ lynns_room_morning_heater_booster:
     - platform: state
       entity_id: input_boolean.is_auto_fan_enabled_lynns_room
       state: 'on'
-    - platform: state
-      entity_id: media_player.lynns_room
-      state: playing
   handlers:
     - constraints:
         - platform: time
-          start_time: "06:50:00"
-          end_time: "07:30:00"
+          start_time: "06:30:00"
+          end_time: "07:00:00"
         - platform: state
           entity_id: climate.lynns_room
           state: heat
@@ -245,8 +290,8 @@ lynns_room_morning_heater_booster:
           entity_id: sensor.template_lynn_s_room_temperature
           state: '<{{temperature_threshold}}'
         - platform: state
-          entity_id: binary_sensor.zb_lynn_s_room_door
-          state: 'off'
+          entity_id: input_select.occupancy_lynn_s_room
+          state: OCCUPIED
       actions:
         - platform: service
           service: climate/set_temperature
@@ -278,3 +323,101 @@ lynns_room_morning_heater_booster:
           service: climate/turn_off
           data:
             entity_id: climate.lynns_room
+
+
+lynn_s_room_temperature_monitor:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: sensor.template_lynn_s_room_temperature
+  constraints:
+    - platform: state
+      entity_id: binary_sensor.sleeping_time
+      state: "on"
+    - platform: state
+      entity_id: input_select.occupancy_lynn_s_room
+      state: OCCUPIED
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: sensor.template_lynn_s_room_temperature
+          state: '>= 26.5'
+      actions:
+        - platform: notify
+          target: all_ios
+          message: Lynn's room temperature is too high ({{ state(trigger_info.data.entity_id) }}°C)
+          data:
+            push:
+              sound:
+                name: default
+                critical: 1
+                volume: 0.5
+
+    - constraints:
+        - platform: state
+          entity_id: sensor.template_lynn_s_room_temperature
+          state: '<= 21'
+      actions:
+        - platform: notify
+          target: all_ios
+          message: Lynn's room temperature is too low ({{ state(trigger_info.data.entity_id) }}°C)
+          data:
+            push:
+              sound:
+                name: default
+                critical: 1
+                volume: 0.5
+
+
+lynn_s_room_window_monitor:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: binary_sensor.mqtt_lynns_room_window
+      from: "off"
+      to: "on"
+  constraints:
+    - platform: state
+      entity_id: binary_sensor.sleeping_time
+      state: "on"
+  handlers:
+    - constraints:
+      actions:
+        - platform: camera_snapshot
+          entity_id: camera.lynn_s_room_cam
+          filename: lynn_s_room_cam.jpg
+        - platform: delay
+          delay: 1
+          actions:
+            - platform: notify
+              target: all_ios
+              message: Lynn's room window is opened
+              data:
+                attachment:
+                  url: https://snjoetw-hass.duckdns.org:59138/local/snapshot/lynn_s_room_cam.jpg
+                  hide-thumbnail: false
+                push:
+                  sound:
+                    name: default
+                    critical: 1
+                    volume: 0.5
+
+
+lynn_s_room_sleep_music_auto_stop:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      time: "09:00:00"
+  handlers:
+    - constraints:
+        - platform: state
+          entity: media_player.lynns_room
+          state: playing
+      actions:
+        - platform: turn_off_media_player
+          entity_id: media_player.lynns_room
+

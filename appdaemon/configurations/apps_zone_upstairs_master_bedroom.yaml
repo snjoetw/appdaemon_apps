@@ -153,5 +153,5 @@ master_bedroom_sleep_music_auto_stop:
           entity: media_player.master_bedroom
           state: playing
       actions:
-        - platform: turn_on_media_player
+        - platform: turn_off_media_player
           entity_id: media_player.master_bedroom

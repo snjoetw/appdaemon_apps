@@ -5,6 +5,7 @@ basement_stairway_lighting:
     - binary_sensor.zb_basement_stairway_motion
     - binary_sensor.zb_basement_stairway_door
   turn_off_delay: 30
+  dim_light_before_turn_off: false
   lighting_scenes:
     Default:
       - light.hue_basement_stairway_light

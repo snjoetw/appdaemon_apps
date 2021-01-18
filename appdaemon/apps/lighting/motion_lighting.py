@@ -34,6 +34,7 @@ class MotionLighting(BaseAutomation):
         self.scene_entity_id = self.arg('scene_entity_id')
         self.lighting_scenes = self.arg('lighting_scenes')
         self.turn_off_delay = self.arg('turn_off_delay')
+        self.dim_light_before_turn_off = self.arg('dim_light_before_turn_off', True)
 
         self.turn_on_constraints = []
         for constraint in self.list_arg('turn_on_constraints', []):
@@ -151,5 +152,8 @@ class MotionLighting(BaseAutomation):
             self.debug('Cancelled turn off delay timer')
 
     def turn_off_lights_handler(self, kwargs={}):
-        actions = [TurnOffAction(self, {'entity_ids': self.turn_off_light_entity_ids})]
+        actions = [TurnOffAction(self, {
+            'entity_ids': self.turn_off_light_entity_ids,
+            'dim_light_before_turn_off': self.dim_light_before_turn_off,
+        })]
         self.do_actions(actions)

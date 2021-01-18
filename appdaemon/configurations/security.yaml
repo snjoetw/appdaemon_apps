@@ -298,6 +298,7 @@ alarm_state_announcer:
           message: "Alarm triggered."
           data:
             push:
+              category: alarm_armed
               sound:
                 name: default
                 critical: 1
@@ -374,6 +375,8 @@ window_left_open:
 garage_door_left_open:
   module: automation
   class: Automation
+  variables:
+    message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
   triggers:
     - platform: state
       entity_ids: *var_garage_doors
@@ -391,7 +394,10 @@ garage_door_left_open:
           repeat: 600
           actions:
             - platform: sonos
-              tts_message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
+              tts_message: "{{ message }}"
+            - platform: notify
+              target: all_ios
+              message: "{{ message }}"
     - constraints:
         - platform: triggered_state
           to: "closed"
@@ -402,6 +408,8 @@ garage_door_left_open:
 lock_left_unlocked:
   module: automation
   class: Automation
+  variables:
+    message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} has been left unlocked for too long."
   triggers:
     - platform: state
       entity_ids: *var_door_locks
@@ -419,7 +427,7 @@ lock_left_unlocked:
           repeat: 600
           actions:
             - platform: sonos
-              tts_message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} has been left unlocked for too long."
+              tts_message: "{{ message }}"
     - constraints:
         - platform: triggered_state
           to: "locked"

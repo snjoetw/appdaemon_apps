@@ -79,18 +79,32 @@ class TemplateRenderer:
         self._jinja_env.globals['format_date'] = format_date
         self._jinja_env.globals['relative_time'] = get_age
 
+        if hasattr(self._app, 'variables'):
+            for name, value in self._app.variables.items():
+                if name in self._jinja_env.globals:
+                    raise ValueError('Variable {} already defined in template'.format(name))
+
+                self._jinja_env.globals[name] = value
+
     def render(self, message, **kwargs):
-        if isinstance(message, str) and ("{{" in message or "{%" in message):
+        if self._should_render_template(message):
             template = self._jinja_env.from_string(message)
             rendered = template.render(**kwargs)
 
-            if is_int(rendered):
-                return to_int(rendered)
-            elif is_float(rendered):
-                return to_float(rendered)
+            if is_float(rendered):
+                rendered = to_float(rendered)
+            elif is_int(rendered):
+                rendered = to_int(rendered)
+
+            if self._should_render_template(rendered):
+                rendered = self.render(rendered, **kwargs)
+
             return rendered
 
         return message
+
+    def _should_render_template(self, message):
+        return isinstance(message, str) and ("{{" in message or "{%" in message)
 
     def _get_state(self, entity=None, **kwargs):
         return self._app.get_state(entity, **kwargs)

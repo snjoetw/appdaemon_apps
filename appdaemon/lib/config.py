@@ -23,7 +23,13 @@ class Config:
         raw = self.raw(key)
         if raw is None:
             return default
-        return self._template_renderer.render(raw, trigger_info=self._trigger_info)
+
+        if isinstance(raw, dict):
+            return self._to_dict(raw)
+        elif isinstance(raw, list):
+            return self._to_list(raw)
+
+        return self._to_template_value(raw)
 
     def int(self, key, default=None):
         value = self.value(key)
@@ -32,6 +38,22 @@ class Config:
     def float(self, key, default=None):
         value = self.value(key)
         return to_float(value, default)
+
+    def _to_dict(self, dict_value):
+        applied = {}
+        for k, v in dict_value.items():
+            if isinstance(v, dict):
+                applied[k] = self._to_dict(v)
+            else:
+                applied[k] = self._to_template_value(v)
+
+        return applied
+
+    def _to_list(self, list_value):
+        applied = []
+        for value in list_value:
+            applied.append(self._to_template_value(value))
+        return applied
 
     def list(self, key, default=None):
         value = self.value(key)
@@ -49,6 +71,16 @@ class Config:
             if isinstance(value, list):
                 values.extend(self._flatten_list_config(value))
             else:
-                values.append(value)
+                values.append(self._to_template_value(value))
 
         return values
+
+    def _to_template_value(self, raw):
+        rendered = self._template_renderer.render(raw, trigger_info=self._trigger_info)
+
+        return rendered
+
+    def __repr__(self):
+        return "{}(config={})".format(
+            self.__class__.__name__,
+            self._config_dict)

@@ -20,8 +20,6 @@ def get_constraint(app, config):
         return TriggeredActionConstraint(app, config)
     elif platform == 'attribute':
         return AttributeConstraint(app, config)
-    elif platform == 'darkness_level':
-        return DarknessStateConstraint(app, config)
     elif platform == 'time':
         return TimeConstraint(app, config)
     elif platform == 'has_scheduled_job':
@@ -48,10 +46,10 @@ class StateConstraint(Constraint):
 
     def check(self, trigger_info):
         entity_ids = self.list_config('entity_id')
-        state = self._config['state']
-        negate = self._config.get('negate', False)
-        match_all = self._config.get('match_all', False)
-        last_changed_seconds = self._config.get('last_changed_seconds')
+        state = self.config('state')
+        negate = self.config('negate', False)
+        match_all = self.config('match_all', False)
+        last_changed_seconds = self.config('last_changed_seconds')
         return self._check_entity_state(entity_ids, state, negate, match_all, last_changed_seconds)
 
     def _check_entity_state(self, entity_ids, target_state, negate, match_all, last_changed_seconds):
@@ -91,13 +89,12 @@ class TemplateConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        template = self._config['template']
-        expected_value = self._config['expected_value']
-        actual_value = self.render_template(template, trigger_info=trigger_info)
+        expected_value = self.config('expected_value')
+        actual_value = self.config('template')
         matched = matches_value(expected_value, actual_value)
 
         self.debug('Evaluating template={} with \n expected_value={} and \n actual_value={}, \n matching={}'.format(
-            template,
+            self.config_wrapper.raw('template'),
             expected_value,
             actual_value,
             matched))
@@ -191,10 +188,10 @@ class AttributeConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        entity_id = self._config['entity_id']
-        attribute = self._config['attribute']
-        value = self._config['value']
-        negate = self._config.get('negate', False)
+        entity_id = self.config('entity_id')
+        attribute = self.config('attribute')
+        value = self.config('value')
+        negate = self.config('negate', False)
         current_value = self.get_state(entity_id, attribute=attribute)
         condition = matches_value(value, current_value)
 
@@ -243,44 +240,19 @@ def matches_numeric_value(op, expected, actual):
     return operator_fn(actual, expected)
 
 
-class DarknessStateConstraint(Constraint):
-    def __init__(self, app, constraint_config):
-        super().__init__(app, constraint_config)
-
-    def check(self, trigger_info):
-        darkness_entity_id = self._config['darkness_entity_id']
-        darkness_entity = self.get_state(darkness_entity_id, attribute='all')
-        darkness_changed_at = darkness_entity['last_changed']
-
-        for skip_entity_id in self._config.get('skip_entity_ids', []):
-            skip_entity = self.get_state(skip_entity_id, attribute='all')
-
-            # if skip_entity is on, then skip
-            if skip_entity['state'] == 'on':
-                return False
-            # if darkness_entity was updated before skip_entity, then skip
-            elif darkness_changed_at < skip_entity['last_changed']:
-                return False
-
-        min_darkness_level = to_float(self._config['min_darkness_level'])
-        current_darkness_level = to_float(darkness_entity['state'])
-
-        return current_darkness_level >= min_darkness_level
-
-
 class TimeConstraint(Constraint):
     def __init__(self, app, constraint_config):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        start_time = self._config.get('start_time')
-        end_time = self._config.get('end_time')
+        start_time = self.config('start_time')
+        end_time = self.config('end_time')
 
         if start_time and end_time:
             return self._app.now_is_between(start_time, end_time)
 
-        start_time = self.get_state(self._config.get('start_time_entity_id'))
-        end_time = self.get_state(self._config.get('end_time_entity_id'))
+        start_time = self.get_state(self.config('start_time_entity_id'))
+        end_time = self.get_state(self.config('end_time_entity_id'))
 
         if start_time and end_time:
             start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
@@ -294,7 +266,7 @@ class HasScheduledJobConstraint(Constraint):
 
     def check(self, trigger_info):
         has_job = has_scheduled_job(self._app)
-        negate = self._config.get('negate', False)
+        negate = self.config('negate', False)
 
         if negate:
             return not has_job

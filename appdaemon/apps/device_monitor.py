@@ -54,7 +54,7 @@ class WrapperAction(Action):
                     })
 
     def _update_result_cache(self, checker, checker_result):
-        checker_type = checker.config['type']
+        checker_type = checker.config('type')
         CHECKER_RESULT_CACHE[checker_type] = checker_result
 
 

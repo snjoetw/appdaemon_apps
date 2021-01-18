@@ -67,20 +67,25 @@ class StateTrigger(Trigger):
 
         settings = {}
 
-        if "from" in self._config:
-            settings["old"] = self.config("from")
+        from_state = self.config("from")
+        if from_state is not None:
+            settings["old"] = from_state
 
-        if "to" in self._config:
-            settings["new"] = self.config("to")
+        to_state = self.config("to")
+        if to_state is not None:
+            settings["new"] = to_state
 
-        if "duration" in self._config:
-            settings["duration"] = self.config("duration")
+        duration = self.config("duration")
+        if duration is not None:
+            settings["duration"] = duration
 
-        if "immediate" in self._config:
-            settings["immediate"] = self.config("immediate")
+        immediate = self.config("immediate")
+        if immediate is not None:
+            settings["immediate"] = immediate
 
-        if "attribute" in self._config:
-            settings["attribute"] = self.config("attribute")
+        attribute = self.config("attribute")
+        if attribute is not None:
+            settings["attribute"] = attribute
 
         entity_ids = self.list_config('entity_ids', [])
         if not entity_ids:

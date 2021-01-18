@@ -24,7 +24,7 @@ class AutoClimateVentMonitor(BaseAutomation):
     def temperature_change_handler(self, entity, attribute, old, new, kwargs):
         self.adjust_vent_openess()
 
-    def run_every_handler(self, time=None, **kwargs):
+    def run_every_handler(self, kwargs):
         self.adjust_vent_openess()
 
     def adjust_vent_openess(self):

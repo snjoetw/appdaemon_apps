@@ -1,9 +1,10 @@
 import concurrent
 import time
-import traceback
 
 import appdaemon.utils as utils
 import hassapi as hass
+import traceback
+
 from lib.helper import to_float, to_int
 
 
@@ -110,8 +111,7 @@ class BaseAutomation(hass.Hass):
         if len(actions) == 1 or not do_parallel_actions:
             self.debug('About to do action(s) in sequential order')
             for action in actions:
-                action.do_action(trigger_info)
-                self.debug('{} is done'.format(action))
+                do_action(action, trigger_info)
             return
 
         self.debug('About to do action(s) in parallel')
@@ -124,8 +124,12 @@ class BaseAutomation(hass.Hass):
 
 
 def do_action(action, trigger_info):
+    if not action.check_action_constraints(trigger_info):
+        return
+
     action.debug('About to do action: {}'.format(action))
     try:
+        action.config_wrapper.trigger_info = trigger_info
         return action.do_action(trigger_info)
     except Exception as e:
         action.error('Error when running actions in parallel: {}, action={}, trigger_info={}\n{}'.format(
@@ -133,3 +137,5 @@ def do_action(action, trigger_info):
             action,
             trigger_info,
             traceback.format_exc()))
+
+    action.config_wrapper.trigger_info = None

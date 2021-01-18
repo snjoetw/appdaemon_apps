@@ -2,7 +2,7 @@ import concurrent
 
 import traceback
 
-from base_automation import BaseAutomation
+from base_automation import BaseAutomation, do_action
 from lib.actions import get_action
 from lib.constraints import get_constraint
 from lib.triggers import get_trigger
@@ -62,9 +62,12 @@ class Handler:
         self._app.debug('Checking handler={}'.format(self))
         if self._constraints:
             for constraint in self._constraints:
-                if not constraint.check(trigger_info):
-                    self._app.debug(
-                        'Constraint does not match {}'.format(constraint))
+                constraint.config_wrapper.trigger_info = trigger_info
+                matched = constraint.check(trigger_info)
+                constraint.config_wrapper.trigger_info = None
+
+                if not matched:
+                    self._app.debug('Constraint does not match {}'.format(constraint))
                     return False
 
         self._app.debug('All constraints match')
@@ -77,15 +80,12 @@ class Handler:
         if len(self._actions) == 1 or not self._do_parallel_actions:
             self._app.debug('About to do action(s) in sequential order')
             for action in self._actions:
-                if action.check_action_constraints(trigger_info):
-                    action.do_action(trigger_info)
-                    self._app.debug('{} is done'.format(action))
+                do_action(action, trigger_info)
             return
 
         self._app.debug('About to do action(s) in parallel')
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            futures = {executor.submit(do_action, action, trigger_info): action
-                       for action in self._actions}
+            futures = {executor.submit(do_action, action, trigger_info): action for action in self._actions}
             for future in concurrent.futures.as_completed(futures):
                 future.result()
 
@@ -97,18 +97,3 @@ class Handler:
             self._constraints,
             self._actions,
             self._do_parallel_actions)
-
-
-def do_action(action, trigger_info):
-    if not action.check_action_constraints(trigger_info):
-        return
-
-    action.debug('About to do action: {}'.format(action))
-    try:
-        return action.do_action(trigger_info)
-    except Exception as e:
-        action.error('Error when running actions in parallel: {}, action={}, trigger_info={}\n{}'.format(
-            e,
-            action,
-            trigger_info,
-            traceback.format_exc()))

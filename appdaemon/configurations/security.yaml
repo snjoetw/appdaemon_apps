@@ -293,16 +293,13 @@ alarm_state_announcer:
           tts_message: "Alarm is triggered.<break time=\".2s\" />You are being recorded.<break time=\".2s\" />Police have been contacted."
           prelude_name: alarm_siren
         - platform: notify
-          target: all_ios
-          title: "Alarm triggered."
           message: "Alarm triggered."
-          data:
-            push:
-              category: alarm_armed
-              sound:
-                name: default
-                critical: 1
-                volume: 0.8
+          recipient: all
+          notifier: ios
+          ios:
+            category: alarm_armed
+            critical: true
+
     - constraints:
         - platform: triggered_state
           entity_id: alarm_control_panel.home_alarm
@@ -396,8 +393,10 @@ garage_door_left_open:
             - platform: sonos
               tts_message: "{{ message }}"
             - platform: notify
-              target: all_ios
               message: "{{ message }}"
+              recipient: all
+              notifier: ios
+
     - constraints:
         - platform: triggered_state
           to: "closed"
@@ -574,8 +573,10 @@ alarm_maintenance:
     - constraints:
       actions:
         - platform: notify
-          target: mobile_app_joes_iphone
           message: "{{ friendly_name(trigger_info.data.entity_id) }} is on"
+          recipient: joe
+          notifier: ios
+
 
 
 front_door_auto_lock:

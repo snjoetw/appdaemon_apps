@@ -345,29 +345,26 @@ lynn_s_room_temperature_monitor:
           state: '>= 26.5'
       actions:
         - platform: notify
-          target: all_ios
+          recipient: all
+          notifier: ios
           message: Lynn's room temperature is too high ({{ state(trigger_info.data.entity_id) }}°C)
-          data:
-            push:
-              sound:
-                name: default
-                critical: 1
-                volume: 0.5
-
+          camera_entity_id: camera.lynn_s_room_cam
+          ios:
+            critical: 1
+            volume: 0.5
     - constraints:
         - platform: state
           entity_id: sensor.template_lynn_s_room_temperature
           state: '<= 21'
       actions:
         - platform: notify
-          target: all_ios
+          recipient: all
+          notifier: ios
           message: Lynn's room temperature is too low ({{ state(trigger_info.data.entity_id) }}°C)
-          data:
-            push:
-              sound:
-                name: default
-                critical: 1
-                volume: 0.5
+          camera_entity_id: camera.lynn_s_room_cam
+          ios:
+            critical: 1
+            volume: 0.5
 
 
 lynn_s_room_window_monitor:
@@ -386,24 +383,14 @@ lynn_s_room_window_monitor:
   handlers:
     - constraints:
       actions:
-        - platform: camera_snapshot
-          entity_id: camera.lynn_s_room_cam
-          filename: lynn_s_room_cam.jpg
-        - platform: delay
-          delay: 1
-          actions:
-            - platform: notify
-              target: all_ios
-              message: Lynn's room window is opened
-              data:
-                attachment:
-                  url: https://snjoetw-hass.duckdns.org:59138/local/snapshot/lynn_s_room_cam.jpg
-                  hide-thumbnail: false
-                push:
-                  sound:
-                    name: default
-                    critical: 1
-                    volume: 0.5
+        - platform: notify
+          recipient: all
+          notifier: ios
+          message: Lynn's room window is opened
+          camera_entity_id: camera.lynn_s_room_cam
+          ios:
+            critical: 1
+            volume: 0.5
 
 
 lynn_s_room_sleep_music_auto_stop:

@@ -60,14 +60,15 @@ shower_time_scene:
             - platform: turn_off
               entity_ids:
                 input_boolean.is_scene_shower_time:
+
         - platform: notify
-          target: mobile_app_joes_iphone
+          recipient: all
+          notifier: ios
           message: |
             Shower time activated, remember to take the towel!
             Do you want to change music?
-          data:
-            push:
-              category: "shower_time_music"
+          ios:
+            category: "shower_time_music"
 
 
 camping_time_scene:

@@ -13,18 +13,16 @@ home_status_action_handler:
           action_name: home_status
       actions:
         - platform: notify
-          target: mobile_app_joes_iphone
+          recipient: joe
+          notifier: ios
           message: |
             🐘: {{ state('sensor.lynn_s_room_temperature') }}/{{ state('sensor.zb_lynn_s_room_temperature') }}°C
             🛏️: {{ state('sensor.master_bedroom_temperature') }}/{{ state('sensor.zb_master_bedroom_temperature') }}°C
             🔪: {{ state('sensor.kitchen_temperature') }}°C
             Last motion in {{ state('input_text.last_home_movement') | lower | replace(' motion', '') | replace(' 2', '') }} {{ relative_time(state_attr('input_text.last_home_movement', 'last_updated')) }}
-          data:
-            push:
-              sound:
-                name: default
-                critical: 1
-                volume: 0.0
+          ios:
+            critical: true
+            volume: 0.0
 
 
 shower_time_action_handler:

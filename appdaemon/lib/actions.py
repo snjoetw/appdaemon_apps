@@ -7,6 +7,7 @@ from lib.component import Component
 from lib.constraints import get_constraint
 from lib.helper import to_int, list_value
 from lib.schedule_job import cancel_job, schedule_job, schedule_repeat_job
+from notifier import Message, NotifierType
 
 
 def get_action(app, config):
@@ -556,12 +557,16 @@ class NotifyAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        target = self.config("target")
         message = self.config("message")
-        recipient_target = self.config("recipient_target")
-        data = self.config("data") or {}
 
-        notify(self._app, target, message, recipient_target, data)
+        notifier_types = [NotifierType(n) for n in self.list_config('notifier')]
+        recipients = self.list_config('recipient')
+        camera_entity_id = self.config('camera_entity_id')
+
+        notifier = self._app.get_app('notifier')
+        notifier.notify(Message(notifier_types, recipients, message, camera_entity_id, {
+            NotifierType.IOS.value: self.config(NotifierType.IOS.value, {})
+        }))
 
 
 class CancelJobAction(Action):

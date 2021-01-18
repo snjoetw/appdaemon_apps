@@ -2,6 +2,19 @@
 # C O M M O N
 ###############################################################################
 
+notifier:
+  debug: true
+  module: notifier
+  class: Notifier
+  ios:
+    external_base_url: !secret homeassistant_external_url
+    recipients:
+      joe: mobile_app_joes_iphone
+      yuyu: mobile_app_yuyus_iphone
+  facebook_messenger:
+    recipients: !secret facebook_recipients_by_name
+    access_token: !secret facebook_meesenger_page_access_token
+
 sonos_announcer:
   debug: true
   module: sonos_announcer

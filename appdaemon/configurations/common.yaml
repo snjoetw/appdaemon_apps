@@ -126,19 +126,19 @@ vacation_mode_notifier:
           from: "off"
           to: "on"
       actions:
-        - platform: alarm_notifier
+        - platform: notify
           message: "Hello! We're going away and will be back on {{ format_date(state('input_datetime.vacation_end_date')) }}. Please look after our house for us :)"
-          messenger_types:
-            - facebook
+          recipient: all
+          notifier: facebook_messenger
     - constraints:
         - platform: triggered_state
           from: "on"
           to: "off"
       actions:
-        - platform: alarm_notifier
+        - platform: notify
           message: "Hello! We're back, thanks for taking care of our house!"
-          messenger_types:
-            - facebook
+          recipient: all
+          notifier: facebook_messenger
 
 
 #mqtt_sun:
@@ -327,3 +327,32 @@ reminder:
 #  calendar_entity_id: calendar.google_elementary_school
 #  workday_entity_id: binary_sensor.workday_sensor
 #  school_day_entity_id: input_boolean.is_school_day
+
+
+#test:
+#  debug: true
+#  module: automation
+#  class: Automation
+#  variables:
+#    trigger_info2:
+#      data:
+#        entity_id: sensor.test_motion
+#    message: >
+#      {% if 'motion' in trigger_info2.data.entity_id %}
+#        WARNING: **{{ friendly_name(trigger_info2.data.entity_id) | capitalize }}** detected while alarm is armed
+#      {% else %}
+#        WARNING: **{{ friendly_name(trigger_info2.data.entity_id) | capitalize }}** is opened while alarm is armed
+#      {% endif %}
+#  triggers:
+#    - platform: time
+#      seconds: 180
+#  handlers:
+#    - constraints:
+#      actions:
+#        - platform: notify
+#          message: "{{ message }}"
+#          recipient: joe
+#          notifier: ios
+#          ios:
+#            category: alarm_armed
+#            critical: true

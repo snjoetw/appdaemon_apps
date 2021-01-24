@@ -90,6 +90,8 @@ zone_end_upstairs_movement:
 door_beep:
   module: automation
   class: Automation
+  variables:
+    message: "{{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
   triggers:
     - platform: state
       entity_ids:
@@ -102,7 +104,7 @@ door_beep:
         - platform: triggered_state
           entity_id: *var_door_sensors
       actions:
-        - platform: sonos
+        - platform: announcement
           tts_message: ''
           prelude_name: door_beep
           player_entity_id:
@@ -116,15 +118,16 @@ door_beep:
             payload: door
         - platform: alarm_notifier
           trigger_entity_id: "{{ trigger_info.data.entity_id }}"
-          message: "{{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
-          messenger_types:
-            - ios
+          message: "⚠️ {{ message }}"
+          notifier: ios
+          ios:
+            thread_id: door_beep
 
     - constraints:
         - platform: triggered_state
           entity_id: *var_window_sensors
       actions:
-        - platform: sonos
+        - platform: announcement
           tts_message: ''
           prelude_name: window_beep
           player_entity_id:
@@ -137,15 +140,16 @@ door_beep:
             payload: window
         - platform: alarm_notifier
           trigger_entity_id: "{{ trigger_info.data.entity_id }}"
-          message: "{{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
-          messenger_types:
-            - ios
+          message: "⚠️ {{ message }}"
+          notifier: ios
+          ios:
+            thread_id: door_beep
 
     - constraints:
         - platform: triggered_state
           entity_id: *var_garage_doors
       actions:
-        - platform: sonos
+        - platform: announcement
           tts_message: ''
           prelude_name: garage_beep
           player_entity_id:
@@ -158,36 +162,85 @@ door_beep:
             payload: garage
         - platform: alarm_notifier
           trigger_entity_id: "{{ trigger_info.data.entity_id }}"
-          message: "{{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
-          messenger_types:
-            - ios
+          message: "⚠️ {{ message }}"
+          notifier: ios
+          ios:
+            thread_id: door_beep
 
 
 ###############################################################################
 # S E C U R I T Y - M O N I T O R
 ###############################################################################
 alarm_monitor:
-  module: alarm_monitor
-  class: AlarmMonitor
-  motion_entity_id: *var_motion_sensors
-  door_entity_id: *var_door_sensors
-  window_entity_id: *var_window_sensors
-  alarm_entity_id: alarm_control_panel.home_alarm
-  alarm_triggered_entity_id: input_text.alarm_triggered_entity_id
-  motion_notify_message: 'WARNING: **{{ friendly_name(trigger_info.data.entity_id) | capitalize }}** detected while alarm is armed'
-  default_notify_message: 'WARNING: **{{ friendly_name(trigger_info.data.entity_id) | capitalize }}** is opened while alarm is armed'
-
+  debug: true
+  module: automation
+  class: Automation
+  variables:
+    alarm_entity_id: alarm_control_panel.home_alarm
+    message: >
+      {% if 'motion' in trigger_info.data.entity_id %}
+        WARNING: **{{ friendly_name(trigger_info.data.entity_id) | capitalize }}** detected while alarm is armed
+      {% else %}
+        WARNING: **{{ friendly_name(trigger_info.data.entity_id) | capitalize }}** is opened while alarm is armed
+      {% endif %}
+  triggers:
+    - platform: state
+      entity_ids:
+        - *var_door_sensors
+        - *var_motion_sensors
+        - *var_window_sensors
+      to: "on"
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: "{{ alarm_entity_id }}"
+          state: armed_away
+      actions:
+        - platform: set_value
+          entity_id: input_text.alarm_triggered_entity_id
+          value: "{{ trigger_info.data.entity_id }}"
+        - platform: alarm_notifier
+          trigger_entity_id: "{{ trigger_info.data.entity_id }}"
+          message: "‼️ {{ message }}"
+          ios:
+            category: alarm_armed
+            critical: true
+            thread_id: alarm_monitor
+            url: /lovelace/view_alarm
+        - platform: service
+          service: alarm_control_panel/alarm_trigger
+          data:
+            entity_id: "{{ alarm_entity_id }}"
+    - constraints:
+        - platform: state
+          entity_id: "{{ alarm_entity_id }}"
+          state: armed_home
+        - platform: triggered_state
+          entity_id:
+            - *var_door_sensors
+            - *var_window_sensors
+      actions:
+        - platform: set_value
+          entity_id: input_text.alarm_triggered_entity_id
+          value: "{{ trigger_info.data.entity_id }}"
+        - platform: alarm_notifier
+          trigger_entity_id: "{{ trigger_info.data.entity_id }}"
+          message: "‼️ {{ message }}"
+          ios:
+            category: alarm_armed
+            critical: true
+            thread_id: alarm_monitor
+            url: /lovelace/view_alarm
+        - platform: service
+          service: alarm_control_panel/alarm_trigger
+          data:
+            entity_id: "{{ alarm_entity_id }}"
 
 alarm_notifier:
   module: alarm_notifier
   class: AlarmNotifier
   is_vacation_mode_entity_id: input_boolean.is_vacation_mode
   presence_mode_entity_id: input_select.presence_mode
-  ios_recipients:
-    - all_ios
-  facebook_recipients: !secret facebook_recipients
-  facebook_access_token: !secret facebook_meesenger_page_access_token
-  external_base_url: !secret homeassistant_external_url
   entity_settings:
     binary_sensor.mqtt_kitchen_window:
       camera_entity_id: camera.family_room_cam
@@ -226,6 +279,14 @@ alarm_notifier:
 alarm_state_announcer:
   module: automation
   class: Automation
+  variables:
+    pending_arm_message: "Alarm is about to arm."
+    pending_trigger_message: "Alarm is about to trigger."
+    armed_home_message: "Alarm armed for stay."
+    armed_away_message: "Alarm armed for away."
+    disarmed_message: "Alarm disarmed."
+    triggered_message: "Alarm triggered."
+
   triggers:
     - platform: state
       entity_id: alarm_control_panel.home_alarm
@@ -240,47 +301,84 @@ alarm_state_announcer:
           from: "disarmed"
           to: "pending"
       actions:
-        - platform: sonos
-          tts_message: "Alarm is about to arm."
+        - platform: announcement
+          tts_message: "{{ pending_arm_message }}"
+        - platform: notify
+          message: "⚠️ {{ pending_arm_message }}"
+          recipient: all
+          notifier: ios
+          ios:
+            category: alarm_armed
+            thread_id: alarm_state_announcer
+            url: /lovelace/view_alarm
+
     - constraints:
         - platform: triggered_state
           entity_id: alarm_control_panel.home_alarm
           from: "disarmed"
           to: "armed_home"
       actions:
-        - platform: sonos
-          tts_message: "Alarm armed for stay."
+        - platform: announcement
+          tts_message: "{{ armed_home_message }}"
+        - platform: notify
+          message: "✅ {{ armed_home_message }}"
+          recipient: all
+          notifier: ios
+          ios:
+            category: alarm_armed
+            thread_id: alarm_state_announcer
+            url: /lovelace/view_alarm
+
     - constraints:
         - platform: triggered_state
           entity_id: alarm_control_panel.home_alarm
           from: "pending"
           to: "armed_away"
       actions:
-        - platform: sonos
-          tts_message: "Alarm armed for away."
+        - platform: announcement
+          tts_message: "{{ armed_away_message }}"
+        - platform: notify
+          message: "✅ {{ armed_away_message }}"
+          recipient: all
+          notifier: ios
+          ios:
+            category: alarm_armed
+            thread_id: alarm_state_announcer
+            url: /lovelace/view_alarm
+
     - constraints:
         - platform: triggered_state
           entity_id: alarm_control_panel.home_alarm
           to: "disarmed"
       actions:
-        - platform: sonos
-          tts_message: "Alarm disarmed."
-    #    - constraints:
-    #        - platform: triggered_state
-    #          entity_id: alarm_control_panel.home_alarm
-    #          from: "armed_away"
-    #          to: "pending"
-    #      actions:
-    #        - platform: sonos
-    #          tts_message: "Alarm is about to trigger."
-    #    - constraints:
-    #        - platform: triggered_state
-    #          entity_id: alarm_control_panel.home_alarm
-    #          from: "armed_home"
-    #          to: "pending"
-    #      actions:
-    #        - platform: sonos
-    #          tts_message: "Alarm is about to trigger."
+        - platform: announcement
+          tts_message: "{{ disarmed_message }}"
+        - platform: notify
+          message: "✅ {{ disarmed_message }}"
+          recipient: all
+          notifier: ios
+          ios:
+            category: alarm_disarmed
+            thread_id: alarm_state_announcer
+            url: /lovelace/view_alarm
+
+    - constraints:
+        - platform: triggered_state
+          entity_id: alarm_control_panel.home_alarm
+          from: ["armed_away", "armed_home"]
+          to: "pending"
+      actions:
+        - platform: announcement
+          tts_message: "{{ pending_trigger_message }}"
+        - platform: notify
+          message: "‼️ {{ pending_trigger_message }}"
+          recipient: all
+          notifier: ios
+          ios:
+            category: alarm_armed
+            thread_id: alarm_state_announcer
+            url: /lovelace/view_alarm
+
     - constraints:
         - platform: triggered_state
           entity_id: alarm_control_panel.home_alarm
@@ -289,29 +387,41 @@ alarm_state_announcer:
           entity_id: input_boolean.is_vacation_mode
           state: 'on'
       actions:
-        - platform: sonos
+        - platform: announcement
           tts_message: "Alarm is triggered.<break time=\".2s\" />You are being recorded.<break time=\".2s\" />Police have been contacted."
           prelude_name: alarm_siren
         - platform: notify
-          message: "Alarm triggered."
+          message: "‼️ {{ triggered_message }}"
           recipient: all
           notifier: ios
           ios:
             category: alarm_armed
             critical: true
+            thread_id: alarm_state_announcer
+            url: /lovelace/view_alarm
 
     - constraints:
         - platform: triggered_state
           entity_id: alarm_control_panel.home_alarm
           to: "triggered"
       actions:
-        - platform: sonos
-          tts_message: "Alarm triggered."
-
+        - platform: announcement
+          tts_message: "{{ triggered_message }}"
+        - platform: notify
+          message: "‼️ {{ triggered_message }}"
+          recipient: all
+          notifier: ios
+          ios:
+            category: alarm_armed
+            critical: true
+            thread_id: alarm_state_announcer
+            url: /lovelace/view_alarm
 
 door_left_open:
   module: automation
   class: Automation
+  variables:
+    message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
   triggers:
     - platform: state
       entity_ids: *var_door_sensors
@@ -328,8 +438,16 @@ door_left_open:
           delay: 600
           repeat: 1800
           actions:
-            - platform: sonos
-              tts_message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
+            - platform: announcement
+              tts_message: "{{ message }}"
+            - platform: notify
+              message: "⚠️ {{ message }}"
+              recipient: all
+              notifier: ios
+              ios:
+                thread_id: door_left_open
+                url: /lovelace/view_alarm
+
     - constraints:
         - platform: triggered_state
           to: "off"
@@ -340,6 +458,8 @@ door_left_open:
 window_left_open:
   module: automation
   class: Automation
+  variables:
+    message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
   triggers:
     - platform: state
       entity_ids:
@@ -360,8 +480,15 @@ window_left_open:
           delay: 1800
           repeat: 3600
           actions:
-            - platform: sonos
-              tts_message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} is still open."
+            - platform: announcement
+              tts_message: "{{ message }}"
+            - platform: notify
+              message: "⚠️ {{ message }}"
+              recipient: all
+              notifier: ios
+              ios:
+                thread_id: window_left_open
+                url: /lovelace/view_alarm
     - constraints:
         - platform: triggered_state
           to: "off"
@@ -390,12 +517,15 @@ garage_door_left_open:
           delay: 600
           repeat: 600
           actions:
-            - platform: sonos
+            - platform: announcement
               tts_message: "{{ message }}"
             - platform: notify
-              message: "{{ message }}"
+              message: "⚠️ {{ message }}"
               recipient: all
               notifier: ios
+              ios:
+                thread_id: garage_door_left_open
+                url: /lovelace/view_alarm
 
     - constraints:
         - platform: triggered_state
@@ -425,8 +555,15 @@ lock_left_unlocked:
           delay: 600
           repeat: 600
           actions:
-            - platform: sonos
+            - platform: announcement
               tts_message: "{{ message }}"
+            - platform: notify
+              message: "⚠️ {{ message }}"
+              recipient: all
+              notifier: ios
+              ios:
+                thread_id: lock_left_unlocked
+                url: /lovelace/view_alarm
     - constraints:
         - platform: triggered_state
           to: "locked"
@@ -496,6 +633,8 @@ is_alarm_armed:
 alarm_arm_checker:
   module: automation
   class: Automation
+  variables:
+    message: "Unable to arm, window or door is still open."
   triggers:
     - platform: state
       entity_id: alarm_control_panel.home_alarm
@@ -515,8 +654,12 @@ alarm_arm_checker:
           service: alarm_control_panel/alarm_disarm
           data:
             entity_id: alarm_control_panel.home_alarm
-        - platform: sonos
-          tts_message: "Unable to arm, window or door is still open."
+        - platform: announcement
+          tts_message: "{{ message }}"
+        - platform: notify
+          message: "{{ message }}"
+          recipient: all
+          notifier: ios
 
 
 alarm_auto_arm:
@@ -573,10 +716,11 @@ alarm_maintenance:
     - constraints:
       actions:
         - platform: notify
-          message: "{{ friendly_name(trigger_info.data.entity_id) }} is on"
+          message: "⚠️⚠️⚠️ {{ friendly_name(trigger_info.data.entity_id) }} is on"
           recipient: joe
           notifier: ios
-
+          ios:
+            url: /lovelace/view_alarm
 
 
 front_door_auto_lock:
@@ -776,8 +920,12 @@ power_outage_detector:
           entity_ids:
             input_boolean.is_out_of_power:
               force_off: false
-        - platform: alarm_notifier
-          message: "Looks like there's a power outage ..."
+        - platform: notify
+          message: "⚡️ Looks like there's a power outage ..."
+          recipient: all
+          notifier: ios
+          ios:
+            critical: true
     - constraints:
         - platform: state
           entity_id: input_boolean.is_out_of_power
@@ -790,5 +938,22 @@ power_outage_detector:
           entity_ids:
             input_boolean.is_out_of_power:
               force_off: false
-        - platform: alarm_notifier
-          message: "Power is restored!"
+        - platform: notify
+          message: "⚡️ Power is restored!"
+          recipient: all
+          notifier: ios
+
+
+nest_camera_events:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: nest_event
+  handlers:
+    - constraints:
+      actions:
+        - platform: debug
+
+

@@ -67,6 +67,8 @@ washer_is_done_announement:
   module: automation
   class: Automation
   cancel_job_when_no_match: true
+  variables:
+    message: "Washer has finished and is ready to be emptied."
   triggers:
     - platform: state
       entity_id: input_select.washer_status
@@ -80,5 +82,9 @@ washer_is_done_announement:
           repeat: 1800
           delay: 300
           actions:
-            - platform: sonos
-              tts_message: "Washer has finished and is ready to be emptied."
+            - platform: announcement
+              tts_message: "{{ message }}"
+            - platform: notify
+              message: "{{ message }}"
+              recipient: all
+              notifier: ios

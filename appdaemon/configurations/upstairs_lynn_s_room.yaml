@@ -402,9 +402,8 @@ lynn_s_room_sleep_music_auto_stop:
   handlers:
     - constraints:
         - platform: state
-          entity: media_player.lynns_room
+          entity_id: media_player.lynns_room
           state: playing
       actions:
         - platform: turn_off_media_player
           entity_id: media_player.lynns_room
-

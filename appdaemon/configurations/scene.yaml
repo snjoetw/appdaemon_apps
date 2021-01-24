@@ -48,6 +48,11 @@ shower_time_scene:
           volume: 0.45
           source: 'Piano Chill'
           shuffle: true
+          constraints:
+            - platform: state
+              entity_id: media_player.master_bathroom
+              state: playing
+              negate: true
         - platform: turn_on
           entity_ids:
             light.zwave_master_bathroom_light:

@@ -25,7 +25,7 @@ def get_action(app, config):
     elif platform == "turn_off_media_player":
         return TurnOffMediaPLayerAction(app, config)
     elif platform == "turn_on_media_player":
-        return PlayMediaPlayerAction(app, config)
+        return TurnOnMediaPLayerAction(app, config)
     elif platform == "select_input_select_option":
         return SelectInputSelectOptionAction(app, config)
     elif platform == "add_input_select_option":
@@ -44,7 +44,7 @@ def get_action(app, config):
         return ServiceAction(app, config)
     elif platform == "set_fan_min_on_time":
         return SetFanMinOnTimeAction(app, config)
-    elif platform == "sonos":
+    elif platform == "announcement":
         return AnnouncementAction(app, config)
     elif platform == "debug":
         return DebugAction(app, config)
@@ -448,7 +448,7 @@ class TurnOffMediaPLayerAction(Action):
         self.call_service("media_player/turn_off", entity_id=entity_ids)
 
 
-class PlayMediaPlayerAction(Action):
+class TurnOnMediaPLayerAction(Action):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
@@ -457,6 +457,7 @@ class PlayMediaPlayerAction(Action):
         volume = self.config("volume")
         source = self.config("source")
         shuffle = self.config("shuffle", False)
+        repeat = self.config("repeat", "all")
 
         self.call_service("media_player/turn_on", entity_id=entity_ids)
 
@@ -468,6 +469,8 @@ class PlayMediaPlayerAction(Action):
 
         if shuffle:
             self.call_service("media_player/shuffle_set", entity_id=entity_ids, shuffle=shuffle)
+
+        self.call_service("media_player/repeat_set", entity_id=entity_ids, repeat=repeat)
 
 
 class SelectInputSelectOptionAction(Action):
@@ -557,16 +560,31 @@ class NotifyAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
+        title = self.config("title")
         message = self.config("message")
-
         notifier_types = [NotifierType(n) for n in self.list_config('notifier')]
         recipients = self.list_config('recipient')
         camera_entity_id = self.config('camera_entity_id')
 
         notifier = self._app.get_app('notifier')
-        notifier.notify(Message(notifier_types, recipients, message, camera_entity_id, {
+        notifier.notify(Message(notifier_types, recipients, title, message, camera_entity_id, {
             NotifierType.IOS.value: self.config(NotifierType.IOS.value, {})
         }))
+
+
+class AlarmNotifierAction(Action):
+    def __init__(self, app, action_config):
+        super().__init__(app, action_config)
+
+    def do_action(self, trigger_info):
+        title = self.config("title")
+        message = self.config("message")
+        image_filename = self.config("image_filename")
+        trigger_entity_id = self.config("trigger_entity_id")
+        notifier_types = [NotifierType(n) for n in self.list_config('notifier')]
+
+        notifier = self._app.get_app('alarm_notifier')
+        notifier.notify(title, message, trigger_entity_id, notifier_types, image_filename)
 
 
 class CancelJobAction(Action):
@@ -632,9 +650,6 @@ class AnnouncementAction(Action):
         prelude_name = self.config('prelude_name')
 
         announcer = self._app.get_app('sonos_announcer')
-
-        self.call_service("notify/all_ios", message=message)
-
         announcer.announce(message, use_cache=use_cache, player_entity_ids=player_entity_id, prelude_name=prelude_name)
 
 
@@ -666,20 +681,6 @@ class DebugAction(Action):
     def do_action(self, trigger_info):
         template_value = self.config('template')
         self.log("Debugging, trigger_info={}, template_value={}".format(trigger_info, template_value))
-
-
-class AlarmNotifierAction(Action):
-    def __init__(self, app, action_config):
-        super().__init__(app, action_config)
-
-    def do_action(self, trigger_info):
-        message = self.config("message")
-        image_filename = self.config("image_filename")
-        trigger_entity_id = self.config("trigger_entity_id")
-        messenger_types = self.config("messenger_types", ())
-
-        notifier = self._app.get_app('alarm_notifier')
-        notifier.send(message, trigger_entity_id, messenger_types, image_filename)
 
 
 class CameraSnapshotAction(Action):

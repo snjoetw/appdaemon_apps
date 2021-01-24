@@ -19,13 +19,15 @@ class NotifierType(Enum):
 class Message:
     _notifier_types: List[NotifierType]
     _recipients: List[str]
-    _text: str
+    _title: str
+    _message_text: str
     _camera_entity_id: str
 
-    def __init__(self, notifier_types, recipients, text, camera_entity_id=None, settings={}):
+    def __init__(self, notifier_types, recipients, title, message_text, camera_entity_id=None, settings={}):
         self._notifier_types = notifier_types
         self._recipients = recipients
-        self._text = text
+        self._title = title
+        self._message_text = message_text
         self._camera_entity_id = camera_entity_id
         self._settings = settings
 
@@ -42,8 +44,12 @@ class Message:
         return self._camera_entity_id
 
     @property
-    def text(self):
-        return self._text
+    def title(self):
+        return self._title
+
+    @property
+    def message_text(self):
+        return self._message_text
 
     @property
     def settings(self):
@@ -52,11 +58,12 @@ class Message:
         return self._settings
 
     def __repr__(self):
-        return "{}(notifier_types={}, recipients={}, text={}, camera_entity_id={}, settings={})".format(
+        return "{}(notifier_types={}, recipients={}, title={}, text={}, camera_entity_id={}, settings={})".format(
             self.__class__.__name__,
             self.notifier_types,
             self.recipients,
-            self.text,
+            self.title,
+            self.message_text,
             self.camera_entity_id,
             self.settings)
 
@@ -105,14 +112,20 @@ class IosMessenger(Messenger):
 
     def send(self, message: Message):
         recipients = self.figure_recipients(message)
-        data = self.create_data(message)
+        service_data = {
+            'data': self.create_data(message),
+            'message': message.message_text,
+        }
+
+        if message.title:
+            service_data['title'] = message.title
 
         for recipient in recipients:
-            self.call_service('notify/' + recipient, message=message.text, data=data)
+            self.call_service('notify/' + recipient, **service_data)
 
     def figure_recipients(self, message: Message):
         if 'all' in message.recipients:
-            return 'all_ios'
+            return ['all_ios']
         return [self._recipients.get(r) for r in message.recipients]
 
     def create_data(self, message: Message):
@@ -130,7 +143,15 @@ class IosMessenger(Messenger):
         if settings is None:
             return data
 
+        url = settings.get('url')
+        if url is not None:
+            data['url'] = url
+
         push = {}
+        thread_id = settings.get('thread_id')
+        if thread_id is not None:
+            push['thread-id'] = thread_id
+
         category = settings.get('category')
         if category is not None:
             push['category'] = category
@@ -162,7 +183,7 @@ class FacebookMessenger(Messenger):
             snapshot_filepath = self.get_camera_snapshot(message.camera_entity_id)
             self.send_image_message(recipients, snapshot_filepath)
 
-        return self.send_text_message(recipients, message.text)
+        return self.send_text_message(recipients, message.message_text)
 
     def figure_recipients(self, message: Message):
         if 'all' in message.recipients:
@@ -212,7 +233,7 @@ class PersistentNotificationMessenger(Messenger):
     def send_image_message(self, message: Message):
         snapshot_filepath = self.get_camera_snapshot(message.camera_entity_id)
         self.send_text_message(
-            message.text
+            message.message_text
             + '\n'
             + '![image](/local{})'.format(snapshot_filepath))
 
@@ -228,17 +249,13 @@ class PersistentNotificationMessenger(Messenger):
             self.send_image_message(message)
             return
 
-        return self.send_text_message(message.text)
+        return self.send_text_message(message.message_text)
 
 
 class Notifier(BaseAutomation):
     _messengers: List[Messenger]
 
     def initialize(self):
-        # self.external_base_url = self.args['external_base_url']
-        # self.ios_recipients = self.args['ios_recipients']
-        # self.facebook_recipients = self.args['facebook_recipients']
-        # self.facebook_access_token = self.args['facebook_access_token']
         self._messengers = (
             PersistentNotificationMessenger(self, self.args),
             IosMessenger(self, self.args),

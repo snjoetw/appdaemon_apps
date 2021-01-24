@@ -3,11 +3,11 @@ water_leak_detected:
   module: automation
   class: Automation
   cancel_job_when_no_match: true
+  variables:
+    message: "{{ friendly_name(trigger_info.data.entity_id) }} detected water leak."
   triggers:
     - platform: state
       entity_ids:
-        # Kitchen Fridge Water Leak
-        - binary_sensor.water_leak_sensor_158d000212f249
         - binary_sensor.zb_kitchen_sink_water_leak
         - binary_sensor.zb_washer_water_leak
   handlers:
@@ -19,9 +19,14 @@ water_leak_detected:
           repeat: 300
           delay: 5
           actions:
-            - platform: sonos
-              tts_message: "{{ friendly_name(trigger_info.data.entity_id) }} detected water leak."
-
+            - platform: announcement
+              tts_message: "{{ message }}"
+            - platform: notify
+              message: "💧 {{ message }}"
+              recipient: all
+              notifier: ios
+              ios:
+                critical: true
 
 mailbox_monitor:
   module: automation
@@ -68,7 +73,7 @@ mail_delivered_notifier:
             - platform: alarm_notifier
               message: "Mail was just delivered"
               image_filename: mailbox_notifier.jpg
-            - platform: sonos
+            - platform: announcement
               tts_message: "Mail was just delivered"
     - constraints:
         - platform: triggered_state
@@ -88,11 +93,12 @@ mail_delivered_notifier:
 package_delivered_notifier:
   module: automation
   class: Automation
+  variables:
+    message: "A package was just delivered"
   triggers:
     - platform: state
       entity_ids:
         - switch.mqtt_front_door_package_left
-        - binary_sensor.mqtt_front_door
   handlers:
     - constraints:
         - platform: triggered_state
@@ -100,26 +106,13 @@ package_delivered_notifier:
           from: "off"
           to: "on"
       actions:
-        - platform: camera_snapshot
-          entity_id: camera.front_door
-          filename: mailbox_notifier.jpg
-        - platform: delay
-          delay: 5
-          actions:
-            - platform: alarm_notifier
-              message: "A package was just delivered"
-              image_filename: mailbox_notifier.jpg
-            - platform: sonos
-              tts_message: "A package was just delivered"
-    - constraints:
-        - platform: triggered_state
-          entity_id: binary_sensor.mqtt_front_door
-      actions:
-        - platform: cancel_job
-          cancel_all: true
-        - platform: turn_off
-          entity_ids:
-            - switch.mqtt_front_door_package_left
+        - platform: announcement
+          tts_message: "{{ message }}"
+        - platform: notify
+          message: "📦 {{ message }}"
+          recipient: all
+          notifier: ios
+          camera_entity_id: camera.front_door
 
 
 

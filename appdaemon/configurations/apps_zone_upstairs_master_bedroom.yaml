@@ -131,7 +131,7 @@ master_bedroom_sleep_music_auto_play:
   handlers:
     - constraints:
         - platform: state
-          entity: media_player.master_bedroom
+          entity_id: media_player.master_bedroom
           state: playing
           negate: true
       actions:
@@ -150,7 +150,7 @@ master_bedroom_sleep_music_auto_stop:
   handlers:
     - constraints:
         - platform: state
-          entity: media_player.master_bedroom
+          entity_id: media_player.master_bedroom
           state: playing
       actions:
         - platform: turn_off_media_player

@@ -51,3 +51,42 @@ music_notification_action_handler:
           volume: 0.3
           source: 'K-Pop Essentials'
           shuffle: true
+
+
+alarm_notification_action_handler:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: ios.notification_action_fired
+  handlers:
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            actionName: ALARM_DISARM
+      actions:
+        - platform: service
+          service: alarm_control_panel/alarm_disarm
+          data:
+            entity_id: alarm_control_panel.home_alarm
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            actionName: ALARM_ARM_AWAY
+      actions:
+        - platform: service
+          service: alarm_control_panel/alarm_arm_away
+          data:
+            entity_id: alarm_control_panel.home_alarm
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            actionName: ALARM_ARM_HOME
+      actions:
+        - platform: service
+          service: alarm_control_panel/alarm_arm_home
+          data:
+            entity_id: alarm_control_panel.home_alarm
+

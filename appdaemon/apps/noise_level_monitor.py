@@ -1,11 +1,49 @@
-import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from itertools import repeat
+
+import traceback
 
 from base_automation import BaseAutomation
 
 
+class LightSetting:
+    def __init__(self, config):
+        if isinstance(config, dict):
+            self._light_entity_id = config['light_entity_id']
+            self._delegate_light_entity_id = config.get(
+                'delegate_light_entity_id', self._light_entity_id)
+        else:
+            self._light_entity_id = config
+            self._delegate_light_entity_id = config
+
+    @property
+    def light_entity_id(self):
+        return self._light_entity_id
+
+    @property
+    def delegate_light_entity_id(self):
+        return self._delegate_light_entity_id
+
+
+class MonitorSetting:
+    def __init__(self, config):
+        self._noise_entity_id = config['noise_entity_id']
+        self._light_data = config['light_data']
+
+    @property
+    def noise_entity_id(self):
+        return self._noise_entity_id
+
+    @property
+    def light_data(self):
+        return self._light_data
+
+
 class NoiseLevelMonitor(BaseAutomation):
+    light_settings: list[LightSetting]
+    monitor_settings: list[MonitorSetting]
+    is_monitoring: bool
+    sleeping_time_entity_id: str
 
     def initialize(self):
         self.sleeping_time_entity_id = self.arg('sleeping_time_entity_id')
@@ -43,16 +81,13 @@ class NoiseLevelMonitor(BaseAutomation):
         self.debug('Using light_data={}'.format(light_data))
 
         with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = {executor.submit(handle_noise_detected, self, setting,
-                                       light_data): setting for setting in
+            futures = {executor.submit(handle_noise_detected, self, setting, light_data): setting for setting in
                        self.light_settings}
             for future in as_completed(futures):
                 try:
                     future.result()
                 except Exception as e:
-                    self.error('Error when running actions: {}\n{}'.format(
-                        e,
-                        traceback.format_exc()))
+                    self.error('Error when running actions: {}\n{}'.format(e, traceback.format_exc()))
 
     def light_state_change_handler(self, entity, attribute, old, new, kwargs):
         if self.should_monitor():
@@ -94,11 +129,9 @@ class NoiseLevelMonitor(BaseAutomation):
 
         for setting in self.monitor_settings:
             if self.get_state(setting.noise_entity_id) == 'unavailable':
-                self.call_service('ffmpeg/restart',
-                                  entity_id=setting.noise_entity_id)
+                self.call_service('ffmpeg/restart', entity_id=setting.noise_entity_id)
                 self.sleep(10)
-                self.call_service('ffmpeg/start',
-                                  entity_id=setting.noise_entity_id)
+                self.call_service('ffmpeg/start', entity_id=setting.noise_entity_id)
 
                 just_started = True
 
@@ -110,11 +143,10 @@ class NoiseLevelMonitor(BaseAutomation):
             if self.get_state(setting.noise_entity_id) != 'unavailable':
                 self.enable_monitor(False)
 
-                self.call_service('ffmpeg/restart',
-                                  entity_id=setting.noise_entity_id)
+                self.call_service('ffmpeg/restart', entity_id=setting.noise_entity_id)
                 self.sleep(10)
-                self.call_service('ffmpeg/stop',
-                                  entity_id=setting.noise_entity_id)
+                self.call_service('ffmpeg/stop', entity_id=setting.noise_entity_id)
+                self.set_state(setting.noise_entity_id, state='off')
 
     def enable_monitor(self, enable):
         self.is_monitoring = enable
@@ -151,36 +183,3 @@ def handle_noise_detected(app, light_setting, light_data):
         })
     else:
         app.turn_off(light_setting.delegate_light_entity_id)
-
-
-class LightSetting:
-    def __init__(self, config):
-        if isinstance(config, dict):
-            self._light_entity_id = config['light_entity_id']
-            self._delegate_light_entity_id = config.get(
-                'delegate_light_entity_id', self._light_entity_id)
-        else:
-            self._light_entity_id = config
-            self._delegate_light_entity_id = config
-
-    @property
-    def light_entity_id(self):
-        return self._light_entity_id
-
-    @property
-    def delegate_light_entity_id(self):
-        return self._delegate_light_entity_id
-
-
-class MonitorSetting:
-    def __init__(self, config):
-        self._noise_entity_id = config['noise_entity_id']
-        self._light_data = config['light_data']
-
-    @property
-    def noise_entity_id(self):
-        return self._noise_entity_id
-
-    @property
-    def light_data(self):
-        return self._light_data

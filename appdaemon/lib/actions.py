@@ -2,12 +2,17 @@ import random
 import time
 from datetime import timedelta, datetime
 
+from typing import List
+
+from alarm_notifier import AlarmNotifier
 from base_automation import do_action
 from lib.component import Component
+from lib.constraints import Constraint
 from lib.constraints import get_constraint
 from lib.helper import to_int, list_value
 from lib.schedule_job import cancel_job, schedule_job, schedule_repeat_job
-from notifier import Message, NotifierType
+from notifier import Message, NotifierType, Notifier
+from sonos_announcer import SonosAnnouncer
 
 
 def get_action(app, config):
@@ -169,6 +174,8 @@ def set_cover_position(app, entity_id, position, difference_threshold=0):
 
 
 class Action(Component):
+    _constraints: List[Constraint]
+
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
@@ -180,10 +187,10 @@ class Action(Component):
 
         for constraint in self._constraints:
             if not constraint.check(trigger_info):
-                self._app.debug('Action constraint does not match {}'.format(constraint))
+                self.app.debug('Action constraint does not match {}'.format(constraint))
                 return False
 
-        self._app.debug('All action constraints passed')
+        self.app.debug('All action constraints passed')
         return True
 
     def do_action(self, trigger_info):
@@ -200,13 +207,13 @@ class DelayableAction(Action):
             self.schedule_job(delay, trigger_info=trigger_info)
             return
 
-        cancel_job(self._app, trigger_info)
+        cancel_job(self.app, trigger_info)
         self.job_runner({
             'trigger_info': trigger_info
         })
 
     def schedule_job(self, delay, trigger_info):
-        schedule_job(self._app, self.job_runner, delay, trigger_info=trigger_info)
+        schedule_job(self.app, self.job_runner, delay, trigger_info=trigger_info)
 
     def job_runner(self, kwargs={}):
         raise NotImplementedError()
@@ -222,10 +229,10 @@ class RepeatableAction(Action):
 
         if repeat > 0:
             start_at = datetime.now() + timedelta(seconds=delay)
-            schedule_repeat_job(self._app, self.job_runner, start_at, repeat, trigger_info=trigger_info)
+            schedule_repeat_job(self.app, self.job_runner, start_at, repeat, trigger_info=trigger_info)
             return
 
-        cancel_job(self._app, trigger_info)
+        cancel_job(self.app, trigger_info)
         self.job_runner({
             'trigger_info': trigger_info
         })
@@ -243,7 +250,7 @@ class NotifiableAction(Action):
         notify_message = self.config("notify_message")
 
         if notify_target and notify_message:
-            notify(self._app, notify_target, notify_message)
+            notify(self.app, notify_target, notify_message)
 
 
 def figure_light_settings(entity_ids):
@@ -285,7 +292,7 @@ class TurnOnAction(Action):
     def do_action(self, trigger_info):
         entity_ids = figure_light_settings(self.config('entity_ids'))
 
-        cancel_job(self._app, trigger_info)
+        cancel_job(self.app, trigger_info)
 
         self.debug('About to run TurnOnAction: {}'.format(entity_ids))
 
@@ -301,7 +308,7 @@ class TurnOnAction(Action):
             })
 
             if should_turn_on:
-                turn_on_entity(self._app, entity_id, config)
+                turn_on_entity(self.app, entity_id, config)
 
     def should_turn_on(self, entity_id, config):
         if config.get("force_on", True):
@@ -358,7 +365,7 @@ class TurnOffAction(Action):
             })
 
             if self.get_state(entity_id) == "on" or force_off:
-                turn_off_entity(self._app, entity_id, config)
+                turn_off_entity(self.app, entity_id, config)
 
     def should_dim_lights(self, entity_ids):
         if not self.config('dim_light_before_turn_off', True):
@@ -385,7 +392,7 @@ class TurnOffAction(Action):
             if not brightness or brightness <= DEFAULT_DIMMED_BRIGHTNESS:
                 continue
 
-            turn_on_entity(self._app, entity_id, {
+            turn_on_entity(self.app, entity_id, {
                 'brightness': DEFAULT_DIMMED_BRIGHTNESS
             })
 
@@ -396,7 +403,7 @@ class ToggleAction(Action):
 
     def do_action(self, trigger_info):
         entity_id = self.config("entity_id")
-        toggle_entity(self._app, entity_id)
+        toggle_entity(self.app, entity_id)
 
 
 class SetCoverPositionAction(Action):
@@ -409,7 +416,7 @@ class SetCoverPositionAction(Action):
         position_difference_threshold = self.config("position_difference_threshold", 3)
 
         for entity_id in entity_ids:
-            set_cover_position(self._app, entity_id, position, position_difference_threshold)
+            set_cover_position(self.app, entity_id, position, position_difference_threshold)
 
 
 class LockAction(NotifiableAction):
@@ -566,7 +573,7 @@ class NotifyAction(Action):
         recipients = self.list_config('recipient')
         camera_entity_id = self.config('camera_entity_id')
 
-        notifier = self._app.get_app('notifier')
+        notifier: Notifier = self.app.get_app('notifier')
         notifier.notify(Message(notifier_types, recipients, title, message, camera_entity_id, {
             NotifierType.IOS.value: self.config(NotifierType.IOS.value, {})
         }))
@@ -583,7 +590,7 @@ class AlarmNotifierAction(Action):
         trigger_entity_id = self.config("trigger_entity_id")
         notifier_types = [NotifierType(n) for n in self.list_config('notifier')]
 
-        notifier = self._app.get_app('alarm_notifier')
+        notifier: AlarmNotifier = self.app.get_app('alarm_notifier')
         notifier.notify(title, message, trigger_entity_id, notifier_types, image_filename)
 
 
@@ -595,9 +602,9 @@ class CancelJobAction(Action):
         cancel_all = self.config('cancel_all', False)
 
         if cancel_all:
-            cancel_job(self._app)
+            cancel_job(self.app)
         else:
-            cancel_job(self._app, trigger_info)
+            cancel_job(self.app, trigger_info)
 
 
 class PersistentNotificationAction(Action):
@@ -649,7 +656,7 @@ class AnnouncementAction(Action):
         use_cache = self.config('use_cache', True)
         prelude_name = self.config('prelude_name')
 
-        announcer = self._app.get_app('sonos_announcer')
+        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
         announcer.announce(message, use_cache=use_cache, player_entity_ids=player_entity_id, prelude_name=prelude_name)
 
 
@@ -670,7 +677,7 @@ class MotionAnnouncementAction(Action):
 
         message = 'Incoming message from {}: {}'.format(message_from, message)
 
-        announcer = self._app.get_app('sonos_announcer')
+        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
         announcer.announce(message, use_cache=False, motion_entity_id=triggered_entity_id)
 
 

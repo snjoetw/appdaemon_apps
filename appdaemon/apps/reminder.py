@@ -7,6 +7,8 @@ from lib.briefing_helper import MEDIUM_PAUSE
 from lib.context import Context
 from lib.helper import figure_parts_of_day
 from lib.reminder_helper import get_reminder_provider, TIME_TRIGGER_METHOD, MOTION_TRIGGER_METHOD
+from notifier import Notifier, Message, NotifierType
+from sonos_announcer import SonosAnnouncer
 
 
 class Reminder(ConfigurableAutomation):
@@ -34,9 +36,7 @@ class Reminder(ConfigurableAutomation):
         self.init_trigger('time', {
             'seconds': 60,
         })
-        self.init_handler(self.create_handler(
-            [],
-            [ReminderAction(self, self.args, TIME_TRIGGER_METHOD)]))
+        self.init_handler(self.create_handler([], [ReminderAction(self, self.args, TIME_TRIGGER_METHOD)]))
 
 
 class ReminderAction(Action):
@@ -59,10 +59,11 @@ class ReminderAction(Action):
             self.debug('No reminder message, skipping ...')
             return
 
-        announcer = self._app.get_app('sonos_announcer')
-        announcer.announce(message,
-                           use_cache=False,
-                           motion_entity_id=motion_entity_id)
+        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        announcer.announce(message, use_cache=False, motion_entity_id=motion_entity_id)
+
+        notifier: Notifier = self.app.get_app('notifier')
+        notifier.notify(Message([NotifierType.IOS], 'all', None, message, None, {}))
 
     def build_reminder_text(self):
         parts_of_day = figure_parts_of_day()
@@ -81,8 +82,7 @@ class ReminderAction(Action):
             try:
                 reminder_text = provider.provide(context)
                 if reminder_text is not None:
-                    self.debug('Building reminder text with: {}'.format(
-                        reminder_text))
+                    self.debug('Building reminder text with: {}'.format(reminder_text))
                     reminder_texts.append(reminder_text)
                     self.provider_history[provider] = now
             except:

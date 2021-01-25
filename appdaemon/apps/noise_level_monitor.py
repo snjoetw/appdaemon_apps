@@ -40,8 +40,8 @@ class MonitorSetting:
 
 
 class NoiseLevelMonitor(BaseAutomation):
-    light_settings: list[LightSetting]
-    monitor_settings: list[MonitorSetting]
+    light_settings: list
+    monitor_settings: list
     is_monitoring: bool
     sleeping_time_entity_id: str
 

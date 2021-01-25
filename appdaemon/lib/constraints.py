@@ -249,7 +249,7 @@ class TimeConstraint(Constraint):
         end_time = self.config('end_time')
 
         if start_time and end_time:
-            return self._app.now_is_between(start_time, end_time)
+            return self.app.now_is_between(start_time, end_time)
 
         start_time = self.get_state(self.config('start_time_entity_id'))
         end_time = self.get_state(self.config('end_time_entity_id'))
@@ -265,7 +265,7 @@ class HasScheduledJobConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        has_job = has_scheduled_job(self._app)
+        has_job = has_scheduled_job(self.app)
         negate = self.config('negate', False)
 
         if negate:

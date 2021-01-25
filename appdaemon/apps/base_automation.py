@@ -5,14 +5,14 @@ import appdaemon.utils as utils
 import hassapi as hass
 import traceback
 
-from lib.helper import to_float, to_int
+from lib.config import Config
 
 
 class BaseAutomation(hass.Hass):
 
     @property
     def debug_enabled(self):
-        return self.args.get('debug', False)
+        return self.config_wrapper.value('debug', False)
 
     def log(self, msg, level='INFO'):
         if level == 'DEBUG' and not self.debug_enabled:
@@ -33,38 +33,18 @@ class BaseAutomation(hass.Hass):
     def error(self, msg):
         return self.log(msg, level='ERROR')
 
+    @property
+    def config_wrapper(self):
+        return Config(self, self.args)
+
     def arg(self, key, default=None):
-        value = self.args.get(key, default)
-
-        if str(value).startswith("state:"):
-            value = self.get_state(value.split(':')[1])
-
-        return value
+        return self.config_wrapper.value(key, default)
 
     def int_arg(self, key, default=None):
-        return to_int(self.float_arg(key, default))
-
-    def float_arg(self, key, default=None):
-        value = self.arg(key, default)
-        return to_float(value, default)
+        return self.config_wrapper.int(key, default)
 
     def list_arg(self, key, default=None):
-        value = self.args.get(key, default)
-
-        if isinstance(value, list):
-            return self._flatten_list_arg(value)
-
-        return [value]
-
-    def _flatten_list_arg(self, arg_value):
-        values = []
-        for value in arg_value:
-            if isinstance(value, list):
-                values.extend(self._flatten_list_arg(value))
-            else:
-                values.append(value)
-
-        return values
+        return self.config_wrapper.list(key, default)
 
     def sleep(self, duration):
         self.debug('About to sleep for {} sec'.format(duration))

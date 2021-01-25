@@ -23,13 +23,13 @@ class Component:
         self.app.select_option(entity_id, option, **kwargs)
 
     def log(self, msg, level="INFO"):
-        return self._app.log(msg, level=level)
+        return self.app.log(msg, level=level)
 
     def debug(self, msg):
-        return self._app.debug(msg)
+        return self.app.debug(msg)
 
     def error(self, msg):
-        return self._app.error(msg)
+        return self.app.error(msg)
 
     @property
     def config_wrapper(self):
@@ -45,7 +45,7 @@ class Component:
         return self.config_wrapper.list(key, default)
 
     def now_is_between(self, start_time_str, end_time_str, name=None):
-        return self._app.now_is_between(start_time_str, end_time_str, name)
+        return self.app.now_is_between(start_time_str, end_time_str, name)
 
     def now_is_after(self, time_str):
         now = self.get_now()
@@ -58,10 +58,10 @@ class Component:
         return now < time
 
     def get_now(self):
-        return self._app.get_now().astimezone(self._app.AD.tz)
+        return self.app.get_now().astimezone(self.app.AD.tz)
 
     def parse_time(self, time_str):
-        time = self._app.parse_time(time_str)
+        time = self.app.parse_time(time_str)
         now = self.get_now()
         return now.replace(
             hour=time.hour,

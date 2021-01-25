@@ -57,8 +57,7 @@ class Trigger(Component):
 
         self._callback = callback
 
-        self._app.debug('Registered trigger {} with {}'.format(self,
-                                                               trigger_config))
+        self.app.debug('Registered trigger {} with {}'.format(self, trigger_config))
 
 
 class StateTrigger(Trigger):
@@ -92,7 +91,7 @@ class StateTrigger(Trigger):
             entity_ids.extend(self.list_config('entity_id', []))
 
         for entity_id in entity_ids:
-            self._app.listen_state(self._state_change_handler, entity_id, **settings)
+            self.app.listen_state(self._state_change_handler, entity_id, **settings)
 
     def _state_change_handler(self, entity_id, attribute, old, new, kwargs):
         if old == new:
@@ -114,13 +113,13 @@ class TimeTrigger(Trigger):
         seconds = self.config("seconds", 0)
         interval_in_seconds = minutes * 60 + seconds
         if interval_in_seconds > 0:
-            self._app.debug('Scheduled time trigger to run every {} sec'.format(interval_in_seconds))
+            self.app.debug('Scheduled time trigger to run every {} sec'.format(interval_in_seconds))
             now = datetime.now() + timedelta(seconds=2)
-            self._app.run_every(self._run_every_handler, now, interval_in_seconds)
+            self.app.run_every(self._run_every_handler, now, interval_in_seconds)
         elif self.config("time") is not None:
             time = datetime.strptime(self.config("time"), '%H:%M:%S').time()
-            self._app.debug('Scheduled time trigger to run at {}'.format(time))
-            self._app.run_daily(self._run_every_handler, time)
+            self.app.debug('Scheduled time trigger to run at {}'.format(time))
+            self.app.run_daily(self._run_every_handler, time)
 
     def _run_every_handler(self, time=None, **kwargs):
         self._callback(TriggerInfo("time", {
@@ -139,9 +138,9 @@ class EventTrigger(Trigger):
 
         if entity_ids:
             for entity_id in entity_ids:
-                self._app.listen_event(self._event_change_handler, event_type, entity_id=entity_id)
+                self.app.listen_event(self._event_change_handler, event_type, entity_id=entity_id)
         else:
-            self._app.listen_event(self._event_change_handler, event_type)
+            self.app.listen_event(self._event_change_handler, event_type)
 
     def _event_change_handler(self, event_name, data, kwargs):
         for data_key, data_value in self._event_data.items():
@@ -164,10 +163,10 @@ class SunriseTrigger(Trigger):
         super().__init__(app, trigger_config, callback)
 
         offset = self.config("offset", 0)
-        self._app.run_at_sunrise(self._run_at_sunrise_handler, offset=offset)
+        self.app.run_at_sunrise(self._run_at_sunrise_handler, offset=offset)
 
     def _run_at_sunrise_handler(self, kwargs):
-        self._app.log(kwargs)
+        self.app.log(kwargs)
         self._callback(TriggerInfo("sunrise", {
         }))
 
@@ -177,10 +176,10 @@ class SunsetTrigger(Trigger):
         super().__init__(app, trigger_config, callback)
 
         offset = self.config("offset", 0)
-        self._app.run_at_sunset(self._run_at_sunset_handler, offset=offset)
+        self.app.run_at_sunset(self._run_at_sunset_handler, offset=offset)
 
     def _run_at_sunset_handler(self, kwargs):
-        self._app.log(kwargs)
+        self.app.log(kwargs)
         self._callback(TriggerInfo("sunset", {
         }))
 
@@ -189,7 +188,7 @@ class ActionTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        self._app.listen_event(self._event_change_handler, 'ios.action_fired')
+        self.app.listen_event(self._event_change_handler, 'ios.action_fired')
         self._target_name = self.config('action_name')
 
     def _event_change_handler(self, event_name, data, kwargs):

@@ -48,8 +48,7 @@ def _check(app, config):
         app.set_mode_value(mode_entity_id, 'Dark')
         return
 
-    light_sensor_entity = app.get_state(config.get(LIGHT_SENSOR_ENTITY_ID),
-                                        attribute='all')
+    light_sensor_entity = app.get_state(config.get(LIGHT_SENSOR_ENTITY_ID), attribute='all')
 
     if light_sensor_entity is None:
         app.error('Unable to get light_sensor_entity={}'.format(config.get(LIGHT_SENSOR_ENTITY_ID)))

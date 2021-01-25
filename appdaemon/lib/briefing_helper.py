@@ -76,8 +76,7 @@ class CommuteTimeBriefingProvider(BriefingProvider):
         return self.app.now_is_between(self.start_time, self.end_time)
 
     def briefing(self, context):
-        commute_time_monitor: CommuteTimeMonitor = self._app.get_app(
-            'commute_time_monitor')
+        commute_time_monitor: CommuteTimeMonitor = self.app.get_app('commute_time_monitor')
         departure_time = datetime.now() + timedelta(minutes=10)
         routes = commute_time_monitor.get_routes(departure_time)
 

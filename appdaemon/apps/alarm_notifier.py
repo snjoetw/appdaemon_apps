@@ -1,6 +1,6 @@
 from base_automation import BaseAutomation
 from lib.presence_helper import PRESENCE_MODE_NO_ONE_IS_HOME
-from notifier import NotifierType, Message
+from notifier import NotifierType, Message, Notifier
 
 
 class AlarmNotifier(BaseAutomation):
@@ -18,7 +18,7 @@ class AlarmNotifier(BaseAutomation):
         setting = self._entity_settings.get(trigger_entity_id, {}).get('trigger_entity_id', {})
         camera_entity_id = setting.get('camera_entity_id')
 
-        notifier = self._app.get_app('notifier')
+        notifier: Notifier = self.get_app('notifier')
         notifier.notify(Message(notifier_types, 'all', title, message, camera_entity_id, {
             NotifierType.IOS.value: self.config(NotifierType.IOS.value, {})
         }))

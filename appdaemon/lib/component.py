@@ -35,9 +35,6 @@ class Component:
     def config_wrapper(self):
         return self._config_wrapper
 
-    def config(self, key, default=None):
-        return self.config_wrapper.value(key, default)
-
     def now_is_between(self, start_time_str, end_time_str, name=None):
         return self.app.now_is_between(start_time_str, end_time_str, name)
 

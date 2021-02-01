@@ -28,7 +28,7 @@ class UpdateAction(Action):
         super().__init__(app, action_config)
 
         self.person_entity_ids = self.config_wrapper.list('person_entity_id', None)
-        self.presence_mode_entity_id = self.config('presence_mode_entity_id')
+        self.presence_mode_entity_id = self.config_wrapper.value('presence_mode_entity_id', None)
 
     def do_action(self, trigger_info):
         self.debug('About to determine presence mode for {}'.format(

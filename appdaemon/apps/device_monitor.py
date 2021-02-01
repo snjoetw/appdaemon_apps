@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
-
 from enum import Enum
+from typing import List
 
 from configurable_automation import ConfigurableAutomation
 from lib.actions import Action
@@ -9,6 +9,48 @@ from lib.component import Component
 from lib.helper import to_float, to_datetime
 
 CHECKER_RESULT_CACHE = {}
+
+
+class Checker(Component):
+
+    def __init__(self, app, config):
+        super().__init__(app, config)
+
+        self._app = app
+        self._config = config
+
+    def check(self):
+        raise NotImplementedError()
+
+
+class DeviceResult:
+    def __init__(self, entity_id, result_type, metadata={}):
+        self._entity_id = entity_id
+        self._result_type = result_type
+        self._metadata = metadata
+
+    @property
+    def result_type(self):
+        return self._result_type
+
+    @property
+    def is_ok(self):
+        return self.result_type == ResultType.OK or self.result_type == ResultType.IGNORE
+
+    @property
+    def entity_id(self):
+        return self._entity_id
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    def __repr__(self):
+        return '{}(result_type={}, is_ok={}, entity_id={})'.format(
+            self.__class__.__name__,
+            self.result_type,
+            self.is_ok,
+            self.entity_id)
 
 
 class DeviceMonitor(ConfigurableAutomation):
@@ -29,6 +71,8 @@ class DeviceMonitor(ConfigurableAutomation):
 
 
 class WrapperAction(Action):
+    checkers: List[Checker]
+
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
@@ -53,8 +97,8 @@ class WrapperAction(Action):
                         'notification_id': notification_id,
                     })
 
-    def _update_result_cache(self, checker, checker_result):
-        checker_type = checker.config('type')
+    def _update_result_cache(self, checker: Checker, checker_result: DeviceResult):
+        checker_type = checker.config_wrapper.value('type')
         CHECKER_RESULT_CACHE[checker_type] = checker_result
 
 
@@ -72,18 +116,6 @@ def create_checker(app, config):
         return PingChecker(app, config)
 
     raise ValueError('Invalid action config: {}'.format(config))
-
-
-class Checker(Component):
-
-    def __init__(self, app, config):
-        super().__init__(app, config)
-
-        self._app = app
-        self._config = config
-
-    def check(self):
-        raise NotImplementedError()
 
 
 class EntityNameFilteringChecker(Checker):
@@ -358,33 +390,3 @@ class CheckerResult:
     @property
     def error_message(self):
         return self._error_message
-
-
-class DeviceResult:
-    def __init__(self, entity_id, result_type, metadata={}):
-        self._entity_id = entity_id
-        self._result_type = result_type
-        self._metadata = metadata
-
-    @property
-    def result_type(self):
-        return self._result_type
-
-    @property
-    def is_ok(self):
-        return self.result_type == ResultType.OK or self.result_type == ResultType.IGNORE
-
-    @property
-    def entity_id(self):
-        return self._entity_id
-
-    @property
-    def metadata(self):
-        return self._metadata
-
-    def __repr__(self):
-        return '{}(result_type={}, is_ok={}, entity_id={})'.format(
-            self.__class__.__name__,
-            self.result_type,
-            self.is_ok,
-            self.entity_id)

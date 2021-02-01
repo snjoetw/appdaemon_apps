@@ -19,8 +19,8 @@ class MediaPlayer(Component):
         self.media_manager = media_manager
         self.player_entity_ids = self.config_wrapper.list('player_entity_id', None)
         self.motion_entity_ids = self.config_wrapper.list('motion_entity_id', None)
-        self.volumes = self.config('volumes')
-        self.targeted_only = self.config('targeted_only', False)
+        self.volumes = self.config_wrapper.value('volumes', None)
+        self.targeted_only = self.config_wrapper.value('targeted_only', False)
 
         if not self.player_entity_ids:
             raise ValueError('Missing player_entity_ids')
@@ -83,7 +83,7 @@ class GoogleMediaPlayer(MediaPlayer):
 
         self.empty_media_url = '{}{}'.format(media_manager.api_base_url, LIBRARY_URL_PATH.format('empty.mp3'))
 
-        if self.config('keep_alive', False):
+        if self.config_wrapper.value('keep_alive', False):
             now = datetime.now() + timedelta(seconds=2)
             self.app.run_every(self._run_every_handler, now, 240)
 
@@ -413,9 +413,9 @@ class MediaManager(Component):
     def __init__(self, app, config):
         super().__init__(app, config)
 
-        self.api_base_url = self.config('api_base_url')
+        self.api_base_url = self.config_wrapper.value('api_base_url', None)
         self.api_url = '{}/api/tts_get_url'.format(self.api_base_url)
-        self.api_token = self.config('api_token')
+        self.api_token = self.config_wrapper.value('api_token', None)
         self.cache_file_path = LOCAL_SPEECH_BASE_FILEPATH
         self.cache = self._init_file_cache()
 

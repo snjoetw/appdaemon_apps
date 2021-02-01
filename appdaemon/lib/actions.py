@@ -202,7 +202,7 @@ class DelayableAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        delay = self.config("delay", 0)
+        delay = self.config_wrapper.value("delay", 0)
         if delay > 0:
             self.schedule_job(delay, trigger_info=trigger_info)
             return
@@ -224,8 +224,8 @@ class RepeatableAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        repeat = self.config("repeat", 0)
-        delay = self.config("delay", repeat)
+        repeat = self.config_wrapper.value("repeat", 0)
+        delay = self.config_wrapper.value("delay", repeat)
 
         if repeat > 0:
             start_at = datetime.now() + timedelta(seconds=delay)
@@ -246,8 +246,8 @@ class NotifiableAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        notify_target = self.config("notify_target")
-        notify_message = self.config("notify_message")
+        notify_target = self.config_wrapper.value("notify_target", None)
+        notify_message = self.config_wrapper.value("notify_message", None)
 
         if notify_target and notify_message:
             notify(self.app, notify_target, notify_message)
@@ -290,7 +290,7 @@ class TurnOnAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_ids = figure_light_settings(self.config('entity_ids'))
+        entity_ids = figure_light_settings(self.config_wrapper.value('entity_ids', None))
 
         cancel_job(self.app, trigger_info)
 
@@ -338,7 +338,7 @@ class TurnOffAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_ids = figure_light_settings(self.config('entity_ids'))
+        entity_ids = figure_light_settings(self.config_wrapper.value('entity_ids', None))
         if self.should_dim_lights(entity_ids):
             self.dim_lights(entity_ids)
 
@@ -350,7 +350,7 @@ class TurnOffAction(Action):
         })
 
     def turn_off_lights_job_runner(self, kwargs={}):
-        entity_ids = figure_light_settings(self.config('entity_ids'))
+        entity_ids = figure_light_settings(self.config_wrapper.value('entity_ids', None))
         trigger_info = kwargs.get('trigger_info')
         self.debug('About to run TurnOffAction: {}'.format(entity_ids))
 
@@ -368,7 +368,7 @@ class TurnOffAction(Action):
                 turn_off_entity(self.app, entity_id, config)
 
     def should_dim_lights(self, entity_ids):
-        if not self.config('dim_light_before_turn_off', True):
+        if not self.config_wrapper.value('dim_light_before_turn_off', True):
             return False
 
         for entity_id in entity_ids.keys():
@@ -402,7 +402,7 @@ class ToggleAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config("entity_id")
+        entity_id = self.config_wrapper.value("entity_id", None)
         toggle_entity(self.app, entity_id)
 
 
@@ -412,8 +412,8 @@ class SetCoverPositionAction(Action):
 
     def do_action(self, trigger_info):
         entity_ids = self.config_wrapper.list("entity_id", [])
-        position = self.config("position")
-        position_difference_threshold = self.config("position_difference_threshold", 3)
+        position = self.config_wrapper.value("position", None)
+        position_difference_threshold = self.config_wrapper.value("position_difference_threshold", 3)
 
         for entity_id in entity_ids:
             set_cover_position(self.app, entity_id, position, position_difference_threshold)
@@ -424,8 +424,8 @@ class LockAction(NotifiableAction):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config("entity_id")
-        force_lock = self.config("force_lock", False)
+        entity_id = self.config_wrapper.value("entity_id", None)
+        force_lock = self.config_wrapper.value("force_lock", False)
 
         if self.get_state(entity_id) == 'locked' and not force_lock:
             return
@@ -440,7 +440,7 @@ class UnlockAction(NotifiableAction):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config("entity_id")
+        entity_id = self.config_wrapper.value("entity_id", None)
         self.call_service("lock/unlock", entity_id=entity_id)
 
         super().do_action(trigger_info)
@@ -461,10 +461,10 @@ class TurnOnMediaPLayerAction(Action):
 
     def do_action(self, trigger_info):
         entity_ids = self.config_wrapper.list('entity_id', [])
-        volume = self.config("volume")
-        source = self.config("source")
-        shuffle = self.config("shuffle", False)
-        repeat = self.config("repeat", "all")
+        volume = self.config_wrapper.value("volume", None)
+        source = self.config_wrapper.value("source", None)
+        shuffle = self.config_wrapper.value("shuffle", False)
+        repeat = self.config_wrapper.value("repeat", "all")
 
         self.call_service("media_player/turn_on", entity_id=entity_ids)
 
@@ -485,8 +485,8 @@ class SelectInputSelectOptionAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config("entity_id")
-        option = self.config("option")
+        entity_id = self.config_wrapper.value("entity_id", None)
+        option = self.config_wrapper.value("option", None)
 
         current_option = self.get_state(entity_id)
         if current_option != option:
@@ -516,7 +516,7 @@ class RemoveInputSelectOptionAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config("entity_id")
+        entity_id = self.config_wrapper.value("entity_id", None)
         option = self.config_wrapper.value("option")
         options = self.get_state(entity_id, attribute='options')
 
@@ -534,8 +534,8 @@ class SetInputSelectOptionsAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config("entity_id")
-        options = self.config("options")
+        entity_id = self.config_wrapper.value("entity_id", None)
+        options = self.config_wrapper.value("options", None)
 
         self.call_service("input_select/set_options", **{
             'entity_id': entity_id,
@@ -550,8 +550,8 @@ class SetValueAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config("entity_id")
-        new_value = self.config("value")
+        entity_id = self.config_wrapper.value("entity_id", None)
+        new_value = self.config_wrapper.value("value", None)
         current_value = self.get_state(entity_id)
 
         if current_value != new_value:
@@ -567,15 +567,16 @@ class NotifyAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        title = self.config("title")
-        message = self.config("message")
+        title = self.config_wrapper.value("title", None)
+        message = self.config_wrapper.value("message", None)
         notifier_types = [NotifierType(n) for n in self.config_wrapper.list('notifier')]
         recipients = self.config_wrapper.list('recipient')
-        camera_entity_id = self.config('camera_entity_id')
+        camera_entity_id = self.config_wrapper.value('camera_entity_id', None)
 
         notifier: Notifier = self.app.get_app('notifier')
+        default = {}
         notifier.notify(Message(notifier_types, recipients, title, message, camera_entity_id, {
-            NotifierType.IOS.value: self.config(NotifierType.IOS.value, {})
+            NotifierType.IOS.value: self.config_wrapper.value(NotifierType.IOS.value, default)
         }))
 
 
@@ -584,10 +585,10 @@ class AlarmNotifierAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        title = self.config("title")
-        message = self.config("message")
-        image_filename = self.config("image_filename")
-        trigger_entity_id = self.config("trigger_entity_id")
+        title = self.config_wrapper.value("title", None)
+        message = self.config_wrapper.value("message", None)
+        image_filename = self.config_wrapper.value("image_filename", None)
+        trigger_entity_id = self.config_wrapper.value("trigger_entity_id", None)
         notifier_types = [NotifierType(n) for n in self.config_wrapper.list('notifier')]
 
         notifier: AlarmNotifier = self.app.get_app('alarm_notifier')
@@ -599,7 +600,7 @@ class CancelJobAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        cancel_all = self.config('cancel_all', False)
+        cancel_all = self.config_wrapper.value('cancel_all', False)
 
         if cancel_all:
             cancel_job(self.app)
@@ -612,7 +613,8 @@ class PersistentNotificationAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        data = self.config("data", {})
+        default = {}
+        data = self.config_wrapper.value("data", default)
         data['notification_id'] = "pn_{}".format(time.time())
 
         self.call_service("persistent_notification/create", **data)
@@ -623,8 +625,9 @@ class ServiceAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        service = self.config("service")
-        data = self.config("data", {})
+        service = self.config_wrapper.value("service", None)
+        default = {}
+        data = self.config_wrapper.value("data", default)
 
         self.call_service(service, **data)
 
@@ -634,8 +637,8 @@ class SetFanMinOnTimeAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config('entity_id')
-        fan_min_on_time = self.config('fan_min_on_time')
+        entity_id = self.config_wrapper.value('entity_id', None)
+        fan_min_on_time = self.config_wrapper.value('fan_min_on_time', None)
 
         current_fan_min_on_time = self.get_state(entity_id, attribute='fan_min_on_time')
 
@@ -651,10 +654,10 @@ class AnnouncementAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        message = self.config("tts_message")
+        message = self.config_wrapper.value("tts_message", None)
         player_entity_id = self.config_wrapper.list('player_entity_id', [])
-        use_cache = self.config('use_cache', True)
-        prelude_name = self.config('prelude_name')
+        use_cache = self.config_wrapper.value('use_cache', True)
+        prelude_name = self.config_wrapper.value('prelude_name', None)
 
         announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
         announcer.announce(message, use_cache=use_cache, player_entity_ids=player_entity_id, prelude_name=prelude_name)
@@ -665,8 +668,8 @@ class MotionAnnouncementAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        message_entity_id = self.config("message_entity_id")
-        message_from_entity_id = self.config("message_from_entity_id")
+        message_entity_id = self.config_wrapper.value("message_entity_id", None)
+        message_from_entity_id = self.config_wrapper.value("message_from_entity_id", None)
 
         triggered_entity_id = trigger_info.data.get('entity_id')
         message = self.get_state(message_entity_id)
@@ -686,7 +689,7 @@ class DebugAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        template_value = self.config('template')
+        template_value = self.config_wrapper.value('template', None)
         self.log("Debugging, trigger_info={}, template_value={}".format(trigger_info, template_value))
 
 
@@ -695,8 +698,8 @@ class CameraSnapshotAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.config("entity_id")
-        filename = self.config("filename")
+        entity_id = self.config_wrapper.value("entity_id", None)
+        filename = self.config_wrapper.value("filename", None)
         if not filename.startswith('/'):
             filename = '/config/www/snapshot/{}'.format(filename)
 
@@ -748,7 +751,7 @@ class SetStateAction(Action):
 
     def do_action(self, trigger_info):
         entity_ids = self.config_wrapper.list('entity_id')
-        state = self.config('state')
+        state = self.config_wrapper.value('state', None)
 
         for entity_id in entity_ids:
             self.set_state(entity_id, state=state)

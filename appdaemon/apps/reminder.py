@@ -46,7 +46,7 @@ class ReminderAction(Action):
         self.trigger_method = trigger_method
         self.providers = [get_reminder_provider(app, p) for p in self.config_wrapper.list('providers', None)]
         self.provider_history = {}
-        self.presence_mode_entity_id = self.config('presence_mode_entity_id')
+        self.presence_mode_entity_id = self.config_wrapper.value('presence_mode_entity_id', None)
 
     def do_action(self, trigger_info):
         if self.trigger_method == TIME_TRIGGER_METHOD and trigger_info.trigger_time.minute % 5:

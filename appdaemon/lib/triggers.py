@@ -66,23 +66,23 @@ class StateTrigger(Trigger):
 
         settings = {}
 
-        from_state = self.config("from")
+        from_state = self.config_wrapper.value("from", None)
         if from_state is not None:
             settings["old"] = from_state
 
-        to_state = self.config("to")
+        to_state = self.config_wrapper.value("to", None)
         if to_state is not None:
             settings["new"] = to_state
 
-        duration = self.config("duration")
+        duration = self.config_wrapper.value("duration", None)
         if duration is not None:
             settings["duration"] = duration
 
-        immediate = self.config("immediate")
+        immediate = self.config_wrapper.value("immediate", None)
         if immediate is not None:
             settings["immediate"] = immediate
 
-        attribute = self.config("attribute")
+        attribute = self.config_wrapper.value("attribute", None)
         if attribute is not None:
             settings["attribute"] = attribute
 
@@ -109,15 +109,15 @@ class TimeTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        minutes = self.config("minutes", 0)
-        seconds = self.config("seconds", 0)
+        minutes = self.config_wrapper.value("minutes", 0)
+        seconds = self.config_wrapper.value("seconds", 0)
         interval_in_seconds = minutes * 60 + seconds
         if interval_in_seconds > 0:
             self.app.debug('Scheduled time trigger to run every {} sec'.format(interval_in_seconds))
             now = datetime.now() + timedelta(seconds=2)
             self.app.run_every(self._run_every_handler, now, interval_in_seconds)
-        elif self.config("time") is not None:
-            time = datetime.strptime(self.config("time"), '%H:%M:%S').time()
+        elif self.config_wrapper.value("time", None) is not None:
+            time = datetime.strptime(self.config_wrapper.value("time", None), '%H:%M:%S').time()
             self.app.debug('Scheduled time trigger to run at {}'.format(time))
             self.app.run_daily(self._run_every_handler, time)
 
@@ -131,9 +131,10 @@ class EventTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        self._event_data = self.config("event_data", {})
+        default = {}
+        self._event_data = self.config_wrapper.value("event_data", default)
 
-        event_type = self.config("event_type")
+        event_type = self.config_wrapper.value("event_type", None)
         entity_ids = self.config_wrapper.list('entity_ids', [])
 
         if entity_ids:
@@ -162,7 +163,7 @@ class SunriseTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        offset = self.config("offset", 0)
+        offset = self.config_wrapper.value("offset", 0)
         self.app.run_at_sunrise(self._run_at_sunrise_handler, offset=offset)
 
     def _run_at_sunrise_handler(self, kwargs):
@@ -175,7 +176,7 @@ class SunsetTrigger(Trigger):
     def __init__(self, app, trigger_config, callback):
         super().__init__(app, trigger_config, callback)
 
-        offset = self.config("offset", 0)
+        offset = self.config_wrapper.value("offset", 0)
         self.app.run_at_sunset(self._run_at_sunset_handler, offset=offset)
 
     def _run_at_sunset_handler(self, kwargs):
@@ -189,7 +190,7 @@ class ActionTrigger(Trigger):
         super().__init__(app, trigger_config, callback)
 
         self.app.listen_event(self._event_change_handler, 'ios.action_fired')
-        self._target_name = self.config('action_name')
+        self._target_name = self.config_wrapper.value('action_name', None)
 
     def _event_change_handler(self, event_name, data, kwargs):
         action_name = data.get('actionName')

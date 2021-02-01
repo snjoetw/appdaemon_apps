@@ -64,9 +64,9 @@ class CommuteTimeBriefingProvider(BriefingProvider):
     def __init__(self, app, briefing_config):
         super().__init__(app, briefing_config)
 
-        self.workday_entity_id = self.config('workday_entity_id')
-        self.start_time = self.config('start_time')
-        self.end_time = self.config('end_time')
+        self.workday_entity_id = self.config_wrapper.value('workday_entity_id', None)
+        self.start_time = self.config_wrapper.value('start_time', None)
+        self.end_time = self.config_wrapper.value('end_time', None)
 
     def can_brief(self, context):
         return self.get_state(self.workday_entity_id) == 'on' \
@@ -140,11 +140,11 @@ class CalendarBriefingProvider(BriefingProvider):
 
         self.events_fetcher = CalendarEventFetcher(
             self,
-            self.config('api_base_url'),
-            self.config('api_token'),
+            self.config_wrapper.value('api_base_url', None),
+            self.config_wrapper.value('api_token', None),
         )
 
-        self.calendar_entity_id = self.config('calendar_entity_id')
+        self.calendar_entity_id = self.config_wrapper.value('calendar_entity_id', None)
 
     def can_brief(self, context):
         return True
@@ -231,12 +231,12 @@ class ReminderBriefingProvider(BriefingProvider):
 
         self.events_fetcher = CalendarEventFetcher(
             self,
-            self.config('api_base_url'),
-            self.config('api_token'),
+            self.config_wrapper.value('api_base_url', None),
+            self.config_wrapper.value('api_token', None),
         )
 
-        self.waste_collection_calendar_entity_id = self.config(
-            'waste_collection_calendar_entity_id')
+        self.waste_collection_calendar_entity_id = self.config_wrapper.value('waste_collection_calendar_entity_id',
+                                                                             None)
 
     def can_brief(self, context):
         return True
@@ -277,9 +277,9 @@ class StockPriceProvider(BriefingProvider):
     def __init__(self, app, briefing_config):
         super().__init__(app, briefing_config)
 
-        self.quote_fetcher = StockQuoteFetcher(app, self.config('api_key'))
+        self.quote_fetcher = StockQuoteFetcher(app, self.config_wrapper.value('api_key', None))
         self.stock_symbols = self.config_wrapper.list('stock_symbols')
-        self.workday_entity_id = self.config('workday_entity_id')
+        self.workday_entity_id = self.config_wrapper.value('workday_entity_id', None)
 
     def can_brief(self, context):
         return self.get_state(self.workday_entity_id) == 'on'

@@ -269,6 +269,7 @@ briefer:
 
 
 reminder:
+  debug: true
   module: reminder
   class: Reminder
   presence_mode_entity_id: input_select.presence_mode
@@ -313,6 +314,75 @@ reminder:
       interval: 60
       trigger_method: motion
       bad_air_quality_mode_entity_id: input_boolean.is_bad_air_quality_mode
+
+    - provider: exceeds_threshold
+      interval: 30
+      trigger_method: motion
+      threshold: 800
+      reminder_text: 'CO2 level is high in {area_names}'
+      notify_settings:
+        message: '{{reminder_text}}'
+        recipient: all
+        notifier: ios
+        ios:
+          thread_id: Air Quality Monitor
+      settings:
+        - entity_id: sensor.airthings_kitchen_co2
+          name: Kitchen
+
+    - provider: exceeds_threshold
+      interval: 10
+      trigger_method: motion
+      threshold: 1000
+      reminder_text: 'Attention, CO2 level is really high in {area_names}'
+      notify_settings:
+        message: '{{reminder_text}}'
+        recipient: all
+        notifier: ios
+        ios:
+          thread_id: Air Quality Monitor
+      settings:
+        - entity_id: sensor.airthings_kitchen_co2
+          name: Kitchen
+
+    - provider: exceeds_threshold
+      interval: 30
+      trigger_method: motion
+      threshold: 250
+      reminder_text: 'Air quality is bad in {area_names}'
+      notify_settings:
+        message: '{{reminder_text}}'
+        recipient: all
+        notifier: ios
+        ios:
+          thread_id: Air Quality Monitor
+      settings:
+        - entity_id: sensor.airthings_kitchen_voc
+          name: Kitchen
+        - entity_id: sensor.airthings_lynns_room_voc
+          name: Lynn's Room
+        - entity_id: sensor.airthings_master_bedroom_voc
+          name: Master Bedroom
+
+    - provider: exceeds_threshold
+      interval: 10
+      trigger_method: motion
+      threshold: 2000
+      reminder_text: 'Attention, air quality is really bad in {area_names}'
+      notify_settings:
+        message: '{{reminder_text}}'
+        recipient: all
+        notifier: ios
+        ios:
+          thread_id: Air Quality Monitor
+      settings:
+        - entity_id: sensor.airthings_kitchen_voc
+          name: Kitchen
+        - entity_id: sensor.airthings_lynns_room_voc
+          name: Lynn's Room
+        - entity_id: sensor.airthings_master_bedroom_voc
+          name: Master Bedroom
+
 
     - provider: climate_away_mode
       interval: 60

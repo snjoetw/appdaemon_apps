@@ -74,6 +74,7 @@ shower_time_scene:
             Do you want to change music?
           ios:
             category: "shower_time_music"
+            thread_id: Shower Time Scene
 
 
 camping_time_scene:

@@ -26,44 +26,26 @@ master_bathroom_lighting:
 master_bathroom_shower_mode:
   module: automation
   class: Automation
+  variables:
+    shower_watt_threshold: 8.0
   triggers:
     - platform: state
       entity_id:
-        - sensor.zb_master_bathroom_humidity
-        - sensor.zb_master_bathroom_temperature
+        - sensor.template_shower_control_watts
   handlers:
     - constraints:
-        - platform: state
-          entity_id: sensor.zb_master_bathroom_humidity
-          state: ">=75"
-        - platform: state
-          entity_id: binary_sensor.trend_temp_rising_sensor_master_bathroom_temperature
-          state: "on"
+        - platform: triggered_state
+          to: '>={{shower_watt_threshold}}'
         - platform: state
           entity_id: input_select.master_bathroom_shower_mode
           state: Not Showering
       actions:
         - platform: select_input_select_option
           entity_id: input_select.master_bathroom_shower_mode
-          option: About to Shower
-    - constraints:
-        - platform: state
-          entity_id: sensor.zb_master_bathroom_humidity
-          state: ">=85"
-        - platform: state
-          entity_id: binary_sensor.trend_temp_rising_sensor_master_bathroom_temperature
-          state: "on"
-        - platform: state
-          entity_id: input_select.master_bathroom_shower_mode
-          state: About to Shower
-      actions:
-        - platform: select_input_select_option
-          entity_id: input_select.master_bathroom_shower_mode
           option: Showering
     - constraints:
-        - platform: state
-          entity_id: sensor.zb_master_bathroom_humidity
-          state: "<75"
+        - platform: triggered_state
+          to: '<{{shower_watt_threshold}}'
         - platform: state
           entity_id: input_select.master_bathroom_shower_mode
           state: Not Showering
@@ -83,33 +65,69 @@ master_bathroom_auto_fan:
   handlers:
     - constraints:
         - platform: triggered_state
-          to: About to Shower
-      actions:
-        - platform: turn_on
-          entity_ids:
-            - input_boolean.is_scene_shower_time
-    - constraints:
-        - platform: triggered_state
+          from: Not Showering
           to: Showering
       actions:
-        - platform: delay
-          delay: 1800
-          actions:
-            - platform: turn_on
-              entity_ids:
-                switch.zwave_master_bathroom_fan:
+        - platform: turn_on
+          entity_ids: input_boolean.is_scene_shower_time
     - constraints:
         - platform: triggered_state
+          from: Showering
           to: Not Showering
       actions:
         - platform: turn_off_media_player
           entity_id: media_player.master_bathroom
         - platform: delay
-          delay: 300
+          delay: 600
+          actions:
+            - platform: turn_on
+              entity_ids: switch.zwave_master_bathroom_fan
+        - platform: delay
+          delay: 1800
           actions:
             - platform: turn_off
-              entity_ids:
-                switch.zwave_master_bathroom_fan:
+              entity_ids: switch.zwave_master_bathroom_fan
+
+
+master_bathroom_window:
+  debug: true
+  module: automation
+  class: Automation
+  variables:
+    message: "Master bathroom window is still open."
+  triggers:
+    - platform: state
+      entity_id:
+        - sensor.zwave_backyard_temperature
+        - binary_sensor.mqtt_master_bathroom_window
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.mqtt_master_bathroom_window
+          state: 'on'
+        - platform: state
+          entity_id: sensor.zwave_backyard_temperature
+          state: '<10'
+        - platform: has_scheduled_job
+          negate: true
+      actions:
+        - platform: repeat
+          repeat: 1800
+          delay: 1800
+          actions:
+            - platform: announcement
+              tts_message: "{{ message }}"
+            - platform: notify
+              message: "{{ message }}"
+              recipient: all
+              notifier: ios
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.mqtt_master_bathroom_window
+          state: 'off'
+        - platform: has_scheduled_job
+      actions:
+        - platform: cancel_job
 
 
 walkin_closet_lighting:

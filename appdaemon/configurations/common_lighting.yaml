@@ -43,76 +43,58 @@ lighting_mode_monitor:
         10: Not Dark
         0: Dark
     # Family Room
-    - light_sensor_entity_id: sensor.zb_family_room_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_family_room
       participate_sleeping_time: false
-      #      exclude_entity_ids:
-      #        - switch.wink_family_room_light
-      #        - switch.wink_family_room_tv_light
       thresholds:
-        18: Not Dark
+        750: Not Dark
         0: Dark
-    - light_sensor_entity_id: sensor.zb_office_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_office
       participate_sleeping_time: false
-      #      exclude_entity_ids:
-      #        - light.xiaomi_office_light
       thresholds:
-        18000: Not Dark
+        750: Not Dark
         0: Dark
-    - light_sensor_entity_id: sensor.zb_hallway_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_hallway
       participate_sleeping_time: false
-      exclude_entity_ids:
-        - light.zwave_hallway_light
       thresholds:
-        35: Not Dark
+        900: Not Dark
         0: Dark
-    - light_sensor_entity_id: sensor.zb_kitchen_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_kitchen
       participate_sleeping_time: true
-      exclude_entity_ids:
       thresholds:
-        35: Not Dark
+        750: Not Dark
         0: Dark
     # Living Room
-    - light_sensor_entity_id: sensor.zb_living_room_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_living_room
       participate_sleeping_time: false
       thresholds:
-        30: Not Dark
+        750: Not Dark
         0: Dark
-    - light_sensor_entity_id: sensor.zb_stairway_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_stairway
-      exclude_entity_ids:
-        - light.zwave_stairway_light
-        - light.hue_upstairs_hallway_light
       thresholds:
-        35: Not Dark
+        750: Not Dark
         0: Dark
-    - light_sensor_entity_id: sensor.zb_stairway_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_upstairs
       participate_midnight_time: true
-      exclude_entity_ids:
-        - light.zwave_stairway_light
-        - light.hue_upstairs_hallway_light
       thresholds:
-        500: Not Dark
+        750: Not Dark
         0: Dark
-    - light_sensor_entity_id: sensor.zb_master_bathroom_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_master_bathroom
       participate_midnight_time: true
-      exclude_entity_ids:
-        - switch.zwave_master_bathroom_ceiling_light
-        - light.zwave_master_bathroom_light
       thresholds:
-        145: Not Dark
+        750: Not Dark
         0: Dark
-    - light_sensor_entity_id: sensor.zb_master_bedroom_motion_illuminance
+    - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_master_bedroom
-      exclude_entity_ids:
       thresholds:
-        100: Not Dark
+        750: Not Dark
         0: Dark
 
 

@@ -23,6 +23,7 @@ var_upstairs_window_sensors: &var_upstairs_window_sensors
   - binary_sensor.mqtt_annes_room_window
   - binary_sensor.mqtt_dressing_room_window
   - binary_sensor.mqtt_lynns_room_window
+  - binary_sensor.mqtt_master_bathroom_window
 
 
 var_basement_window_sensors: &var_basement_window_sensors

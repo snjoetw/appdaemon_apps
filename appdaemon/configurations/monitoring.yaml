@@ -27,6 +27,8 @@ water_leak_detected:
               notifier: ios
               ios:
                 critical: true
+                thread_id: Water Leak Monitor
+
 
 mailbox_monitor:
   module: automation
@@ -73,6 +75,8 @@ mail_delivered_notifier:
             - platform: alarm_notifier
               message: "Mail was just delivered"
               image_filename: mailbox_notifier.jpg
+              ios:
+                thread_id: Mail Monitor
             - platform: announcement
               tts_message: "Mail was just delivered"
     - constraints:
@@ -113,6 +117,8 @@ package_delivered_notifier:
           recipient: all
           notifier: ios
           camera_entity_id: camera.front_door
+          ios:
+            thread_id: Mail Monitor
 
 
 

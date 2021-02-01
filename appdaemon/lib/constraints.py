@@ -1,7 +1,6 @@
+import calendar
 import operator
 from datetime import datetime, date
-
-import calendar
 
 from lib.component import Component
 from lib.helper import to_float, flatten_dict
@@ -32,6 +31,15 @@ def get_constraint(app, config):
         raise ValueError("Invalid constraint config: " + config)
 
 
+def get_operator_fn(op):
+    return {
+        '<': operator.lt,
+        '<=': operator.le,
+        '>': operator.gt,
+        '>=': operator.ge,
+    }[op]
+
+
 class Constraint(Component):
     def __init__(self, app, constraint_config):
         super().__init__(app, constraint_config)
@@ -39,13 +47,59 @@ class Constraint(Component):
     def check(self, trigger_info):
         raise NotImplementedError()
 
+    def _matches_value(self, expected, actual):
+        if isinstance(expected, list) and len(expected) == 1:
+            expected = expected[0]
+
+        if isinstance(expected, list):
+            matched = actual in expected
+            self.debug('Checking {} in {}? {}'.format(actual, expected, matched))
+            return matched
+
+        if not isinstance(expected, str):
+            matched = expected == actual
+            self.debug('Checking {} == {}? {}'.format(actual, expected, matched))
+            return matched
+
+        if not expected.startswith('<') and not expected.startswith('>'):
+            matched = expected == actual
+            self.debug('Checking {} == {}? {}'.format(actual, expected, matched))
+            return matched
+
+        if expected.startswith('<='):
+            return self._matches_numeric_value('<=', expected, actual)
+        elif expected.startswith('<'):
+            return self._matches_numeric_value('<', expected, actual)
+        elif expected.startswith('>='):
+            return self._matches_numeric_value('>=', expected, actual)
+        elif expected.startswith('>'):
+            return self._matches_numeric_value('>', expected, actual)
+
+        matched = expected == actual
+        self.debug('Fallback, checking {} == {}? {}'.format(actual, expected, matched))
+        return matched
+
+    def _matches_numeric_value(self, op, expected, actual):
+        expected = expected.replace(op, '')
+        expected = to_float(expected)
+        actual = to_float(actual)
+        operator_fn = get_operator_fn(op)
+
+        if actual is None:
+            self.debug('Checking {} {} {}? {}'.format(actual, op, expected, False))
+            return False
+
+        matched = operator_fn(actual, expected)
+        self.debug('Checking {} {} {}? {}'.format(actual, op, expected, matched))
+        return matched
+
 
 class StateConstraint(Constraint):
     def __init__(self, app, constraint_config):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        entity_ids = self.list_config('entity_id')
+        entity_ids = self.config_wrapper.list('entity_id')
         state = self.config('state')
         negate = self.config('negate', False)
         match_all = self.config('match_all', False)
@@ -55,7 +109,7 @@ class StateConstraint(Constraint):
     def _check_entity_state(self, entity_ids, target_state, negate, match_all, last_changed_seconds):
         for entity_id in entity_ids:
             current_state = self.get_state(entity_id)
-            condition = matches_value(target_state, current_state)
+            condition = self._matches_value(target_state, current_state)
 
             if negate is True:
                 condition = not condition
@@ -66,7 +120,7 @@ class StateConstraint(Constraint):
             if condition and last_changed_seconds is not None:
                 last_changed = self.get_state(entity_id, attribute='last_changed')
                 delta = datetime.now() - last_changed
-                condition = matches_value(last_changed_seconds, delta.total_seconds)
+                condition = self._matches_value(last_changed_seconds, delta.total_seconds)
 
             if not match_all and condition:
                 self.debug('state constraint matched, entity_id={} '
@@ -91,7 +145,7 @@ class TemplateConstraint(Constraint):
     def check(self, trigger_info):
         expected_value = self.config('expected_value')
         actual_value = self.config('template')
-        matched = matches_value(expected_value, actual_value)
+        matched = self._matches_value(expected_value, actual_value)
 
         self.debug('Evaluating template={} with \n expected_value={} and \n actual_value={}, \n matching={}'.format(
             self.config_wrapper.raw('template'),
@@ -112,20 +166,20 @@ class TriggeredStateConstraint(Constraint):
 
         triggered = trigger_info.data
 
-        entity_id = self.list_config('entity_id', [])
-        if entity_id and not matches_value(entity_id, triggered.get('entity_id')):
+        entity_id = self.config_wrapper.list('entity_id', [])
+        if entity_id and not self._matches_value(entity_id, triggered.get('entity_id')):
             return False
 
-        attribute = self.list_config('attribute', [])
-        if attribute and not matches_value(attribute, triggered.get('attribute')):
+        attribute = self.config_wrapper.list('attribute', [])
+        if attribute and not self._matches_value(attribute, triggered.get('attribute')):
             return False
 
-        from_state = self.list_config('from', [])
-        if from_state and not matches_value(from_state, triggered.get('from')):
+        from_state = self.config_wrapper.list('from', [])
+        if from_state and not self._matches_value(from_state, triggered.get('from')):
             return False
 
-        to_state = self.list_config('to', [])
-        if to_state and not matches_value(to_state, triggered.get('to')):
+        to_state = self.config_wrapper.list('to', [])
+        if to_state and not self._matches_value(to_state, triggered.get('to')):
             return False
 
         return True
@@ -141,11 +195,11 @@ class TriggeredEventConstraint(Constraint):
 
         event = trigger_info.data
 
-        entity_id = self.list_config('entity_id', [])
+        entity_id = self.config_wrapper.list('entity_id', [])
         if entity_id and event.get('entity_id') not in entity_id:
             return False
 
-        event_name = self.list_config('event_name', [])
+        event_name = self.config_wrapper.list('event_name', [])
         if event_name and event.get('event_name') not in event_name:
             return False
 
@@ -193,51 +247,12 @@ class AttributeConstraint(Constraint):
         value = self.config('value')
         negate = self.config('negate', False)
         current_value = self.get_state(entity_id, attribute=attribute)
-        condition = matches_value(value, current_value)
+        condition = self._matches_value(value, current_value)
 
         if negate is True:
             return not condition
 
         return condition
-
-
-def get_operator_fn(op):
-    return {
-        '<': operator.lt,
-        '<=': operator.le,
-        '>': operator.gt,
-        '>=': operator.ge,
-    }[op]
-
-
-def matches_value(expected, actual):
-    if isinstance(expected, list):
-        return actual in expected
-
-    if not isinstance(expected, str):
-        return expected == actual
-
-    if not expected.startswith('<') and not expected.startswith('>'):
-        return expected == actual
-
-    if expected.startswith('<='):
-        return matches_numeric_value('<=', expected, actual)
-    elif expected.startswith('<'):
-        return matches_numeric_value('<', expected, actual)
-    elif expected.startswith('>='):
-        return matches_numeric_value('>=', expected, actual)
-    elif expected.startswith('>'):
-        return matches_numeric_value('>', expected, actual)
-
-    return expected == actual
-
-
-def matches_numeric_value(op, expected, actual):
-    expected = expected.replace(op, '')
-    expected = to_float(expected)
-    actual = to_float(actual)
-    operator_fn = get_operator_fn(op)
-    return operator_fn(actual, expected)
 
 
 class TimeConstraint(Constraint):
@@ -279,7 +294,7 @@ class DayOfWeekConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        days = self.list_config('day', [])
+        days = self.config_wrapper.list('day', [])
         today = date.today()
         day = calendar.day_name[today.weekday()]
         return day in days

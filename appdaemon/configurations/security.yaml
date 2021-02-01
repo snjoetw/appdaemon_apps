@@ -121,7 +121,8 @@ door_beep:
           message: "⚠️ {{ message }}"
           notifier: ios
           ios:
-            thread_id: door_beep
+            thread_id: Door Monitor
+            url: /lovelace/view_alarm
 
     - constraints:
         - platform: triggered_state
@@ -143,7 +144,8 @@ door_beep:
           message: "⚠️ {{ message }}"
           notifier: ios
           ios:
-            thread_id: door_beep
+            thread_id: Window Monitor
+            url: /lovelace/view_alarm
 
     - constraints:
         - platform: triggered_state
@@ -165,7 +167,8 @@ door_beep:
           message: "⚠️ {{ message }}"
           notifier: ios
           ios:
-            thread_id: door_beep
+            thread_id: Garage Monitor
+            url: /lovelace/view_alarm
 
 
 ###############################################################################
@@ -205,7 +208,7 @@ alarm_monitor:
           ios:
             category: alarm_armed
             critical: true
-            thread_id: alarm_monitor
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
         - platform: service
           service: alarm_control_panel/alarm_trigger
@@ -229,7 +232,7 @@ alarm_monitor:
           ios:
             category: alarm_armed
             critical: true
-            thread_id: alarm_monitor
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
         - platform: service
           service: alarm_control_panel/alarm_trigger
@@ -309,7 +312,7 @@ alarm_state_announcer:
           notifier: ios
           ios:
             category: alarm_armed
-            thread_id: alarm_state_announcer
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
 
     - constraints:
@@ -326,7 +329,7 @@ alarm_state_announcer:
           notifier: ios
           ios:
             category: alarm_armed
-            thread_id: alarm_state_announcer
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
 
     - constraints:
@@ -343,7 +346,7 @@ alarm_state_announcer:
           notifier: ios
           ios:
             category: alarm_armed
-            thread_id: alarm_state_announcer
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
 
     - constraints:
@@ -359,13 +362,15 @@ alarm_state_announcer:
           notifier: ios
           ios:
             category: alarm_disarmed
-            thread_id: alarm_state_announcer
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
 
     - constraints:
         - platform: triggered_state
           entity_id: alarm_control_panel.home_alarm
-          from: ["armed_away", "armed_home"]
+          from:
+            - armed_away
+            - armed_home
           to: "pending"
       actions:
         - platform: announcement
@@ -376,7 +381,7 @@ alarm_state_announcer:
           notifier: ios
           ios:
             category: alarm_armed
-            thread_id: alarm_state_announcer
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
 
     - constraints:
@@ -397,7 +402,7 @@ alarm_state_announcer:
           ios:
             category: alarm_armed
             critical: true
-            thread_id: alarm_state_announcer
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
 
     - constraints:
@@ -414,7 +419,7 @@ alarm_state_announcer:
           ios:
             category: alarm_armed
             critical: true
-            thread_id: alarm_state_announcer
+            thread_id: Alarm Monitor
             url: /lovelace/view_alarm
 
 door_left_open:
@@ -440,12 +445,12 @@ door_left_open:
           actions:
             - platform: announcement
               tts_message: "{{ message }}"
-            - platform: notify
+            - platform: alarm_notifier
+              trigger_entity_id: "{{ trigger_info.data.entity_id }}"
               message: "⚠️ {{ message }}"
-              recipient: all
               notifier: ios
               ios:
-                thread_id: door_left_open
+                thread_id: Door Monitor
                 url: /lovelace/view_alarm
 
     - constraints:
@@ -482,13 +487,14 @@ window_left_open:
           actions:
             - platform: announcement
               tts_message: "{{ message }}"
-            - platform: notify
+            - platform: alarm_notifier
+              trigger_entity_id: "{{ trigger_info.data.entity_id }}"
               message: "⚠️ {{ message }}"
-              recipient: all
               notifier: ios
               ios:
-                thread_id: window_left_open
+                thread_id: Window Monitor
                 url: /lovelace/view_alarm
+
     - constraints:
         - platform: triggered_state
           to: "off"
@@ -519,12 +525,12 @@ garage_door_left_open:
           actions:
             - platform: announcement
               tts_message: "{{ message }}"
-            - platform: notify
+            - platform: alarm_notifier
+              trigger_entity_id: "{{ trigger_info.data.entity_id }}"
               message: "⚠️ {{ message }}"
-              recipient: all
               notifier: ios
               ios:
-                thread_id: garage_door_left_open
+                thread_id: Garage Monitor
                 url: /lovelace/view_alarm
 
     - constraints:
@@ -557,13 +563,14 @@ lock_left_unlocked:
           actions:
             - platform: announcement
               tts_message: "{{ message }}"
-            - platform: notify
+            - platform: alarm_notifier
+              trigger_entity_id: "{{ trigger_info.data.entity_id }}"
               message: "⚠️ {{ message }}"
-              recipient: all
               notifier: ios
               ios:
-                thread_id: lock_left_unlocked
+                thread_id: Door Monitor
                 url: /lovelace/view_alarm
+
     - constraints:
         - platform: triggered_state
           to: "locked"

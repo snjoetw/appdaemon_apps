@@ -9,9 +9,9 @@ class AlarmNotifier(BaseAutomation):
     _is_vacation_mode_entity_id: str
 
     def initialize(self):
-        self._is_vacation_mode_entity_id = self.args['is_vacation_mode_entity_id']
-        self._presence_mode_entity_id = self.args['presence_mode_entity_id']
-        self._entity_settings = self.args['entity_settings']
+        self._is_vacation_mode_entity_id = self.cfg.value('is_vacation_mode_entity_id')
+        self._presence_mode_entity_id = self.cfg.value('presence_mode_entity_id')
+        self._entity_settings = self.cfg.value('entity_settings')
 
     def notify(self, title, message, trigger_entity_id, notifiers=[], image_filename=None):
         notifier_types = self._figure_notifier_types(notifiers)

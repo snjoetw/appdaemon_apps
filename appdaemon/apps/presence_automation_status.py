@@ -17,7 +17,7 @@ class PresenceStatusAutomation(BaseAutomation):
         self._config = {}
         self._state_change_handles = {}
 
-        for attributes in self.args["device_entity_ids"]:
+        for attributes in self.cfg.value("device_entity_ids"):
             presence_entity_id = next(iter(attributes))
             config = attributes[presence_entity_id]
             status_entity_id = config["status_entity_id"]
@@ -29,8 +29,7 @@ class PresenceStatusAutomation(BaseAutomation):
                 'proximity_toward_count': 0
             }
 
-            self.listen_state(self.presence_change_handler,
-                              presence_entity_id)
+            self.listen_state(self.presence_change_handler, presence_entity_id)
 
             self.listen_state(self.proximity_change_handler,
                               proximity_entity_id,
@@ -49,19 +48,14 @@ class PresenceStatusAutomation(BaseAutomation):
         try:
             if old != HOME_ZONE and new == HOME_ZONE:
                 status_entity_id = self._config[entity]["status_entity_id"]
-                self.select_option(status_entity_id,
-                                   PERSON_STATUS_JUST_ARRIVED)
-                self.schedule_entity_state_changer(entity,
-                                                   PERSON_STATUS_JUST_ARRIVED)
-                self.log("{} just arrived home".format(
-                    self.friendly_name(status_entity_id)))
+                self.select_option(status_entity_id, PERSON_STATUS_JUST_ARRIVED)
+                self.schedule_entity_state_changer(entity, PERSON_STATUS_JUST_ARRIVED)
+                self.log("{} just arrived home".format(self.friendly_name(status_entity_id)))
             elif old == HOME_ZONE and new != HOME_ZONE:
                 status_entity_id = self._config[entity]["status_entity_id"]
                 self.select_option(status_entity_id, PERSON_STATUS_JUST_LEFT)
-                self.schedule_entity_state_changer(entity,
-                                                   PERSON_STATUS_JUST_LEFT)
-                self.log("{} just left home".format(
-                    self.friendly_name(status_entity_id)))
+                self.schedule_entity_state_changer(entity, PERSON_STATUS_JUST_LEFT)
+                self.log("{} just left home".format(self.friendly_name(status_entity_id)))
         finally:
             self._lock.release()
 
@@ -70,20 +64,15 @@ class PresenceStatusAutomation(BaseAutomation):
 
         try:
             device_entity_id = kwargs["device_entity_id"]
-            status_entity_id = self._config[device_entity_id][
-                "status_entity_id"]
+            status_entity_id = self._config[device_entity_id]["status_entity_id"]
             previous_state = kwargs["previous_state"]
 
             if previous_state == PERSON_STATUS_JUST_ARRIVED:
                 self.select_option(status_entity_id, PERSON_STATUS_HOME)
-                self.log(
-                    "{} is now home".format(
-                        self.friendly_name(status_entity_id)))
+                self.log("{} is now home".format(self.friendly_name(status_entity_id)))
             elif previous_state == PERSON_STATUS_JUST_LEFT:
                 self.select_option(status_entity_id, PERSON_STATUS_AWAY)
-                self.log(
-                    "{} is now away".format(
-                        self.friendly_name(status_entity_id)))
+                self.log("{} is now away".format(self.friendly_name(status_entity_id)))
         finally:
             self._lock.release()
 
@@ -107,8 +96,7 @@ class PresenceStatusAutomation(BaseAutomation):
             current_status = self.get_state(status_entity_id)
 
             if current_status != PERSON_STATUS_AWAY and current_status != PERSON_STATUS_ARRIVING:
-                self.log('Current status ({}) is not away or arriving'.format(
-                    current_status))
+                self.log('Current status ({}) is not away or arriving'.format(current_status))
 
                 config['proximity_toward_count'] = 0
                 return
@@ -132,14 +120,12 @@ class PresenceStatusAutomation(BaseAutomation):
 
         config['proximity_toward_count'] += 1
         if config['proximity_toward_count'] < 3:
-            self.log('Is heading home but not confident enough: {}'.format(
-                config['proximity_toward_count']))
+            self.log('Is heading home but not confident enough: {}'.format(config['proximity_toward_count']))
             return False
 
         distance = to_int(proximity.get('state'), -1)
         if distance <= 0 or distance >= 5:
-            self.log('Is heading home but still too far away: {}'.format(
-                distance))
+            self.log('Is heading home but still too far away: {}'.format(distance))
             return False
 
         self.log('Is heading home now')

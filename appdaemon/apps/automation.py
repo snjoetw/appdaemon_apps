@@ -24,7 +24,7 @@ class Automation(ConfigurableAutomation):
     def initialize(self):
         super().initialize()
 
-        for trigger_config in self.args["triggers"]:
+        for trigger_config in self.cfg.value("triggers"):
             # Initialize a trigger based on config
             trigger = get_trigger(self, trigger_config, self.trigger_handler)
             self.debug('Registered trigger={}'.format(trigger))
@@ -36,7 +36,7 @@ class Automation(ConfigurableAutomation):
         for constraint_config in constraint_configs:
             self._global_constraints.append(get_constraint(self, constraint_config))
 
-        for handler_config in self.args["handlers"]:
+        for handler_config in self.cfg.value("handlers"):
             handler = create_handler(self, handler_config)
             self._handlers.append(handler)
             self.debug('Registered handler={}'.format(handler))

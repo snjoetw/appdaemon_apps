@@ -25,19 +25,13 @@ def _do_action(app, action_type, light_entity_id):
 class VacantLightSimulator(BaseAutomation):
     def initialize(self):
         self._check_frequency = 60
-        self._configs = [SimulatorConfig(c) for c in self.args['simulators']]
+        self._configs = [SimulatorConfig(c) for c in self.cfg.value('simulators')]
 
-        presence_mode_entity_id = self.args['presence_mode_entity_id']
-        self.listen_state(self._presence_mode_change_handler,
-                          presence_mode_entity_id)
+        presence_mode_entity_id = self.cfg.value('presence_mode_entity_id')
+        self.listen_state(self._presence_mode_change_handler, presence_mode_entity_id)
 
         presence_mode = self.get_state(presence_mode_entity_id)
-        self._presence_mode_change_handler(
-            None,
-            None,
-            None,
-            presence_mode,
-            None)
+        self._presence_mode_change_handler(None, None, None, presence_mode, None)
 
     def _presence_mode_change_handler(self, entity, attribute, old, new,
                                       kwargs):
@@ -46,21 +40,15 @@ class VacantLightSimulator(BaseAutomation):
                 self.cancel_timer(handle)
             SCHEDULED_JOB_HANDLES.clear()
 
-            self.log('Presence mode is {}, simulators deactivated, {}'.format(
-                new,
-                SCHEDULED_JOB_HANDLES))
+            self.log('Presence mode is {}, simulators deactivated, {}'.format(new, SCHEDULED_JOB_HANDLES))
         else:
             if 'main' in SCHEDULED_JOB_HANDLES:
                 return
 
-            SCHEDULED_JOB_HANDLES['main'] = self.run_every(
-                self._run_every_handler,
-                datetime.now(),
-                self._check_frequency)
+            SCHEDULED_JOB_HANDLES['main'] = self.run_every(self._run_every_handler, datetime.now(),
+                                                           self._check_frequency)
 
-            self.log('Presence mode is {}, simulators activated, {}'.format(
-                new,
-                SCHEDULED_JOB_HANDLES))
+            self.log('Presence mode is {}, simulators activated, {}'.format(new, SCHEDULED_JOB_HANDLES))
 
     def _run_every_handler(self, time=None, **kwargs):
         for config in self._configs:
@@ -90,26 +78,19 @@ class VacantLightSimulator(BaseAutomation):
         return False
 
     def _schedule_jobs(self, config):
-        turn_on_delay = randint(config.turn_on_min_delay,
-                                config.turn_on_max_delay)
+        turn_on_delay = randint(config.turn_on_min_delay, config.turn_on_max_delay)
         self._schedule_job(config, ActionType.TURN_ON, turn_on_delay)
 
-        turn_off_delay = turn_on_delay + randint(config.turn_off_min_delay,
-                                                 config.turn_off_max_delay)
+        turn_off_delay = turn_on_delay + randint(config.turn_off_min_delay, config.turn_off_max_delay)
         self._schedule_job(config, ActionType.TURN_OFF, turn_off_delay)
 
     def _schedule_job(self, config, action_type, delay):
-        handle = self.run_in(self._job_runner,
-                             delay,
-                             action_type=action_type,
-                             config=config)
+        handle = self.run_in(self._job_runner, delay, action_type=action_type, config=config)
 
         job_name = self._job_name(config, action_type)
         SCHEDULED_JOB_HANDLES[job_name] = handle
 
-        self.log('Scheduled job to run in {} seconds, job_name={}'.format(
-            delay,
-            job_name))
+        self.log('Scheduled job to run in {} seconds, job_name={}'.format(delay, job_name))
 
     def _job_runner(self, kwargs={}):
         action_type = kwargs.get('action_type')

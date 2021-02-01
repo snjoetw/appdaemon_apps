@@ -228,8 +228,8 @@ class SonosAnnouncer(BaseAutomation):
     def initialize(self):
         self._announcer_lock = Lock()
         self._queue = []
-        self._sleeping_time_entity_id = self.args['sleeping_time_entity_id']
-        self._enabler_entity_id = self.args['enabler_entity_id']
+        self._sleeping_time_entity_id = self.cfg.value('sleeping_time_entity_id')
+        self._enabler_entity_id = self.cfg.value('enabler_entity_id')
 
         self._media_manager = MediaManager(self, self.args)
         self._players = [create_player(self, p, self._media_manager) for p in self.cfg.value('players')]

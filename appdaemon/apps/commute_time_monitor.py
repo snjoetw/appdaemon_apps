@@ -16,15 +16,15 @@ class CommuteTimeMonitor(BaseAutomation):
     def initialize(self):
         self._handles_by_state_entity_id = {}
         self._configs = []
-        self._api_key = self.args['google_travel_time_api_key']
+        self._api_key = self.cfg.value('google_travel_time_api_key')
         self._maps_api = googlemaps.Client(key=self._api_key)
         self._notify_entity_ids = self.cfg.list('notify_entity_id', [])
-        self._presence_entity_id = self.args['presence_status_entity_id']
-        self._start_time = self.args['start_time']
-        self._end_time = self.args['end_time']
+        self._presence_entity_id = self.cfg.value('presence_status_entity_id')
+        self._start_time = self.cfg.value('start_time')
+        self._end_time = self.cfg.value('end_time')
 
         self._route_configs = []
-        for route_config in self.args['routes']:
+        for route_config in self.cfg.value('routes'):
             self._route_configs.append(RouteConfig(route_config))
 
         # self.run_every(self.run_every_handler, datetime.now(), 900)

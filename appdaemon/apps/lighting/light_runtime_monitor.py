@@ -7,10 +7,10 @@ from lib.helper import to_datetime
 
 class LightRuntimeMonitor(BaseAutomation):
     def initialize(self):
-        self._thresholds = self.args['thresholds']
+        self._thresholds = self.cfg.value('thresholds')
 
         now = datetime.now() + timedelta(seconds=2)
-        self.run_every(self._run_every_handler, now, self.args['check_frequency'])
+        self.run_every(self._run_every_handler, now, self.cfg.value('check_frequency'))
 
     def _run_every_handler(self, time=None, **kwargs):
         checked_entities = []

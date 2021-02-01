@@ -109,7 +109,7 @@ def do_action(action, trigger_info):
 
     action.debug('About to do action: {}'.format(action))
     try:
-        action.config_wrapper.trigger_info = trigger_info
+        action.cfg.trigger_info = trigger_info
         return action.do_action(trigger_info)
     except Exception as e:
         action.error('Error when running actions in parallel: {}, action={}, trigger_info={}\n{}'.format(
@@ -118,4 +118,4 @@ def do_action(action, trigger_info):
             trigger_info,
             traceback.format_exc()))
 
-    action.config_wrapper.trigger_info = None
+    action.cfg.trigger_info = None

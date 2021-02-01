@@ -1,14 +1,22 @@
+from base_automation import BaseAutomation
 from lib.config import Config
 
 
 class Component:
+    _app: BaseAutomation
+    _config: Config
+
     def __init__(self, app, config):
         self._app = app
-        self._config_wrapper = Config(app, config)
+        self._config = Config(app, config)
 
     @property
     def app(self):
         return self._app
+
+    @property
+    def cfg(self):
+        return self._config
 
     def get_state(self, entity=None, **kwargs):
         return self.app.get_state(entity, **kwargs)
@@ -30,10 +38,6 @@ class Component:
 
     def error(self, msg):
         return self.app.error(msg)
-
-    @property
-    def config_wrapper(self):
-        return self._config_wrapper
 
     def now_is_between(self, start_time_str, end_time_str, name=None):
         return self.app.now_is_between(start_time_str, end_time_str, name)
@@ -63,4 +67,4 @@ class Component:
     def __repr__(self):
         return "{}(config={})".format(
             self.__class__.__name__,
-            self._config_wrapper)
+            self._config)

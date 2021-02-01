@@ -34,9 +34,9 @@ class ReminderProvider(Component):
     def __init__(self, app, reminder_config):
         super().__init__(app, reminder_config)
 
-        self._enabled = self.config_wrapper.value('enabled', True)
-        self._interval = self.config_wrapper.int('interval', 30)
-        self._trigger_method = self.config_wrapper.value('trigger_method', TIME_TRIGGER_METHOD)
+        self._enabled = self.cfg.value('enabled', True)
+        self._interval = self.cfg.int('interval', 30)
+        self._trigger_method = self.cfg.value('trigger_method', TIME_TRIGGER_METHOD)
 
     @property
     def interval(self):
@@ -93,15 +93,15 @@ class SchoolDropOffTimeReminder(ReminderProvider):
 
         self.events_fetcher = CalendarEventFetcher(
             self,
-            self.config_wrapper.value('calendar_api_base_url', None),
-            self.config_wrapper.value('calendar_api_token', None),
+            self.cfg.value('calendar_api_base_url', None),
+            self.cfg.value('calendar_api_token', None),
         )
 
-        self.calendar_entity_id = self.config_wrapper.value('calendar_entity_id', None)
-        self.start_time = self.config_wrapper.value('start_time', None)
-        self.end_time = self.config_wrapper.value('end_time', None)
-        self.school_time = self.config_wrapper.value('school_time', None)
-        self.workday_entity_id = self.config_wrapper.value('workday_entity_id', None)
+        self.calendar_entity_id = self.cfg.value('calendar_entity_id', None)
+        self.start_time = self.cfg.value('start_time', None)
+        self.end_time = self.cfg.value('end_time', None)
+        self.school_time = self.cfg.value('school_time', None)
+        self.workday_entity_id = self.cfg.value('workday_entity_id', None)
 
     def can_provide(self, context):
         if not super().can_provide(context):
@@ -152,15 +152,15 @@ class TravelTimeReminder(ReminderProvider):
 
         self.events_fetcher = CalendarEventFetcher(
             self,
-            self.config_wrapper.value('calendar_api_base_url', None),
-            self.config_wrapper.value('calendar_api_token', None),
+            self.cfg.value('calendar_api_base_url', None),
+            self.cfg.value('calendar_api_token', None),
         )
 
-        self.home_location = self.config_wrapper.value('map_home_location', None)
-        self.travel_time_fetcher = TravelTimeFetcher(self, self.config_wrapper.value('map_api_key', None))
+        self.home_location = self.cfg.value('map_home_location', None)
+        self.travel_time_fetcher = TravelTimeFetcher(self, self.cfg.value('map_api_key', None))
 
-        self.calendar_entity_id = self.config_wrapper.value('calendar_entity_id', None)
-        self.buffer_time = self.config_wrapper.int('buffer_time', None)
+        self.calendar_entity_id = self.cfg.value('calendar_entity_id', None)
+        self.buffer_time = self.cfg.int('buffer_time', None)
 
     def provide(self, context):
         event = self.events_fetcher.fetch_upcoming_event(
@@ -215,15 +215,15 @@ class TeslaBatteryReminder(ReminderProvider):
         super().__init__(app, reminder_config)
 
         # sensor.tesla_estimated_range
-        self.range_entity_id = self.config_wrapper.value('range_entity_id', None)
-        self.reserved_range = self.config_wrapper.value('reserved_range', 50)
+        self.range_entity_id = self.cfg.value('range_entity_id', None)
+        self.reserved_range = self.cfg.value('reserved_range', 50)
         self.events_fetcher = CalendarEventFetcher(
             self,
-            self.config_wrapper.value('calendar_api_base_url', None),
-            self.config_wrapper.value('calendar_api_token', None),
+            self.cfg.value('calendar_api_base_url', None),
+            self.cfg.value('calendar_api_token', None),
         )
-        self.home_location = self.config_wrapper.value('map_home_location', None)
-        self.travel_time_fetcher = TravelTimeFetcher(self, self.config_wrapper.value('map_api_key', None))
+        self.home_location = self.cfg.value('map_home_location', None)
+        self.travel_time_fetcher = TravelTimeFetcher(self, self.cfg.value('map_api_key', None))
 
     def provide(self, context):
         current_range = self.get_state(
@@ -260,8 +260,8 @@ class TeslaBatteryReminder(ReminderProvider):
 class DrinkWaterReminder(ReminderProvider):
     def __init__(self, app, reminder_config):
         super().__init__(app, reminder_config)
-        self.start_time = self.config_wrapper.value('start_time', None)
-        self.end_time = self.config_wrapper.value('end_time', None)
+        self.start_time = self.cfg.value('start_time', None)
+        self.end_time = self.cfg.value('end_time', None)
 
     def can_provide(self, context):
         if not super().can_provide(context):
@@ -279,9 +279,9 @@ class DrinkWaterReminder(ReminderProvider):
 class ExceedsThresholdMonitor(ReminderProvider):
     def __init__(self, app, reminder_config):
         super().__init__(app, reminder_config)
-        self.settings = self.config_wrapper.list('settings')
-        self.threshold = self.config_wrapper.int('threshold')
-        self.reminder_text = self.config_wrapper.value('reminder_text')
+        self.settings = self.cfg.list('settings')
+        self.threshold = self.cfg.int('threshold')
+        self.reminder_text = self.cfg.value('reminder_text')
 
     def provide(self, context):
         exceeds_thresholds = []
@@ -303,7 +303,7 @@ class ExceedsThresholdMonitor(ReminderProvider):
 class BadAirQualityReminder(ReminderProvider):
     def __init__(self, app, reminder_config):
         super().__init__(app, reminder_config)
-        self.bad_air_quality_mode_entity_id = self.config_wrapper.value('bad_air_quality_mode_entity_id', None)
+        self.bad_air_quality_mode_entity_id = self.cfg.value('bad_air_quality_mode_entity_id', None)
 
     def can_provide(self, context):
         if not super().can_provide(context):
@@ -328,7 +328,7 @@ class BadAirQualityReminder(ReminderProvider):
 class ClimateAwayModeReminder(ReminderProvider):
     def __init__(self, app, reminder_config):
         super().__init__(app, reminder_config)
-        self.climate_entity_id = self.config_wrapper.value('climate_entity_id', None)
+        self.climate_entity_id = self.cfg.value('climate_entity_id', None)
 
     def can_provide(self, context):
         if not super().can_provide(context):

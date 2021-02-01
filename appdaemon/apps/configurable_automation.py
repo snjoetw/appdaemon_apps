@@ -62,9 +62,9 @@ class Handler:
         self._app.debug('Checking handler={}'.format(self))
         if self._constraints:
             for constraint in self._constraints:
-                constraint.config_wrapper.trigger_info = trigger_info
+                constraint.cfg.trigger_info = trigger_info
                 matched = constraint.check(trigger_info)
-                constraint.config_wrapper.trigger_info = None
+                constraint.cfg.trigger_info = None
 
                 if not matched:
                     self._app.debug('Constraint does not match {}'.format(constraint))

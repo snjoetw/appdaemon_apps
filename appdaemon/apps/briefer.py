@@ -75,11 +75,11 @@ class BrieferAnnouncementAction(Action):
     def __init__(self, app, action_config, message_provider):
         super().__init__(app, action_config)
 
-        self.on_demand_entity_id = self.config_wrapper.value('on_demand_entity_id', None)
-        self.briefing_state_entity_id = self.config_wrapper.value('briefing_state_entity_id', None)
-        self.briefing_state_periods = self.config_wrapper.value('briefing_state_period', None)
+        self.on_demand_entity_id = self.cfg.value('on_demand_entity_id', None)
+        self.briefing_state_entity_id = self.cfg.value('briefing_state_entity_id', None)
+        self.briefing_state_periods = self.cfg.value('briefing_state_period', None)
         self.message_provider = message_provider
-        self.dry_run = self.config_wrapper.value('dry_run', False)
+        self.dry_run = self.cfg.value('dry_run', False)
 
     def do_action(self, trigger_info):
         should_brief = self.should_brief() or self.dry_run

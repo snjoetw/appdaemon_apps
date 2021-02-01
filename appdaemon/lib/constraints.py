@@ -99,11 +99,11 @@ class StateConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        entity_ids = self.config_wrapper.list('entity_id')
-        state = self.config('state')
-        negate = self.config('negate', False)
-        match_all = self.config('match_all', False)
-        last_changed_seconds = self.config('last_changed_seconds')
+        entity_ids = self.cfg.list('entity_id')
+        state = self.cfg.value('state', None)
+        negate = self.cfg.value('negate', False)
+        match_all = self.cfg.value('match_all', False)
+        last_changed_seconds = self.cfg.value('last_changed_seconds', None)
         return self._check_entity_state(entity_ids, state, negate, match_all, last_changed_seconds)
 
     def _check_entity_state(self, entity_ids, target_state, negate, match_all, last_changed_seconds):
@@ -143,12 +143,12 @@ class TemplateConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        expected_value = self.config('expected_value')
-        actual_value = self.config('template')
+        expected_value = self.cfg.value('expected_value', None)
+        actual_value = self.cfg.value('template', None)
         matched = self._matches_value(expected_value, actual_value)
 
         self.debug('Evaluating template={} with \n expected_value={} and \n actual_value={}, \n matching={}'.format(
-            self.config_wrapper.raw('template'),
+            self.cfg.raw('template'),
             expected_value,
             actual_value,
             matched))
@@ -166,19 +166,19 @@ class TriggeredStateConstraint(Constraint):
 
         triggered = trigger_info.data
 
-        entity_id = self.config_wrapper.list('entity_id', [])
+        entity_id = self.cfg.list('entity_id', [])
         if entity_id and not self._matches_value(entity_id, triggered.get('entity_id')):
             return False
 
-        attribute = self.config_wrapper.list('attribute', [])
+        attribute = self.cfg.list('attribute', [])
         if attribute and not self._matches_value(attribute, triggered.get('attribute')):
             return False
 
-        from_state = self.config_wrapper.list('from', [])
+        from_state = self.cfg.list('from', [])
         if from_state and not self._matches_value(from_state, triggered.get('from')):
             return False
 
-        to_state = self.config_wrapper.list('to', [])
+        to_state = self.cfg.list('to', [])
         if to_state and not self._matches_value(to_state, triggered.get('to')):
             return False
 
@@ -195,11 +195,11 @@ class TriggeredEventConstraint(Constraint):
 
         event = trigger_info.data
 
-        entity_id = self.config_wrapper.list('entity_id', [])
+        entity_id = self.cfg.list('entity_id', [])
         if entity_id and event.get('entity_id') not in entity_id:
             return False
 
-        event_name = self.config_wrapper.list('event_name', [])
+        event_name = self.cfg.list('event_name', [])
         if event_name and event.get('event_name') not in event_name:
             return False
 
@@ -209,7 +209,8 @@ class TriggeredEventConstraint(Constraint):
         return True
 
     def check_event_data(self, event_data):
-        target_event_data = flatten_dict(self.config("event_data", {}))
+        default = {}
+        target_event_data = flatten_dict(self.cfg.value("event_data", default))
         if not target_event_data:
             return True
 
@@ -233,7 +234,7 @@ class TriggeredActionConstraint(Constraint):
 
         action = trigger_info.data
 
-        action_name = self.config('action_name')
+        action_name = self.cfg.value('action_name', None)
         return action_name == action['action_name']
 
 
@@ -242,10 +243,10 @@ class AttributeConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        entity_id = self.config('entity_id')
-        attribute = self.config('attribute')
-        value = self.config('value')
-        negate = self.config('negate', False)
+        entity_id = self.cfg.value('entity_id', None)
+        attribute = self.cfg.value('attribute', None)
+        value = self.cfg.value('value', None)
+        negate = self.cfg.value('negate', False)
         current_value = self.get_state(entity_id, attribute=attribute)
         condition = self._matches_value(value, current_value)
 
@@ -260,14 +261,14 @@ class TimeConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        start_time = self.config('start_time')
-        end_time = self.config('end_time')
+        start_time = self.cfg.value('start_time', None)
+        end_time = self.cfg.value('end_time', None)
 
         if start_time and end_time:
             return self.app.now_is_between(start_time, end_time)
 
-        start_time = self.get_state(self.config('start_time_entity_id'))
-        end_time = self.get_state(self.config('end_time_entity_id'))
+        start_time = self.get_state(self.cfg.value('start_time_entity_id', None))
+        end_time = self.get_state(self.cfg.value('end_time_entity_id', None))
 
         if start_time and end_time:
             start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
@@ -281,7 +282,7 @@ class HasScheduledJobConstraint(Constraint):
 
     def check(self, trigger_info):
         has_job = has_scheduled_job(self.app)
-        negate = self.config('negate', False)
+        negate = self.cfg.value('negate', False)
 
         if negate:
             return not has_job
@@ -294,7 +295,7 @@ class DayOfWeekConstraint(Constraint):
         super().__init__(app, constraint_config)
 
     def check(self, trigger_info):
-        days = self.config_wrapper.list('day', [])
+        days = self.cfg.list('day', [])
         today = date.today()
         day = calendar.day_name[today.weekday()]
         return day in days

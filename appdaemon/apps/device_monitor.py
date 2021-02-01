@@ -16,9 +16,6 @@ class Checker(Component):
     def __init__(self, app, config):
         super().__init__(app, config)
 
-        self._app = app
-        self._config = config
-
     def check(self):
         raise NotImplementedError()
 
@@ -76,7 +73,7 @@ class WrapperAction(Action):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
-        self.checkers = [create_checker(app, c) for c in self.config_wrapper.list('checkers', None)]
+        self.checkers = [create_checker(app, c) for c in self.cfg.list('checkers', None)]
 
     def do_action(self, trigger_info):
         for checker in self.checkers:
@@ -98,7 +95,7 @@ class WrapperAction(Action):
                     })
 
     def _update_result_cache(self, checker: Checker, checker_result: DeviceResult):
-        checker_type = checker.config_wrapper.value('type')
+        checker_type = checker.cfg.value('type')
         CHECKER_RESULT_CACHE[checker_type] = checker_result
 
 
@@ -121,7 +118,7 @@ def create_checker(app, config):
 class EntityNameFilteringChecker(Checker):
     def __init__(self, app, config):
         super().__init__(app, config)
-        self._patterns = self.config_wrapper.list('pattern', None)
+        self._patterns = self.cfg.list('pattern', None)
 
     def check(self):
         self.debug('Checking with {} and pattern={}'.format(type(self).__name__, self._patterns))

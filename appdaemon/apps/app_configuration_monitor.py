@@ -2,7 +2,7 @@ import os
 
 import appdaemon.plugins.hass.hassapi as hass
 
-APPDAEMON_DIR = '/conf/apps'
+APPDAEMON_DIR = '/conf/appdaemon'
 DEFINITION_DIR = APPDAEMON_DIR + '/configurations/'
 MERGED_APP_FILEPATH = APPDAEMON_DIR + '/apps.yaml'
 
@@ -35,9 +35,7 @@ class AppConfigurationMonitor(hass.Hass):
         if not changed_filename.endswith('yaml'):
             return
 
-        self.log('Changes detected on {}, about to merge files in {}'.format(
-            changed_filename,
-            DEFINITION_DIR))
+        self.log('Changes detected on {}, about to merge files in {}'.format(changed_filename, DEFINITION_DIR))
 
         filenames = sorted(os.listdir(DEFINITION_DIR))
         variable_filenames = [f for f in filenames if f.startswith('var')]

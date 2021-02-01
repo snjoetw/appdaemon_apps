@@ -36,14 +36,12 @@ def get_state(entity):
 class VacuumDustbinMonitor(BaseAutomation):
 
     def initialize(self):
-        self.cleaned_count_entity_id = self.arg('runtime_entity_id')
-        self.vacuum_entity_id = self.arg('vacuum_entity_id')
-        self.monitor_state_entity_id = self.arg('monitor_state_entity_id')
-        self.cleaned_count_threshold = self.arg('cleaned_count_threshold', 100)
-        self.dumping_spot_x_coord = self.arg('dumping_spot_x_coord')
-        self.dumping_spot_y_coord = self.arg('dumping_spot_y_coord')
-
-        # self.listen_event(self.event_change_handler, 'zha_event')
+        self.cleaned_count_entity_id = self.cfg.value('runtime_entity_id')
+        self.vacuum_entity_id = self.cfg.value('vacuum_entity_id')
+        self.monitor_state_entity_id = self.cfg.value('monitor_state_entity_id')
+        self.cleaned_count_threshold = self.cfg.value('cleaned_count_threshold', 100)
+        self.dumping_spot_x_coord = self.cfg.value('dumping_spot_x_coord')
+        self.dumping_spot_y_coord = self.cfg.value('dumping_spot_y_coord')
 
         self.listen_state(self.vacuum_state_change_handler, self.vacuum_entity_id, attribute="all")
 
@@ -185,7 +183,7 @@ class VacuumDustbinMonitor(BaseAutomation):
         self.call_service('input_number/set_value', entity_id=self.cleaned_count_entity_id, value=count)
 
     def update_monitor_state(self, state):
-        self.set_state(self.monitor_state_entity_id, state=state)
+        self.select_option(self.monitor_state_entity_id, state)
 
     def current_monitor_state(self):
         return self.get_state(self.monitor_state_entity_id)

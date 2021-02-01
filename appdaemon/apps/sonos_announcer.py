@@ -17,8 +17,8 @@ class MediaPlayer(Component):
     def __init__(self, app, config, media_manager):
         super().__init__(app, config)
         self.media_manager = media_manager
-        self.player_entity_ids = self.list_config('player_entity_id')
-        self.motion_entity_ids = self.list_config('motion_entity_id')
+        self.player_entity_ids = self.config_wrapper.list('player_entity_id', None)
+        self.motion_entity_ids = self.config_wrapper.list('motion_entity_id', None)
         self.volumes = self.config('volumes')
         self.targeted_only = self.config('targeted_only', False)
 

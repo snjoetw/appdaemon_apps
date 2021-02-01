@@ -32,7 +32,7 @@ class WrapperAction(Action):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
-        self.checkers = [create_checker(app, c) for c in self.list_config('checkers')]
+        self.checkers = [create_checker(app, c) for c in self.config_wrapper.list('checkers', None)]
 
     def do_action(self, trigger_info):
         for checker in self.checkers:
@@ -89,7 +89,7 @@ class Checker(Component):
 class EntityNameFilteringChecker(Checker):
     def __init__(self, app, config):
         super().__init__(app, config)
-        self._patterns = self.list_config('pattern')
+        self._patterns = self.config_wrapper.list('pattern', None)
 
     def check(self):
         self.debug('Checking with {} and pattern={}'.format(type(self).__name__, self._patterns))

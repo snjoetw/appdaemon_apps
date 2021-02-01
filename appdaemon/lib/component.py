@@ -38,12 +38,6 @@ class Component:
     def config(self, key, default=None):
         return self.config_wrapper.value(key, default)
 
-    def int_config(self, key, default=None):
-        return self.config_wrapper.int(key, default)
-
-    def list_config(self, key, default=None):
-        return self.config_wrapper.list(key, default)
-
     def now_is_between(self, start_time_str, end_time_str, name=None):
         return self.app.now_is_between(start_time_str, end_time_str, name)
 

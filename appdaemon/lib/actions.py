@@ -179,7 +179,7 @@ class Action(Component):
     def __init__(self, app, action_config):
         super().__init__(app, action_config)
 
-        self._constraints = [get_constraint(app, c) for c in self.list_config('constraints', [])]
+        self._constraints = [get_constraint(app, c) for c in self.config_wrapper.list('constraints', [])]
 
     def check_action_constraints(self, trigger_info):
         if not self._constraints:
@@ -411,7 +411,7 @@ class SetCoverPositionAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_ids = self.list_config("entity_id", [])
+        entity_ids = self.config_wrapper.list("entity_id", [])
         position = self.config("position")
         position_difference_threshold = self.config("position_difference_threshold", 3)
 
@@ -451,7 +451,7 @@ class TurnOffMediaPLayerAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_ids = self.list_config('entity_id', [])
+        entity_ids = self.config_wrapper.list('entity_id', [])
         self.call_service("media_player/turn_off", entity_id=entity_ids)
 
 
@@ -460,7 +460,7 @@ class TurnOnMediaPLayerAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_ids = self.list_config('entity_id', [])
+        entity_ids = self.config_wrapper.list('entity_id', [])
         volume = self.config("volume")
         source = self.config("source")
         shuffle = self.config("shuffle", False)
@@ -569,8 +569,8 @@ class NotifyAction(Action):
     def do_action(self, trigger_info):
         title = self.config("title")
         message = self.config("message")
-        notifier_types = [NotifierType(n) for n in self.list_config('notifier')]
-        recipients = self.list_config('recipient')
+        notifier_types = [NotifierType(n) for n in self.config_wrapper.list('notifier')]
+        recipients = self.config_wrapper.list('recipient')
         camera_entity_id = self.config('camera_entity_id')
 
         notifier: Notifier = self.app.get_app('notifier')
@@ -588,7 +588,7 @@ class AlarmNotifierAction(Action):
         message = self.config("message")
         image_filename = self.config("image_filename")
         trigger_entity_id = self.config("trigger_entity_id")
-        notifier_types = [NotifierType(n) for n in self.list_config('notifier')]
+        notifier_types = [NotifierType(n) for n in self.config_wrapper.list('notifier')]
 
         notifier: AlarmNotifier = self.app.get_app('alarm_notifier')
         notifier.notify(title, message, trigger_entity_id, notifier_types, image_filename)
@@ -652,7 +652,7 @@ class AnnouncementAction(Action):
 
     def do_action(self, trigger_info):
         message = self.config("tts_message")
-        player_entity_id = self.list_config('player_entity_id', [])
+        player_entity_id = self.config_wrapper.list('player_entity_id', [])
         use_cache = self.config('use_cache', True)
         prelude_name = self.config('prelude_name')
 
@@ -714,7 +714,7 @@ class RepeatActionWrapper(RepeatableAction):
 
         self.actions = []
 
-        for config in self.list_config('actions'):
+        for config in self.config_wrapper.list('actions'):
             self.actions.append(get_action(app, config))
 
     def job_runner(self, kwargs={}):
@@ -730,7 +730,7 @@ class DelayActionWrapper(DelayableAction):
 
         self.actions = []
 
-        for config in self.list_config('actions'):
+        for config in self.config_wrapper.list('actions'):
             self.actions.append(get_action(app, config))
 
     def job_runner(self, kwargs={}):
@@ -747,7 +747,7 @@ class SetStateAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_ids = self.list_config('entity_id')
+        entity_ids = self.config_wrapper.list('entity_id')
         state = self.config('state')
 
         for entity_id in entity_ids:
@@ -759,8 +759,8 @@ class HueActivateScene(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_ids = self.list_config('entity_id')
-        scene_names = self.list_config('scene_name')
+        entity_ids = self.config_wrapper.list('entity_id')
+        scene_names = self.config_wrapper.list('scene_name')
 
         scene_name = random.choice(scene_names)
         for entity_id in entity_ids:

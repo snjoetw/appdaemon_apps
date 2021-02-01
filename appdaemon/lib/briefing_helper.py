@@ -278,7 +278,7 @@ class StockPriceProvider(BriefingProvider):
         super().__init__(app, briefing_config)
 
         self.quote_fetcher = StockQuoteFetcher(app, self.config('api_key'))
-        self.stock_symbols = self.list_config('stock_symbols')
+        self.stock_symbols = self.config_wrapper.list('stock_symbols')
         self.workday_entity_id = self.config('workday_entity_id')
 
     def can_brief(self, context):

@@ -44,7 +44,7 @@ class ReminderAction(Action):
         super().__init__(app, action_config)
 
         self.trigger_method = trigger_method
-        self.providers = [get_reminder_provider(app, p) for p in self.list_config('providers')]
+        self.providers = [get_reminder_provider(app, p) for p in self.config_wrapper.list('providers', None)]
         self.provider_history = {}
         self.presence_mode_entity_id = self.config('presence_mode_entity_id')
 

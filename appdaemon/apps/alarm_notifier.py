@@ -20,7 +20,7 @@ class AlarmNotifier(BaseAutomation):
 
         notifier: Notifier = self.get_app('notifier')
         notifier.notify(Message(notifier_types, 'all', title, message, camera_entity_id, {
-            NotifierType.IOS.value: self.config(NotifierType.IOS.value, {})
+            NotifierType.IOS.value: self.config_wrapper(NotifierType.IOS.value, {})
         }))
 
     def _figure_notifier_types(self, notifier_types):

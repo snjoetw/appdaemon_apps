@@ -86,9 +86,9 @@ class StateTrigger(Trigger):
         if attribute is not None:
             settings["attribute"] = attribute
 
-        entity_ids = self.list_config('entity_ids', [])
+        entity_ids = self.config_wrapper.list('entity_ids', [])
         if not entity_ids:
-            entity_ids.extend(self.list_config('entity_id', []))
+            entity_ids.extend(self.config_wrapper.list('entity_id', []))
 
         for entity_id in entity_ids:
             self.app.listen_state(self._state_change_handler, entity_id, **settings)
@@ -134,7 +134,7 @@ class EventTrigger(Trigger):
         self._event_data = self.config("event_data", {})
 
         event_type = self.config("event_type")
-        entity_ids = self.list_config('entity_ids', [])
+        entity_ids = self.config_wrapper.list('entity_ids', [])
 
         if entity_ids:
             for entity_id in entity_ids:

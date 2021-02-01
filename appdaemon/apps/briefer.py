@@ -18,16 +18,16 @@ class Briefer(ConfigurableAutomation):
 
         def briefing_text_provider():
             self.providers = [get_briefing_provider(self, p) for p in
-                              self.list_arg('providers')]
+                              self.cfg.list('providers')]
 
             return self.build_briefing_text()
 
         self.init_trigger('state', {
-            'entity_id': self.list_arg('motion_entity_id'),
+            'entity_id': self.cfg.list('motion_entity_id'),
             'to': 'on',
         })
         self.init_trigger('state', {
-            'entity_id': self.arg('on_demand_entity_id'),
+            'entity_id': self.cfg.value('on_demand_entity_id'),
             'to': 'on',
         })
 
@@ -37,8 +37,8 @@ class Briefer(ConfigurableAutomation):
                                        briefing_text_provider)])
         self.init_handler(handler)
 
-        self.enabler_entity_id = self.arg('enabler_entity_id')
-        self.briefing_state_entity_id = self.arg('briefing_state_entity_id')
+        self.enabler_entity_id = self.cfg.value('enabler_entity_id')
+        self.briefing_state_entity_id = self.cfg.value('briefing_state_entity_id')
         midnight = time(0, 0, 0)
         self.run_daily(self.run_daily_handler, midnight)
 

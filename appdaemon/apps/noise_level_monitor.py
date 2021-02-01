@@ -46,15 +46,15 @@ class NoiseLevelMonitor(BaseAutomation):
     sleeping_time_entity_id: str
 
     def initialize(self):
-        self.sleeping_time_entity_id = self.arg('sleeping_time_entity_id')
+        self.sleeping_time_entity_id = self.cfg.value('sleeping_time_entity_id')
         self.is_monitoring = False
 
-        monitor_configs = self.list_arg('monitor_settings', [])
+        monitor_configs = self.cfg.list('monitor_settings', [])
         self.monitor_settings = []
         for config in monitor_configs:
             self.monitor_settings.append(MonitorSetting(config))
 
-        light_configs = self.list_arg('light_settings', [])
+        light_configs = self.cfg.list('light_settings', [])
         self.light_settings = []
         for config in light_configs:
             self.light_settings.append(LightSetting(config))

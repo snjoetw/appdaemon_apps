@@ -29,19 +29,19 @@ def create_turn_off_action(app, entity_id):
 class MotionLighting(BaseAutomation):
 
     def initialize(self):
-        self.motion_entity_ids = self.list_arg('motion_entity_id')
-        self.enabler_entity_id = self.arg('enabler_entity_id')
-        self.scene_entity_id = self.arg('scene_entity_id')
-        self.lighting_scenes = self.arg('lighting_scenes')
-        self.turn_off_delay = self.arg('turn_off_delay')
-        self.dim_light_before_turn_off = self.arg('dim_light_before_turn_off', True)
+        self.motion_entity_ids = self.cfg.list('motion_entity_id')
+        self.enabler_entity_id = self.cfg.value('enabler_entity_id')
+        self.scene_entity_id = self.cfg.value('scene_entity_id')
+        self.lighting_scenes = self.cfg.value('lighting_scenes')
+        self.turn_off_delay = self.cfg.value('turn_off_delay')
+        self.dim_light_before_turn_off = self.cfg.value('dim_light_before_turn_off', True)
 
         self.turn_on_constraints = []
-        for constraint in self.list_arg('turn_on_constraints', []):
+        for constraint in self.cfg.list('turn_on_constraints', []):
             self.turn_on_constraints.append(get_constraint(self, constraint))
 
         light_entity_ids = light_settings_to_entity_ids(self.lighting_scenes)
-        self.turn_off_light_entity_ids = self.list_arg('turn_off_light_entity_ids', light_entity_ids)
+        self.turn_off_light_entity_ids = self.cfg.list('turn_off_light_entity_ids', light_entity_ids)
         self.turn_off_lights_handle = None
 
         self.register_motion_state_change_event()

@@ -7,11 +7,11 @@ from lib.helper import to_float
 
 class AutoClimateVentMonitor(BaseAutomation):
     def initialize(self):
-        self.enabler_entity_id = self.arg('enabler_entity_id')
-        self.climate_entity_id = self.arg('climate_entity_id')
-        self.hvac_action_entity_id = self.arg('hvac_action_entity_id')
-        self.last_hvac_action_entity_id = self.arg('last_hvac_action_entity_id')
-        self.zone_configs = [ZoneConfig(z) for z in self.list_arg('zones')]
+        self.enabler_entity_id = self.cfg.value('enabler_entity_id')
+        self.climate_entity_id = self.cfg.value('climate_entity_id')
+        self.hvac_action_entity_id = self.cfg.value('hvac_action_entity_id')
+        self.last_hvac_action_entity_id = self.cfg.value('last_hvac_action_entity_id')
+        self.zone_configs = [ZoneConfig(z) for z in self.cfg.list('zones')]
 
         self.listen_state(self.temperature_change_handler, self.climate_entity_id, attribute="all")
 

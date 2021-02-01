@@ -18,7 +18,7 @@ class CommuteTimeMonitor(BaseAutomation):
         self._configs = []
         self._api_key = self.args['google_travel_time_api_key']
         self._maps_api = googlemaps.Client(key=self._api_key)
-        self._notify_entity_ids = self.list_arg('notify_entity_id', [])
+        self._notify_entity_ids = self.cfg.list('notify_entity_id', [])
         self._presence_entity_id = self.args['presence_status_entity_id']
         self._start_time = self.args['start_time']
         self._end_time = self.args['end_time']

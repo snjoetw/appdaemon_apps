@@ -12,13 +12,13 @@ from lib.teslajson import Connection
 class TeslaProxy(mqtt.Mqtt, BaseAutomation):
 
     def initialize(self):
-        c = Connection(self.arg('tesla_username'), self.arg('tesla_password'))
+        c = Connection(self.cfg.value('tesla_username'), self.cfg.value('tesla_password'))
         self.orca = c.vehicles[0]
         response = self.orca.get('')
         self.log(response)
         self._lock = Lock()
         self._queue = []
-        self._motion_entity_id = self.arg('motion_entity_id')
+        self._motion_entity_id = self.cfg.value('motion_entity_id')
 
         super(mqtt.Mqtt, self).listen_event(
             self._door_lock_handler,

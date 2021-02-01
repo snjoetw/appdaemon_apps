@@ -8,8 +8,8 @@ class AirQualityMonitor(BaseAutomation):
 
     def initialize(self):
         self.bad_air_quality_fans = []
-        self.monitor_settings = [MonitorSettings(c) for c in self.list_arg('monitors')]
-        self.bad_air_quality_mode_entity_id = self.arg('bad_air_quality_mode_entity_id')
+        self.monitor_settings = [MonitorSettings(c) for c in self.cfg.list('monitors')]
+        self.bad_air_quality_mode_entity_id = self.cfg.value('bad_air_quality_mode_entity_id')
 
         for setting in self.monitor_settings:
             self.listen_state(self.air_quality_change_handler, setting.air_quality_entity_id)

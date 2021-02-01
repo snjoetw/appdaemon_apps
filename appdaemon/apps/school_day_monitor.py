@@ -9,13 +9,13 @@ class SchoolDayMonitor(BaseAutomation):
     def initialize(self):
         self.events_fetcher = CalendarEventFetcher(
             self,
-            self.arg('calendar_api_base_url'),
-            self.arg('calendar_api_token'),
+            self.cfg.value('calendar_api_base_url'),
+            self.cfg.value('calendar_api_token'),
         )
 
-        self.calendar_entity_id = self.arg('calendar_entity_id')
-        self.workday_entity_id = self.arg('workday_entity_id')
-        self.school_day_entity_id = self.arg('school_day_entity_id')
+        self.calendar_entity_id = self.cfg.value('calendar_entity_id')
+        self.workday_entity_id = self.cfg.value('workday_entity_id')
+        self.school_day_entity_id = self.cfg.value('school_day_entity_id')
 
         runtime = time(0, 15, 0)
         self.run_daily(self.run_daily_hanlder, runtime)

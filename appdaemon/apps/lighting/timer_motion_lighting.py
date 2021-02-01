@@ -10,7 +10,7 @@ class TimerMotionLighting(MotionLighting):
     def initialize(self):
         super().initialize()
 
-        self.timer_settings = ImageProcessingSettings(self.arg('timer'))
+        self.timer_settings = ImageProcessingSettings(self.cfg.value('timer'))
 
         now = datetime.now() + timedelta(seconds=2)
         self.run_every(self.run_every_handler, now, CHECK_FREQUENCY)

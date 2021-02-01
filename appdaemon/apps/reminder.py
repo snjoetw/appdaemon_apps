@@ -16,7 +16,7 @@ class Reminder(ConfigurableAutomation):
     def initialize(self):
         super().initialize()
 
-        motion_entity_ids = self.list_arg('motion_entity_id')
+        motion_entity_ids = self.cfg.list('motion_entity_id')
         self.init_trigger('state', {
             'entity_id': motion_entity_ids
         })

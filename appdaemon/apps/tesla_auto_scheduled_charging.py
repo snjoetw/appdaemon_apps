@@ -24,23 +24,23 @@ class TeslaAutoScheduledCharging(BaseAutomation):
 
     def initialize(self):
         self.events_fetcher = CalendarEventFetcher(self,
-                                                   self.arg('calendar_api_base_url'),
-                                                   self.arg('calendar_api_token'))
-        self.travel_time_fetcher = TravelTimeFetcher(self, self.arg('map_api_key'))
-        self.buffer_time = self.int_arg('buffer_time', 10)
-        self.home_location = self.arg('map_home_location')
+                                                   self.cfg.value('calendar_api_base_url'),
+                                                   self.cfg.value('calendar_api_token'))
+        self.travel_time_fetcher = TravelTimeFetcher(self, self.cfg.value('map_api_key'))
+        self.buffer_time = self.cfg.int('buffer_time', 10)
+        self.home_location = self.cfg.value('map_home_location')
 
-        self.enabler_entity_id = self.arg('enabler_entity_id')
-        self.auto_charge_state_entity_id = self.arg('auto_charge_state_entity_id')
-        self.calendar_entity_id = self.arg('calendar_entity_id')
-        self.school_day_entity_id = self.arg('school_day_entity_id')
-        self.work_day_entity_id = self.arg('work_day_entity_id')
-        self.tesla_state_entity_id = self.arg('tesla_state_entity_id')
-        self.tesla_plugged_in_entity_id = self.arg('tesla_plugged_in_entity_id')
-        self.tesla_location_entity_id = self.arg('tesla_location_entity_id')
-        self.tesla_charge_limit_entity_id = self.arg('tesla_charge_limit_entity_id')
-        self.tesla_resume_logging_url = self.arg('tesla_resume_logging_url')
-        self.school_time = self.arg('school_time')
+        self.enabler_entity_id = self.cfg.value('enabler_entity_id')
+        self.auto_charge_state_entity_id = self.cfg.value('auto_charge_state_entity_id')
+        self.calendar_entity_id = self.cfg.value('calendar_entity_id')
+        self.school_day_entity_id = self.cfg.value('school_day_entity_id')
+        self.work_day_entity_id = self.cfg.value('work_day_entity_id')
+        self.tesla_state_entity_id = self.cfg.value('tesla_state_entity_id')
+        self.tesla_plugged_in_entity_id = self.cfg.value('tesla_plugged_in_entity_id')
+        self.tesla_location_entity_id = self.cfg.value('tesla_location_entity_id')
+        self.tesla_charge_limit_entity_id = self.cfg.value('tesla_charge_limit_entity_id')
+        self.tesla_resume_logging_url = self.cfg.value('tesla_resume_logging_url')
+        self.school_time = self.cfg.value('school_time')
 
         self.original_charge_limit = None
         self.last_charged_time = None

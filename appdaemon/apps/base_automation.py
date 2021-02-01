@@ -11,8 +11,12 @@ from lib.config import Config
 class BaseAutomation(hass.Hass):
 
     @property
+    def cfg(self):
+        return Config(self, self.args)
+
+    @property
     def debug_enabled(self):
-        return self.config_wrapper.value('debug', False)
+        return self.cfg.value('debug', False)
 
     def log(self, msg, level='INFO'):
         if level == 'DEBUG' and not self.debug_enabled:
@@ -32,19 +36,6 @@ class BaseAutomation(hass.Hass):
 
     def error(self, msg):
         return self.log(msg, level='ERROR')
-
-    @property
-    def config_wrapper(self):
-        return Config(self, self.args)
-
-    def arg(self, key, default=None):
-        return self.config_wrapper.value(key, default)
-
-    def int_arg(self, key, default=None):
-        return self.config_wrapper.int(key, default)
-
-    def list_arg(self, key, default=None):
-        return self.config_wrapper.list(key, default)
 
     def sleep(self, duration):
         self.debug('About to sleep for {} sec'.format(duration))

@@ -232,7 +232,7 @@ class SonosAnnouncer(BaseAutomation):
         self._enabler_entity_id = self.args['enabler_entity_id']
 
         self._media_manager = MediaManager(self, self.args)
-        self._players = [create_player(self, p, self._media_manager) for p in self.arg('players')]
+        self._players = [create_player(self, p, self._media_manager) for p in self.cfg.value('players')]
 
         self.listen_state(self._sleeping_time_state_change_handler, self._sleeping_time_entity_id)
 

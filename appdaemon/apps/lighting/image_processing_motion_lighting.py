@@ -8,7 +8,7 @@ class ImageProcessingMotionLighting(MotionLighting):
     def initialize(self):
         super().initialize()
 
-        self.image_processing_settings = ImageProcessingSettings(self.arg('image_processing_settings'))
+        self.image_processing_settings = ImageProcessingSettings(self.cfg.value('image_processing_settings'))
         person_detected_entity_id = self.image_processing_settings.person_detected_entity_id
         self.listen_state(self.image_processing_state_change_handler, person_detected_entity_id)
 

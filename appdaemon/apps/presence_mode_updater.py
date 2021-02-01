@@ -16,7 +16,7 @@ class PresenceModeUpdater(ConfigurableAutomation):
         })
 
         self.init_trigger('state', {
-            'entity_ids': self.list_arg('person_entity_id'),
+            'entity_ids': self.cfg.list('person_entity_id'),
         })
 
         handler = self.create_handler([], [UpdateAction(self, self.args)])

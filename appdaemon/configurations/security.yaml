@@ -249,30 +249,32 @@ alarm_notifier:
       camera_entity_id: camera.family_room_cam
     binary_sensor.zb_kitchen_french_door:
       camera_entity_id: camera.family_room_cam
+    binary_sensor.zb_kitchen_motion:
+      camera_entity_id: camera.family_room_cam
     binary_sensor.mqtt_family_room_window:
       camera_entity_id: camera.family_room_cam
     binary_sensor.mqtt_front_door:
       camera_entity_id: camera.living_room_cam
     binary_sensor.mqtt_living_room_window:
       camera_entity_id: camera.living_room_cam
-    binary_sensor.mqtt_office_window:
+    binary_sensor.zb_living_room_motion:
       camera_entity_id: camera.living_room_cam
+    binary_sensor.mqtt_office_window:
+      camera_entity_id: camera.office_cam
+    binary_sensor.zb_office_motion:
+      camera_entity_id: camera.office_cam
     binary_sensor.mqtt_garage_entry_door:
       camera_entity_id: camera.laundry_room_cam
     binary_sensor.mqtt_laundry_room_window:
-      camera_entity_id: camera.laundry_room_cam
-    binary_sensor.mqtt_workout_room_window:
       camera_entity_id: camera.laundry_room_cam
     binary_sensor.zb_laundry_room_motion:
       camera_entity_id: camera.laundry_room_cam
     binary_sensor.zb_master_bedroom_motion:
       camera_entity_id: camera.master_bedroom_cam
-    binary_sensor.zb_kitchen_motion:
-      camera_entity_id: camera.family_room_cam
-    binary_sensor.zb_living_room_motion:
-      camera_entity_id: camera.living_room_cam
-    binary_sensor.zb_office_motion:
-      camera_entity_id: camera.living_room_cam
+    binary_sensor.zb_lynn_s_room_motion:
+      camera_entity_id: camera.lynn_s_room_cam
+    binary_sensor.mqtt_lynns_room_window:
+      camera_entity_id: camera.lynn_s_room_cam
     cover.myq_front_garage_door:
       camera_entity_id: camera.front_yard
     cover.myq_back_garage_door:

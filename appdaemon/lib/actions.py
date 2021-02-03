@@ -452,6 +452,7 @@ class TurnOffMediaPLayerAction(Action):
 
     def do_action(self, trigger_info):
         entity_ids = self.cfg.list('entity_id', [])
+        self.call_service("media_player/media_stop", entity_id=entity_ids)
         self.call_service("media_player/turn_off", entity_id=entity_ids)
 
 

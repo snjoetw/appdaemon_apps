@@ -15,13 +15,20 @@ class AlarmNotifier(BaseAutomation):
 
     def notify(self, title, message, trigger_entity_id, notifiers=[], image_filename=None):
         notifier_types = self._figure_notifier_types(notifiers)
-        setting = self._entity_settings.get(trigger_entity_id, {}).get('trigger_entity_id', {})
-        camera_entity_id = setting.get('camera_entity_id')
+        camera_entity_id = self._figure_camera_entity_id(trigger_entity_id)
 
         notifier: Notifier = self.get_app('notifier')
         notifier.notify(Message(notifier_types, 'all', title, message, camera_entity_id, {
             NotifierType.IOS.value: self.cfg.value(NotifierType.IOS.value, {})
         }))
+
+    def _figure_camera_entity_id(self, trigger_entity_id):
+        setting = self._entity_settings.get(trigger_entity_id, {}).get('trigger_entity_id', {})
+        camera_entity_id = setting.get('camera_entity_id')
+
+        self.debug('trigger_entity_id={} => camera_entity_id={}'.format(trigger_entity_id, camera_entity_id))
+
+        return camera_entity_id
 
     def _figure_notifier_types(self, notifier_types):
         if notifier_types:

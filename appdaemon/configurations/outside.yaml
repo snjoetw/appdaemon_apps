@@ -4,7 +4,8 @@ front_yard_lighting:
   enabler_entity_id: input_boolean.is_motion_enabled_front_yard
   scene_entity_id: input_select.lighting_mode_front_yard
   motion_entity_id:
-    - binary_sensor.front_yard_camera_motion_detected
+    - input_boolean.nest_front_yard_activity_detected
+    - input_boolean.nest_front_door_activity_detected
   turn_off_delay: 300
   timer:
     turn_on_start_time: '16:00:00'
@@ -22,7 +23,8 @@ front_door_lighting_on_motion:
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_front_door
   scene_entity_id: input_select.lighting_mode_front_yard
-  motion_entity_id: binary_sensor.front_door_camera_person_detected
+  motion_entity_id:
+    - input_boolean.nest_front_door_doorbell_pressed
   turn_off_delay: 120
   lighting_scenes:
     Dark:
@@ -72,7 +74,8 @@ backyard_lighting:
   scene_entity_id: input_select.lighting_mode_backyard
   motion_entity_id:
     - binary_sensor.backyard_multisensor_sensor
-    - binary_sensor.rear_driveway_camera_motion_detected
+    - input_boolean.nest_rear_driveway_activity_detected
+    - input_boolean.nest_backyard_activity_detected
   turn_off_delay: 300
   timer:
     turn_on_start_time: '16:00:00'
@@ -86,41 +89,121 @@ backyard_lighting:
         force_off: false
 
 
-front_yard_activity_publisher:
+front_door_doorbell_pressed:
+  debug: true
   module: automation
   class: Automation
   triggers:
-    - platform: state
-      entity_ids:
-        - binary_sensor.front_yard_camera_front_yard_activity
-        - binary_sensor.front_yard_camera_motion_detected
-        - binary_sensor.front_yard_camera_person_detected
-        - binary_sensor.front_yard_camera_sound_detected
+    - platform: event
+      event_type: nest_event
+  constraints:
+    - platform: triggered_event
+      event_data:
+        device_id: 28946153c1fa3ec98b0590ff0f0ed7f4
+        type: doorbell_chime
   handlers:
     - constraints:
       actions:
-        - platform: service
-          service: mqtt/publish
-          data:
-            topic: home/sensor/front_yard_activity
-            payload: "{{ trigger_info.data.to }}"
+        - platform: turn_on
+          entity_ids: input_boolean.nest_front_door_doorbell_pressed
+        - platform: delay
+          delay: 60
+          actions:
+            - platform: turn_off
+              entity_ids: input_boolean.nest_front_door_doorbell_pressed
 
 
-front_door_activity_publisher:
+front_door_activity_detected:
+  debug: true
   module: automation
   class: Automation
   triggers:
-    - platform: state
-      entity_ids:
-        - binary_sensor.front_door_camera_front_door_activity
-        - binary_sensor.front_door_camera_motion_detected
-        - binary_sensor.front_door_camera_person_detected
-        - binary_sensor.front_door_camera_sound_detected
+    - platform: event
+      event_type: nest_event
+  constraints:
+    - platform: triggered_event
+      event_data:
+        device_id: 28946153c1fa3ec98b0590ff0f0ed7f4
+        type: camera_person
   handlers:
     - constraints:
       actions:
-        - platform: service
-          service: mqtt/publish
-          data:
-            topic: home/sensor/front_door_activity
-            payload: "{{ trigger_info.data.to }}"
+        - platform: turn_on
+          entity_ids: input_boolean.nest_front_door_activity_detected
+        - platform: delay
+          delay: 60
+          actions:
+            - platform: turn_off
+              entity_ids: input_boolean.nest_front_door_activity_detected
+
+
+front_yard_activity_detected:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: nest_event
+  constraints:
+    - platform: triggered_event
+      event_data:
+        device_id: 6d407eb72b4f6146eaf5ea735c7ba1c9
+        type: camera_person
+  handlers:
+    - constraints:
+      actions:
+        - platform: turn_on
+          entity_ids: input_boolean.nest_front_yard_activity_detected
+        - platform: delay
+          delay: 60
+          actions:
+            - platform: turn_off
+              entity_ids: input_boolean.nest_front_yard_activity_detected
+
+
+backyard_activity_detected:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: nest_event
+  constraints:
+    - platform: triggered_event
+      event_data:
+        device_id: 6edecbd31658fa303e84790204f24fc3
+        type: camera_motion
+  handlers:
+    - constraints:
+      actions:
+        - platform: turn_on
+          entity_ids: input_boolean.nest_backyard_activity_detected
+        - platform: delay
+          delay: 60
+          actions:
+            - platform: turn_off
+              entity_ids: input_boolean.nest_backyard_activity_detected
+
+
+rear_driveway_activity_detected:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: nest_event
+  constraints:
+    - platform: triggered_event
+      event_data:
+        device_id: 1e10190facc863349d2296611aef01c0
+        type: camera_motion
+  handlers:
+    - constraints:
+      actions:
+        - platform: turn_on
+          entity_ids: input_boolean.nest_rear_driveway_activity_detected
+        - platform: delay
+          delay: 60
+          actions:
+            - platform: turn_off
+              entity_ids: input_boolean.nest_rear_driveway_activity_detected

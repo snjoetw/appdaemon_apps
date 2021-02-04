@@ -23,7 +23,7 @@ class AlarmNotifier(BaseAutomation):
         }))
 
     def _figure_camera_entity_id(self, trigger_entity_id):
-        setting = self._entity_settings.get(trigger_entity_id, {}).get('trigger_entity_id', {})
+        setting = self._entity_settings.get(trigger_entity_id, {})
         camera_entity_id = setting.get('camera_entity_id')
 
         self.debug('trigger_entity_id={} => camera_entity_id={}'.format(trigger_entity_id, camera_entity_id))

@@ -91,7 +91,7 @@ door_beep:
   module: automation
   class: Automation
   variables:
-    message: "{{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
+    message: "{{ state(trigger_info.data.entity_id, {'on':'⚠️', 'off':'✅'}) }} {{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
   triggers:
     - platform: state
       entity_ids:
@@ -118,7 +118,7 @@ door_beep:
             payload: door
         - platform: alarm_notifier
           trigger_entity_id: "{{ trigger_info.data.entity_id }}"
-          message: "⚠️ {{ message }}"
+          message: "{{ message }}"
           notifier: ios
           ios:
             thread_id: Door Monitor
@@ -141,7 +141,7 @@ door_beep:
             payload: window
         - platform: alarm_notifier
           trigger_entity_id: "{{ trigger_info.data.entity_id }}"
-          message: "⚠️ {{ message }}"
+          message: "{{ message }}"
           notifier: ios
           ios:
             thread_id: Window Monitor
@@ -164,7 +164,7 @@ door_beep:
             payload: garage
         - platform: alarm_notifier
           trigger_entity_id: "{{ trigger_info.data.entity_id }}"
-          message: "⚠️ {{ message }}"
+          message: "{{ message }}"
           notifier: ios
           ios:
             thread_id: Garage Monitor
@@ -432,10 +432,9 @@ door_left_open:
   triggers:
     - platform: state
       entity_ids: *var_door_sensors
-      to: "on"
-    - platform: state
-      entity_ids: *var_door_sensors
-      to: "off"
+      to:
+        - "on"
+        - "off"
   handlers:
     - constraints:
         - platform: triggered_state

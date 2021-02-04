@@ -93,7 +93,7 @@ class Messenger:
         raise NotImplementedError()
 
     def get_camera_snapshot(self, camera_entity_id):
-        filename = '{}-{}.jpg'.format(camera_entity_id, datetime.now().replace(microsecond=0).isoformat())
+        filename = '{}-{}.jpg'.format(camera_entity_id.split('.')[1], datetime.now().strftime("%Y%m%d%H%M%S"))
         data = {
             'entity_id': camera_entity_id,
             'filename': '{}/{}'.format(self._camera_snapshot_filepath, filename)

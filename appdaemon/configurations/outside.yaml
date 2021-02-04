@@ -18,54 +18,20 @@ front_yard_lighting:
         force_off: false
 
 
-front_door_lighting_on_motion:
+front_door_lighting:
   module: motion_lighting
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_front_door
   scene_entity_id: input_select.lighting_mode_front_yard
   motion_entity_id:
     - input_boolean.nest_front_door_doorbell_pressed
+    - binary_sensor.mqtt_front_door
+    - lock.front_door_lock_locked
   turn_off_delay: 120
   lighting_scenes:
     Dark:
       - entity_id: light.zwave_front_door_light
-        brightness: 200
-
-
-front_door_lighting_on_door_open:
-  module: automation
-  class: Automation
-  triggers:
-    - platform: state
-      entity_id: binary_sensor.mqtt_front_door
-    - platform: state
-      entity_id: lock.front_door_lock_locked
-  handlers:
-    - constraints:
-        - platform: state
-          entity_id: input_select.lighting_mode_front_yard
-          state: [Dark]
-        - platform: triggered_state
-          to:
-            - "on"
-            - "unlocked"
-      actions:
-        - platform: turn_on
-          entity_ids:
-            light.zwave_front_door_light:
-              brightness: 255
-    - constraints:
-        - platform: triggered_state
-          entity_id: binary_sensor.mqtt_front_door
-          to: "off"
-      actions:
-        - platform: delay
-          delay: 120
-          actions:
-            - platform: turn_off
-              entity_ids:
-                light.zwave_front_door_light:
-                  force_off: false
+        brightness: 255
 
 
 backyard_lighting:

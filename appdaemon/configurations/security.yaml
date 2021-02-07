@@ -271,6 +271,10 @@ alarm_notifier:
       camera_entity_id: camera.laundry_room_cam
     binary_sensor.zb_master_bedroom_motion:
       camera_entity_id: camera.master_bedroom_cam
+    binary_sensor.mqtt_master_bedroom_window:
+      camera_entity_id: camera.master_bedroom_cam
+    binary_sensor.mqtt_master_bathroom_window:
+      camera_entity_id: camera.master_bedroom_cam
     binary_sensor.zb_lynn_s_room_motion:
       camera_entity_id: camera.lynn_s_room_cam
     binary_sensor.mqtt_lynns_room_window:
@@ -951,6 +955,68 @@ power_outage_detector:
           recipient: all
           notifier: ios
 
+
+alarm_state_change_events:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids: alarm_control_panel.home_alarm
+  handlers:
+    - constraints:
+        - platform: attribute
+          entity_id: "{{ trigger_info.data.entity_id }}"
+          attribute: changed_by
+          value: Telus SmartHome
+          negate: true
+      actions:
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: app/action/SmartHome
+            payload: "{{ trigger_info.data.to }}"
+
+
+nest_app_front_door_open_action:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_boolean.nest_front_door_doorbell_pressed
+        - input_boolean.nest_front_door_activity_detected
+        - input_boolean.nest_front_door_package_delivered
+      to: "on"
+  handlers:
+    - constraints:
+      actions:
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: app/action/Nest
+            payload: "open_app_front_door"
+
+nest_app_open_action:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_ids:
+        - input_boolean.nest_front_yard_activity_detected
+        - input_boolean.nest_backyard_activity_detected
+        - input_boolean.nest_rear_driveway_activity_detected
+      to: "on"
+  handlers:
+    - constraints:
+      actions:
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: app/action/Nest
+            payload: "open_app"
 
 nest_camera_events:
   debug: true

@@ -117,10 +117,13 @@ master_bathroom_window:
           actions:
             - platform: announcement
               tts_message: "{{ message }}"
-            - platform: notify
+            - platform: alarm_notifier
+              trigger_entity_id: binary_sensor.mqtt_master_bathroom_window
               message: "{{ message }}"
-              recipient: all
               notifier: ios
+              ios:
+                thread_id: Door Monitor
+                url: /lovelace/view_alarm
     - constraints:
         - platform: state
           entity_id: binary_sensor.mqtt_master_bathroom_window

@@ -89,9 +89,7 @@ mail_delivered_notifier:
         - platform: cancel_job
           cancel_all: true
         - platform: turn_off
-          entity_ids:
-            input_boolean.is_mail_delivered:
-              force_off: false
+          entity_ids: input_boolean.is_mail_delivered
 
 
 package_delivered_notifier:
@@ -101,12 +99,10 @@ package_delivered_notifier:
     message: "A package was just delivered"
   triggers:
     - platform: state
-      entity_ids:
-        - switch.mqtt_front_door_package_left
+      entity_ids: input_boolean.nest_front_door_package_delivered
   handlers:
     - constraints:
         - platform: triggered_state
-          entity_id: switch.mqtt_front_door_package_left
           from: "off"
           to: "on"
       actions:
@@ -119,6 +115,8 @@ package_delivered_notifier:
           camera_entity_id: camera.front_door
           ios:
             thread_id: Mail Monitor
+        - platform: turn_off
+          entity_ids: input_boolean.nest_front_door_package_delivered
 
 
 
@@ -135,6 +133,7 @@ runtime_accumulator:
 
 
 noise_level_monitor:
+  debug: true
   module: noise_level_monitor
   class: NoiseLevelMonitor
   monitor_settings:

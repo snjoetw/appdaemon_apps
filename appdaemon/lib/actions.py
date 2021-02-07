@@ -575,9 +575,8 @@ class NotifyAction(Action):
         camera_entity_id = self.cfg.value('camera_entity_id', None)
 
         notifier: Notifier = self.app.get_app('notifier')
-        default = {}
         notifier.notify(Message(notifier_types, recipients, title, message, camera_entity_id, {
-            NotifierType.IOS.value: self.cfg.value(NotifierType.IOS.value, default)
+            NotifierType.IOS.value: self.cfg.value(NotifierType.IOS.value, {})
         }))
 
 
@@ -593,7 +592,9 @@ class AlarmNotifierAction(Action):
         notifier_types = [NotifierType(n) for n in self.cfg.list('notifier')]
 
         notifier: AlarmNotifier = self.app.get_app('alarm_notifier')
-        notifier.notify(title, message, trigger_entity_id, notifier_types, image_filename)
+        notifier.notify(notifier_types, title, message, trigger_entity_id, image_filename, {
+            NotifierType.IOS.value: self.cfg.value(NotifierType.IOS.value, {})
+        })
 
 
 class CancelJobAction(Action):

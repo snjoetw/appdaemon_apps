@@ -135,7 +135,7 @@ class EventTrigger(Trigger):
         self._event_data = self.cfg.value("event_data", default)
 
         event_type = self.cfg.value("event_type", None)
-        entity_ids = self.cfg.list('entity_ids', [])
+        entity_ids = self.cfg.list('entity_id', [])
 
         if entity_ids:
             for entity_id in entity_ids:

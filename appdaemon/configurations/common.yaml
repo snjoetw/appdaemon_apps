@@ -389,6 +389,11 @@ reminder:
       trigger_method: motion
       climate_entity_id: climate.main_floor
 
+mobile_app_notification_handler:
+  debug: true
+  module: mobile_app_notification_handler
+  class: MobileAppNotificationHandler
+
 #school_day_monitor:
 #  module: school_day_monitor
 #  class: SchoolDayMonitor

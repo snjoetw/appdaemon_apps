@@ -194,7 +194,13 @@ class TriggeredEventConstraint(Constraint):
             return False
 
         event = trigger_info.data
+        result = self.check_event(event)
+        if self.cfg.value('negate', False):
+            return not result
 
+        return result
+
+    def check_event(self, event):
         entity_id = self.cfg.list('entity_id', [])
         if entity_id and event.get('entity_id') not in entity_id:
             return False

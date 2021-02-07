@@ -91,7 +91,13 @@ door_beep:
   module: automation
   class: Automation
   variables:
-    message: "{{ state(trigger_info.data.entity_id, {'on':'⚠️', 'off':'✅'}) }} {{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
+    state_icons:
+      'on': ⚠️
+      'open': ⚠️
+      'off': ✅
+      'closed': ✅
+      'unavailable': ‼️
+    message: "{{ state(trigger_info.data.entity_id, state_icons) }} {{ friendly_name(trigger_info.data.entity_id) }} is {{ state(trigger_info.data.entity_id, {'on':'opened', 'off':'closed'}) }}"
   triggers:
     - platform: state
       entity_ids:
@@ -240,6 +246,7 @@ alarm_monitor:
             entity_id: "{{ alarm_entity_id }}"
 
 alarm_notifier:
+  debug: true
   module: alarm_notifier
   class: AlarmNotifier
   is_vacation_mode_entity_id: input_boolean.is_vacation_mode
@@ -286,6 +293,7 @@ alarm_notifier:
 
 
 alarm_state_announcer:
+  debug: true
   module: automation
   class: Automation
   variables:
@@ -624,7 +632,7 @@ is_alarm_armed:
     - constraints:
         - platform: state
           entity_id: alarm_control_panel.home_alarm
-          state: [armed_home, armed_away]
+          state: [ armed_home, armed_away ]
       actions:
         - platform: turn_on
           entity_ids:
@@ -633,7 +641,7 @@ is_alarm_armed:
     - constraints:
         - platform: state
           entity_id: alarm_control_panel.home_alarm
-          state: [armed_home, armed_away]
+          state: [ armed_home, armed_away ]
           negate: true
       actions:
         - platform: turn_off
@@ -689,7 +697,7 @@ alarm_auto_arm:
   constraints:
     - platform: state
       entity_id: alarm_control_panel.home_alarm
-      state: [disarmed]
+      state: [ disarmed ]
   handlers:
     - constraints:
         - platform: triggered_state

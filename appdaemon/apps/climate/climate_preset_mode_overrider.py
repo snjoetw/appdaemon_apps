@@ -14,7 +14,6 @@ class ClimatePresetModeOverrider(hass.Hass):
         self.listen_state(self.preset_change_handler, self.climate_entity_id, attribute='preset_mode')
         self.listen_state(self.override_state_change_handler, self.override_enabler_entity_id)
 
-
     def preset_change_handler(self, entity, attribute, old, new, kwargs):
         if self.get_state(self.override_enabler_entity_id) != 'on':
             self.debug('Skipping, override preset not enabled with {}'.format(self.override_enabler_entity_id))
@@ -38,7 +37,7 @@ class ClimatePresetModeOverrider(hass.Hass):
 
         possible_modes = self.get_state(self.climate_entity_id, attribute='preset_modes')
         if overridden_mode not in possible_modes:
-            self.error('Skipping, overridden mode {} is not in possible modes: {}'.format(overridden_mode, possible_modes))
+            self.error('Skipping, {} is not in possible modes: {}'.format(overridden_mode, possible_modes))
             return
 
         self.set_preset_mode(overridden_mode)

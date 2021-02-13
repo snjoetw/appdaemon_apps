@@ -72,12 +72,16 @@ class TemplateRenderer:
 
             return formatn(second, "second")
 
+        def now_is_between(start_time, end_time):
+            return self._now_is_between(start_time, end_time)
+
         self._jinja_env.globals['state'] = get_state
         self._jinja_env.globals['state_attr'] = get_state_attribute
         self._jinja_env.globals['is_state_attr'] = is_state_attribute
         self._jinja_env.globals['friendly_name'] = get_friendly_name
         self._jinja_env.globals['format_date'] = format_date
         self._jinja_env.globals['relative_time'] = get_age
+        self._jinja_env.globals['now_is_between'] = now_is_between
 
         if hasattr(self._app, 'variables'):
             for name, value in self._app.variables.items():
@@ -99,6 +103,9 @@ class TemplateRenderer:
             if self._should_render_template(rendered):
                 rendered = self.render(rendered, **kwargs)
 
+            if isinstance(rendered, str):
+                rendered = rendered.strip()
+
             return rendered
 
         return message
@@ -108,3 +115,6 @@ class TemplateRenderer:
 
     def _get_state(self, entity=None, **kwargs):
         return self._app.get_state(entity, **kwargs)
+
+    def _now_is_between(self, start_time, end_time):
+        return self._app.now_is_between(start_time, end_time)

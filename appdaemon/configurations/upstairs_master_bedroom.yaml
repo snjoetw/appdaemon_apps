@@ -1,3 +1,57 @@
+master_bedroom_occupancy_monitor:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id:
+        - binary_sensor.zb_master_bedroom_door
+        - binary_sensor.zb_master_bedroom_motion
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          entity_id: binary_sensor.zb_master_bedroom_door
+          to: "on"
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.occupancy_master_bedroom
+          option: UNKNOWN
+
+    - constraints:
+        - platform: triggered_state
+          entity_id: binary_sensor.zb_master_bedroom_door
+          to: "off"
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.occupancy_master_bedroom
+          option: OCCUPIED
+          constraints:
+            - platform: state
+              entity_id: media_player.master_bedroom
+              state: playing
+        - platform: select_input_select_option
+          entity_id: input_select.occupancy_master_bedroom
+          option: UNOCCUPIED
+          constraints:
+            - platform: state
+              entity_id: media_player.master_bedroom
+              state: playing
+              negate: true
+
+    - constraints:
+        - platform: triggered_state
+          entity_id:
+            - binary_sensor.zb_master_bedroom_motion
+          to: "on"
+        - platform: state
+          entity_id: binary_sensor.zb_master_bedroom_door
+          state: 'off'
+      actions:
+        - platform: select_input_select_option
+          entity_id: input_select.occupancy_master_bedroom
+          option: OCCUPIED
+
+
 master_bathroom_lighting:
   module: motion_lighting
   class: MotionLighting

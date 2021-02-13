@@ -196,6 +196,7 @@ lynns_room_wakeup_lighting:
 
 
 lynns_room_temperature_difference_heater_booster:
+  debug: true
   module: automation
   class: Automation
   triggers:
@@ -205,7 +206,7 @@ lynns_room_temperature_difference_heater_booster:
         - sensor.template_master_bedroom_temperature
   constraints:
     - platform: time
-      start_time: "02:00:00"
+      start_time: "23:00:00"
       end_time: "06:30:00"
     - platform: state
       entity_id: input_select.last_climate_hvac_action
@@ -222,7 +223,12 @@ lynns_room_temperature_difference_heater_booster:
         - platform: template
           template: >
             {{ (state('sensor.template_master_bedroom_temperature') | float) - (state('sensor.template_lynn_s_room_temperature') | float) }}
-          expected_value: '>=0.5'
+          expected_value: >
+            {% if now_is_between('23:00:00', '01:00:00') %}
+            >=1.5
+            {% else %}
+            >=0.5
+            {% endif %}
         - platform: state
           entity_id: input_select.occupancy_lynn_s_room
           state: OCCUPIED
@@ -252,7 +258,12 @@ lynns_room_temperature_difference_heater_booster:
         - platform: template
           template: >
             {{ (state('sensor.template_master_bedroom_temperature') | float) - (state('sensor.template_lynn_s_room_temperature') | float) }}
-          expected_value: '<=0'
+          expected_value: >
+            {% if now_is_between('23:00:00', '01:00:00') %}
+            <=0.5
+            {% else %}
+            <=0
+            {% endif %}
       actions:
         - platform: service
           service: climate/turn_off
@@ -265,9 +276,10 @@ lynns_room_morning_heater_booster:
   module: automation
   class: Automation
   triggers:
+    - platform: time
+      time: "06:50:00"
     - platform: state
-      entity_ids:
-        - sensor.template_lynn_s_room_temperature
+      entity_ids: sensor.template_lynn_s_room_temperature
   variables:
     temperature_threshold: 25
   constraints:

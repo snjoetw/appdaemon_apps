@@ -2,15 +2,16 @@ import concurrent
 import hashlib
 import os
 import re
-import time
 import traceback
 from datetime import datetime, timedelta
 from threading import Lock
+from typing import List, Any
 
 import requests
+from pydub import AudioSegment
+
 from base_automation import BaseAutomation
 from lib.component import Component
-from pydub import AudioSegment
 
 
 class MediaPlayer(Component):
@@ -40,15 +41,10 @@ class MediaPlayer(Component):
         if current_volume is not None:
             current_volume = round(current_volume, 2)
 
-        self.debug('Checking volume: {} vs {}'.format(
-            current_volume,
-            volume
-        ))
+        self.debug('Checking volume: {} vs {}'.format(current_volume, volume))
 
         if current_volume != volume:
-            self.call_service('media_player/volume_set',
-                              entity_id=player_entity_id,
-                              volume_level=volume)
+            self.call_service('media_player/volume_set', entity_id=player_entity_id, volume_level=volume)
 
     def play_media(self, medias, volume_mode):
         try:
@@ -58,23 +54,20 @@ class MediaPlayer(Component):
                 for media_data in medias:
                     self._play_media(player_entity_id, media_data)
         except:
-            self.app.error("Unable to get play media, medias={}: {}".format(medias, traceback.format_exc()))
+            self.error("Unable to get play media, medias={}: {}".format(medias, traceback.format_exc()))
 
     def _play_media(self, player_entity_id, media_data):
         self.debug('About to play, entity={}, data={}'.format(player_entity_id, media_data))
 
         url = media_data.media_url
-        self.call_service('media_player/play_media',
-                          entity_id=player_entity_id,
-                          media_content_id=url,
+        self.call_service('media_player/play_media', entity_id=player_entity_id, media_content_id=url,
                           media_content_type='music')
 
         if media_data.duration:
             self._sleep(media_data.duration)
 
     def _sleep(self, duration):
-        self.debug('About to sleep for {} sec'.format(duration))
-        time.sleep(duration)
+        self.app.sleep(duration)
 
 
 class GoogleMediaPlayer(MediaPlayer):
@@ -225,6 +218,11 @@ class Announcement:
 
 
 class SonosAnnouncer(BaseAutomation):
+    _enabler_entity_id: str
+    _sleeping_time_entity_id: str
+    _queue: List
+    _announcer_lock: Lock
+
     def initialize(self):
         self._announcer_lock = Lock()
         self._queue = []

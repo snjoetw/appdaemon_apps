@@ -303,14 +303,9 @@ alarm_state_announcer:
     armed_away_message: "Alarm armed for away."
     disarmed_message: "Alarm disarmed."
     triggered_message: "Alarm triggered."
-
   triggers:
     - platform: state
       entity_id: alarm_control_panel.home_alarm
-  constraints:
-    - platform: state
-      entity_id: input_boolean.is_alarm_armable
-      state: "on"
   handlers:
     - constraints:
         - platform: triggered_state

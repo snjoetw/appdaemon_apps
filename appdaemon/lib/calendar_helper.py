@@ -118,9 +118,7 @@ class CalendarEventFetcher(Component):
         return [CalendarEvent(json_event) for json_event in response.json()]
 
     def fetch_waste_collection_event(self, calendar_entity_id, date):
-        events = self.fetch_events(calendar_entity_id,
-                                   date,
-                                   date + timedelta(days=1))
+        events = self.fetch_events(calendar_entity_id, date, date + timedelta(days=1))
         events.sort(key=lambda e: e.start_time)
 
         events_by_type = {}

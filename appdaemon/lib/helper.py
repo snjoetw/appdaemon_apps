@@ -89,7 +89,7 @@ def concat_list(items, concat_str=', '):
     if length == 1:
         return items[0]
     else:
-        return concat_str.join(items[:-1]) + concat_str + " and " + str(items[-1])
+        return concat_str.join(items[:-1]) + " and " + str(items[-1])
 
 
 def figure_parts_of_day():

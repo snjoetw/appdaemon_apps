@@ -73,7 +73,7 @@ class DeviceBatteryReminder(ReminderProvider):
 
         for result in checker_result.error_device_results:
             friendly_name = self.get_state(result.entity_id, attribute='friendly_name')
-            low_battery_device_names.append(friendly_name)
+            low_battery_device_names.append(friendly_name.rstrip(' Battery'))
 
         if not low_battery_device_names:
             return None

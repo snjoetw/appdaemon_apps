@@ -5,6 +5,7 @@ from lib.constraints import get_constraint
 from lib.triggers import TriggerInfo
 
 DEFAULT_SCENE = 'Default'
+TURN_ON_TRIGGER_STATES = ['on', 'unlocked']
 
 
 def light_settings_to_entity_ids(settings):
@@ -44,7 +45,8 @@ class MotionLighting(BaseAutomation):
         self.turn_off_light_entity_ids = self.cfg.list('turn_off_light_entity_ids', light_entity_ids)
         self.turn_off_lights_handle = None
 
-        self.register_motion_state_change_event()
+        if self.enabler_entity_id is None or self.get_state(self.enabler_entity_id) == 'on':
+            self.register_motion_state_change_event()
 
         if self.enabler_entity_id:
             self.listen_state(self.enabler_state_change_handler, self.enabler_entity_id)
@@ -81,7 +83,7 @@ class MotionLighting(BaseAutomation):
 
     def should_turn_on_lights(self, trigger_info):
         motion_state = trigger_info.data.get('to')
-        if motion_state != 'on':
+        if motion_state not in TURN_ON_TRIGGER_STATES:
             return False
 
         for constraint in self.turn_on_constraints:
@@ -94,10 +96,10 @@ class MotionLighting(BaseAutomation):
         motion_state = trigger_info.data.get('to')
 
         if len(self.motion_entity_ids) == 1:
-            return motion_state != 'on'
+            return motion_state not in TURN_ON_TRIGGER_STATES
 
         for motion_entity_id in self.motion_entity_ids:
-            if self.get_state(motion_entity_id) == 'on':
+            if self.get_state(motion_entity_id) in TURN_ON_TRIGGER_STATES:
                 return False
 
         return True

@@ -1,9 +1,7 @@
-from base_automation import BaseAutomation
 from lib.config import Config
 
 
 class Component:
-    _app: BaseAutomation
     _config: Config
 
     def __init__(self, app, config):

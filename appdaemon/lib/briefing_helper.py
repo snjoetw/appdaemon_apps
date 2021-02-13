@@ -235,8 +235,7 @@ class ReminderBriefingProvider(BriefingProvider):
             self.cfg.value('api_token', None),
         )
 
-        self.waste_collection_calendar_entity_id = self.cfg.value('waste_collection_calendar_entity_id',
-                                                                  None)
+        self.waste_collection_calendar_entity_id = self.cfg.value('waste_collection_calendar_entity_id', None)
 
     def can_brief(self, context):
         return True

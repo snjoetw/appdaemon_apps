@@ -301,3 +301,15 @@ fan_auto_night_mode:
           data:
             entity_id: fan.lynns_room
             night_mode: false
+
+climate_preset_mode_overrider:
+  debug: true
+  module: climate_preset_mode_overrider
+  class: ClimatePresetModeOverrider
+  climate_entity_id: climate.main_floor
+  override_enabler_entity_id: input_boolean.is_climate_master_bedroom_only_mode
+  overrides:
+    Sleep: Sleep M
+    Midnight: Midnight M
+    E Morning: E Morning M
+    Home: Home M # remove

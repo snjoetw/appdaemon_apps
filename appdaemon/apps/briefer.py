@@ -121,7 +121,7 @@ class BrieferAnnouncementAction(Action):
         for p in self.briefing_state_periods:
             self.debug('Checking {} and {}'.format(p['state'], current_state.name))
             if p['state'] == current_state.name:
-                return self.now_is_between(p['start_time'], p['end_time'])
+                return self.now.between(p['start_time'], p['end_time'])
 
         return False
 
@@ -136,7 +136,7 @@ class BrieferAnnouncementAction(Action):
         if current_state_period is None:
             return BriefingState.NONE
 
-        if self.now_is_before(current_state_period['start_time']):
+        if self.now.before(current_state_period['start_time']):
             self.debug('Next briefing state => period={} (current={})'.format(current_state_period, current_state))
             return current_state
 
@@ -144,7 +144,7 @@ class BrieferAnnouncementAction(Action):
         while period is not None:
             self.debug('Checking period={}'.format(period))
 
-            if self.now_is_before(period['end_time']):
+            if self.now.before(period['end_time']):
                 self.debug('Next briefing state => period={} (current={})'.format(period, current_state))
                 return BriefingState[period['state']]
 

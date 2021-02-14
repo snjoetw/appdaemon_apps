@@ -44,15 +44,12 @@ class BaseAutomation(hass.Hass):
     @utils.sync_wrapper
     async def get_state(self, entity=None, **kwargs):
         if entity is None and not 'namespace' in kwargs:
-            self.debug('About to retrieve state with entity=None\n{}'.format(
-                ''.join(traceback.format_stack())
-            ))
+            self.debug('About to retrieve state with entity=None\n{}'.format(''.join(traceback.format_stack())))
 
         state = await super().get_state(entity, **kwargs)
 
         if entity is not None and not 'namespace' in kwargs:
-            self.debug('Retrieved state, entity_id={} state={}'.format(entity,
-                                                                       state))
+            self.debug('Retrieved state, entity_id={} state={}'.format(entity,state))
 
         return state
 

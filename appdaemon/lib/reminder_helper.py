@@ -5,6 +5,7 @@ from lib.component import Component
 from lib.helper import concat_list, to_float
 from lib.presence_helper import PRESENCE_MODE_SOMEONE_IS_HOME, PRESENCE_MODE_EVERYONE_IS_HOME
 from lib.travel_time_helper import TravelTimeFetcher
+from lib.time_wrapper import DateTimeWrapper
 
 TIME_TRIGGER_METHOD = 'time'
 MOTION_TRIGGER_METHOD = 'motion'
@@ -130,7 +131,7 @@ class SchoolDropOffTimeReminder(ReminderProvider):
         if no_school_events:
             return None
 
-        school_time = self.parse_time(self.school_time)
+        school_time = DateTimeWrapper(self.school_time).datetime()
         time_diff = (school_time - datetime.now())
         time_diff_in_min = time_diff.total_seconds() / 60
         current_time = datetime.now().strftime('%H:%M')

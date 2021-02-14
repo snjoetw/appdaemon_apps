@@ -589,7 +589,7 @@ class AlarmNotifierAction(Action):
         message = self.cfg.value("message", None)
         image_filename = self.cfg.value("image_filename", None)
         trigger_entity_id = self.cfg.value("trigger_entity_id", None)
-        notifier_types = [NotifierType(n) for n in self.cfg.list('notifier')]
+        notifier_types = [NotifierType(n) for n in self.cfg.list('notifier', [])]
 
         notifier: AlarmNotifier = self.app.get_app('alarm_notifier')
         notifier.notify(notifier_types, title, message, trigger_entity_id, image_filename, {

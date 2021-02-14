@@ -1,4 +1,5 @@
 from lib.config import Config
+from lib.time_wrapper import NowWrapper
 
 
 class Component:
@@ -15,6 +16,10 @@ class Component:
     @property
     def cfg(self):
         return self._config
+
+    @property
+    def now(self):
+        return NowWrapper(self.app)
 
     def get_state(self, entity=None, **kwargs):
         return self.app.get_state(entity, **kwargs)
@@ -36,31 +41,6 @@ class Component:
 
     def error(self, msg):
         return self.app.error(msg)
-
-    def now_is_between(self, start_time_str, end_time_str, name=None):
-        return self.app.now_is_between(start_time_str, end_time_str, name)
-
-    def now_is_after(self, time_str):
-        now = self.get_now()
-        time = self.parse_time(time_str)
-        return time < now
-
-    def now_is_before(self, time_str):
-        now = self.get_now()
-        time = self.parse_time(time_str)
-        return now < time
-
-    def get_now(self):
-        return self.app.get_now().astimezone(self.app.AD.tz)
-
-    def parse_time(self, time_str):
-        time = self.app.parse_time(time_str)
-        now = self.get_now()
-        return now.replace(
-            hour=time.hour,
-            minute=time.minute,
-            second=time.second
-        )
 
     def __repr__(self):
         return "{}(config={})".format(

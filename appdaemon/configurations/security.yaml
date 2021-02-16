@@ -990,8 +990,9 @@ nest_app_front_door_open_action:
       entity_ids:
         - input_boolean.nest_front_door_doorbell_pressed
         - input_boolean.nest_front_door_activity_detected
-        - input_boolean.nest_front_door_package_delivered
       to: "on"
+    - platform: event
+      event_type: ad.nest_event
   handlers:
     - constraints:
       actions:
@@ -1000,6 +1001,21 @@ nest_app_front_door_open_action:
           data:
             topic: app/action/Nest
             payload: "open_app_front_door"
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            event_type:
+              - package_left
+              - doorbell
+            location: Front Door
+      actions:
+        - platform: service
+          service: mqtt/publish
+          data:
+            topic: app/action/Nest
+            payload: "open_app_front_door"
+
 
 nest_app_open_action:
   debug: true

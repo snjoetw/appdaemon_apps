@@ -1,7 +1,7 @@
-import appdaemon.plugins.hass.hassapi as hass
+from base_automation import BaseAutomation
 
 
-class ClimatePresetModeOverrider(hass.Hass):
+class ClimatePresetModeOverrider(BaseAutomation):
     overrides: dict
     override_enabler_entity_id: str
     climate_entity_id: list

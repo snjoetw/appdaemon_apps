@@ -71,6 +71,8 @@ def get_action(app, config):
         return SetStateAction(app, config)
     elif platform == "hue_activate_scene":
         return HueActivateScene(app, config)
+    elif platform == "fire_event":
+        return FireEvent(app, config)
     else:
         raise ValueError("Invalid action config: {}".format(config))
 
@@ -772,3 +774,14 @@ class HueActivateScene(Action):
             group_name = self.get_state(entity_id, attribute='friendly_name')
 
             self.call_service('hue/hue_activate_scene', group_name=group_name, scene_name=scene_name)
+
+
+class FireEvent(Action):
+    def __init__(self, app, action_config):
+        super().__init__(app, action_config)
+
+    def do_action(self, trigger_info):
+        event = self.cfg.value('event')
+        event_data = self.cfg.value('event_data')
+
+        self.app.fire_event(event, **event_data)

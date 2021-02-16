@@ -1,4 +1,3 @@
-
 water_leak_detected:
   module: automation
   class: Automation
@@ -98,13 +97,13 @@ package_delivered_notifier:
   variables:
     message: "A package was just delivered"
   triggers:
-    - platform: state
-      entity_ids: input_boolean.nest_front_door_package_delivered
+    - platform: event
+      event_type: ad.nest_event
   handlers:
     - constraints:
-        - platform: triggered_state
-          from: "off"
-          to: "on"
+        - platform: triggered_event
+          event_data:
+            event_type: package_left
       actions:
         - platform: announcement
           tts_message: "{{ message }}"
@@ -115,8 +114,6 @@ package_delivered_notifier:
           camera_entity_id: camera.front_door
           ios:
             thread_id: Mail Monitor
-        - platform: turn_off
-          entity_ids: input_boolean.nest_front_door_package_delivered
 
 
 

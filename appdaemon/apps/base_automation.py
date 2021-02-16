@@ -1,9 +1,9 @@
 import concurrent
 import time
-
-import appdaemon.utils as utils
-import hassapi as hass
 import traceback
+
+import appdaemon.plugins.hass.hassapi as hass
+import appdaemon.utils as utils
 
 from lib.config import Config
 
@@ -49,7 +49,7 @@ class BaseAutomation(hass.Hass):
         state = await super().get_state(entity, **kwargs)
 
         if entity is not None and not 'namespace' in kwargs:
-            self.debug('Retrieved state, entity_id={} state={}'.format(entity,state))
+            self.debug('Retrieved state, entity_id={} state={}'.format(entity, state))
 
         return state
 

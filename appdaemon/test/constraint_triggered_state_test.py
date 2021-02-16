@@ -6,7 +6,7 @@ from triggers import TriggerInfo
 
 
 def create_constraint(config):
-    app = Mock()
+    app = Mock(**{'variables': {}})
     return get_constraint(app, {
         'platform': 'triggered_state',
         **config

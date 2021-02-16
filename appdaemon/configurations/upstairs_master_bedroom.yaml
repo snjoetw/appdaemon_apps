@@ -221,7 +221,7 @@ master_bedroom_sleep_music_auto_stop:
   class: Automation
   triggers:
     - platform: time
-      time: "09:00:00"
+      time: "09:30:00"
   handlers:
     - constraints:
         - platform: state

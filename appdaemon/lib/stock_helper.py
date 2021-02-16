@@ -1,33 +1,36 @@
 from datetime import datetime
 
 import requests
-from lib.component import Component
+
+from base_automation import BaseAutomation
 from lib.helper import to_float
 
 TRADING_TIME_START = datetime.strptime('06:30:00', '%H:%M:%S').time()
 TRADING_TIME_END = datetime.strptime('13:00:00', '%H:%M:%S').time()
 
 
-class StockQuoteFetcher(Component):
-    def __init__(self, app, api_key):
-        super().__init__(app, {})
+class StockQuoteFetcher:
+    _quote_url: str
+    _app: BaseAutomation
 
-        self.quote_url = "https://finnhub.io/api/v1/quote?token={}&symbol=".format(api_key)
+    def __init__(self, app, api_key):
+        self._app = app
+        self._quote_url = "https://finnhub.io/api/v1/quote?token={}&symbol=".format(api_key)
 
     def fetch_quote(self, symbol):
-        self.debug('About to fetch quote with symbol={}'.format(symbol))
+        self._app.debug('About to fetch quote with symbol={}'.format(symbol))
 
-        response = requests.get(self.quote_url.format(symbol) + symbol)
+        response = requests.get(self._quote_url.format(symbol) + symbol)
 
-        self.debug('Received API response={}, json={}'.format(response, response.json()))
+        self._app.debug('Received API response={}, json={}'.format(response, response.json()))
 
         response.raise_for_status()
 
-        return Quote(symbol, response.json())
+        return Quote(self._app.get_now(), symbol, response.json())
 
 
 class Quote:
-    def __init__(self, symbol, json):
+    def __init__(self, current_time, symbol, json):
         self._symbol = symbol
         self._open = to_float(json['o'])
         self._high = to_float(json['h'])
@@ -37,6 +40,7 @@ class Quote:
         self._previous_close = to_float(json['pc'])
         self._change = round(self._price - self._previous_close, 2)
         self._change_percent = '{}%'.format(round(self._change / self._previous_close * 100))
+        self._current_time = current_time
 
     @property
     def symbol(self):
@@ -80,7 +84,7 @@ class Quote:
 
     @property
     def is_currently_trading(self):
-        delta = datetime.now() - self.timestamp
+        delta = self._current_time - self.timestamp
 
         if delta.days > 0:
             return False

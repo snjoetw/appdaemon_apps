@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List
 
 import appdaemon.plugins.mqtt.mqttapi as mqtt
@@ -68,6 +69,7 @@ class TelusAlarmHandler(Handler):
 
         # setting state before calling service to alarm_state_change_events to filter by changed_by attribute
         self.set_state('alarm_control_panel.home_alarm', state=telus_alarm_state, attributes=alarm_attributes)
+        self.app.sleep(0.5)
         self.call_service(self._figure_service_name(title), entity_id='alarm_control_panel.home_alarm')
 
     @staticmethod
@@ -91,17 +93,52 @@ class TelusAlarmHandler(Handler):
         return None
 
 
+AD_EVENT_NEST = 'ad.nest_event'
+
+
+class NestEventType(Enum):
+    PERSON = 'person'
+    PERSON_TALKING = 'person_talking'
+    MOTION = 'motion'
+    PACKAGE_LEFT = 'package_left'
+    PACKAGE_PICKED_UP = 'package_picked_up'
+    DOORBELL = 'doorbell'
+    CAMERA_OFFLINE = 'camera_offline'
+    KNOWN_FACE_DETECTED = 'known_face_detected'
+
+
 class NestHandler(Handler):
     def __init__(self, app):
         super().__init__(app, 'Nest')
 
     def _do_handle(self, title, text):
-        if title == 'Package left • Front Door':
-            self.app.turn_on('input_boolean.nest_front_door_package_delivered')
-        elif title == 'Person • Front Yard':
-            self.log('Handling title={}'.format(title))
-        elif title == 'Motion • Rear Driveway':
-            self.log('Handling title={}'.format(title))
+        event, location = title.split(' • ')
+        if not event or not location:
+            self.log('Unable to handle title={}'.format(title))
+            return
+
+        event_type = self._figure_event_type(event)
+        if event_type:
+            return self._handle_event(event_type, location)
+
+        if text.startswith('Your camera thinks it spotted a familiar face'):
+            return self._handle_event(NestEventType.KNOWN_FACE_DETECTED, location, face_detected=event)
+
+        self.error('Unsupported event, not handling title={}, text={}'.format(title, text))
+
+    def _handle_event(self, event_type, location, **kwargs):
+        self.log('Handling {} event, location={}, kwargs={}'.format(event_type, location, kwargs))
+        self.app.fire_event(AD_EVENT_NEST, event_type=event_type.value, location=location, **kwargs)
+
+    @staticmethod
+    def _figure_event_type(event):
+        if event is None:
+            return
+
+        try:
+            return NestEventType(event.lower().replace(' ', '_'))
+        except ValueError:
+            return
 
 
 class UberEatsHandler(Handler):
@@ -109,4 +146,4 @@ class UberEatsHandler(Handler):
         super().__init__(app, 'Uber Eats')
 
     def _do_handle(self, title, text):
-        self.info('Uber Eats handler title={}, text={}'.format(title, text))
+        self.log('Uber Eats handler title={}, text={}'.format(title, text))

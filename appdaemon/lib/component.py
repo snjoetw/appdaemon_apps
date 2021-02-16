@@ -1,8 +1,10 @@
+from base_automation import BaseAutomation
 from lib.config import Config
 from lib.time_wrapper import NowWrapper
 
 
 class Component:
+    _app: BaseAutomation
     _config: Config
 
     def __init__(self, app, config):

@@ -216,18 +216,29 @@ class TriggeredEventConstraint(Constraint):
 
     def check_event_data(self, event_data):
         default = {}
-        target_event_data = flatten_dict(self.cfg.value("event_data", default))
-        if not target_event_data:
+        expected_event_data = flatten_dict(self.cfg.value("event_data", default))
+        if not expected_event_data:
             return True
 
         event_data = flatten_dict(event_data)
 
-        for key, value in target_event_data.items():
-            if event_data.get(key) != value:
-                self.debug('Key={} has mismatched value => {} != {}'.format(key, event_data.get(key), value))
+        for key, expected in expected_event_data.items():
+            actual = event_data.get(key)
+            if not self._match_value(expected, actual):
+                self.debug('Key={} has mismatched value => {} != {}'.format(key, expected, actual))
                 return False
 
         return True
+
+    @staticmethod
+    def _match_value(expected, actual):
+        if expected == actual:
+            return True
+
+        if isinstance(expected, list) and not isinstance(actual, list):
+            return actual in expected
+
+        return False
 
 
 class TriggeredActionConstraint(Constraint):

@@ -105,6 +105,8 @@ class BrieferAnnouncementAction(Action):
         if self.dry_run:
             return
 
+        self.app.sleep(2)
+
         announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
         announcer.announce(message, use_cache=False, motion_entity_id=motion_entity_id)
 

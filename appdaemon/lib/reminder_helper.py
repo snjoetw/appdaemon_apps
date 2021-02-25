@@ -74,7 +74,7 @@ class DeviceBatteryReminder(ReminderProvider):
 
         for result in checker_result.error_device_results:
             friendly_name = self.get_state(result.entity_id, attribute='friendly_name')
-            low_battery_device_names.append(friendly_name.rstrip(' Battery'))
+            low_battery_device_names.append(friendly_name)
 
         if not low_battery_device_names:
             return None
@@ -84,7 +84,7 @@ class DeviceBatteryReminder(ReminderProvider):
                 low_battery_device_names[0])
 
         device_names = concat_list(low_battery_device_names)
-        return '{} are running low in battery'.format(device_names)
+        return '{} are running low'.format(device_names)
 
 
 class SchoolDropOffTimeReminder(ReminderProvider):

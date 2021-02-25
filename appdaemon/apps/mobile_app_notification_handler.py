@@ -141,9 +141,42 @@ class NestHandler(Handler):
             return
 
 
+AD_EVENT_UBER_EATS = 'ad.uber_eats_event'
+
+
+class UberEatsEventType(Enum):
+    ORDER_DELIVERED = 'order_delivered'
+    ORDER_ALMOST_DELIVERED = 'order_almost_delivered'
+    ORDER_ON_THE_MOVE = 'order_on_the_move'
+    PREPARING_ORDER = 'preparing_order'
+    ORDER_READY_FOR_PICKUP = 'order_ready_for_pickup'
+
+
 class UberEatsHandler(Handler):
     def __init__(self, app):
         super().__init__(app, 'Uber Eats')
 
     def _do_handle(self, title, text):
-        self.log('Uber Eats handler title={}, text={}'.format(title, text))
+        event_type = self._figure_event_type(text)
+        if event_type:
+            return self._handle_event(event_type)
+
+        self.error('Unsupported event, not handling title={}, text={}'.format(title, text))
+
+    def _handle_event(self, event_type):
+        self.log('Handling {} event'.format(event_type))
+        self.app.fire_event(AD_EVENT_UBER_EATS, event_type=event_type.value)
+
+    @staticmethod
+    def _figure_event_type(text):
+        if 'Grab your order at the door' in text:
+            return UberEatsEventType.ORDER_DELIVERED
+        elif 'moment to leave your order at the door' in text:
+            return UberEatsEventType.ORDER_ALMOST_DELIVERED
+        elif 'Your order is on the move' in text:
+            return UberEatsEventType.ORDER_ON_THE_MOVE
+        elif 'is preparing your order' in text:
+            return UberEatsEventType.PREPARING_ORDER
+        elif 'Time to pick up your order' in text:
+            return UberEatsEventType.ORDER_READY_FOR_PICKUP
+        return None

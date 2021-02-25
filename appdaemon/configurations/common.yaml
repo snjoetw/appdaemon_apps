@@ -431,3 +431,64 @@ mobile_app_notification_handler:
 #          ios:
 #            category: alarm_armed
 #            critical: true
+
+
+uber_eats_notifier:
+  module: automation
+  class: Automation
+  variables:
+    order_delivered_message: "Uber Eats order is delivered at front door."
+    order_almost_delivered_message: "Uber Eats order is delivered at front door."
+    order_on_the_move_message: "Uber Eats order is on the move."
+    preparing_order_message: "Restaurant is preparing your Uber eats order."
+  triggers:
+    - platform: event
+      event_type: ad.uber_eats_event
+  handlers:
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            event_type: order_delivered
+      actions:
+        - platform: announcement
+          tts_message: "{{ order_delivered_message }}"
+        - platform: notify
+          message: "{{ order_delivered_message }}"
+          recipient: all
+          notifier: ios
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            event_type: order_on_the_move
+      actions:
+        - platform: announcement
+          tts_message: "{{ order_on_the_move_message }}"
+        - platform: notify
+          message: "{{ order_on_the_move_message }}"
+          recipient: all
+          notifier: ios
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            event_type: preparing_order
+      actions:
+        - platform: announcement
+          tts_message: "{{ preparing_order_message }}"
+        - platform: notify
+          message: "{{ preparing_order_message }}"
+          recipient: all
+          notifier: ios
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            event_type: order_ready_for_pickup
+      actions:
+        - platform: announcement
+          tts_message: "{{ order_ready_for_pickup_message }}"
+        - platform: notify
+          message: "{{ order_ready_for_pickup_message }}"
+          recipient: all
+          notifier: ios

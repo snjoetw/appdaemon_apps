@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-import requests
+import finnhub
 
 from base_automation import BaseAutomation
 from lib.helper import to_float
@@ -15,18 +15,16 @@ class StockQuoteFetcher:
 
     def __init__(self, app, api_key):
         self._app = app
-        self._quote_url = "https://finnhub.io/api/v1/quote?token={}&symbol=".format(api_key)
+        self._client = finnhub.Client(api_key=api_key)
 
     def fetch_quote(self, symbol):
         self._app.debug('About to fetch quote with symbol={}'.format(symbol))
 
-        response = requests.get(self._quote_url.format(symbol) + symbol)
+        json = self._client.quote(symbol)
 
-        self._app.debug('Received API response={}, json={}'.format(response, response.json()))
+        self._app.debug('Received API json={}'.format(json))
 
-        response.raise_for_status()
-
-        return Quote(self._app.get_now(), symbol, response.json())
+        return Quote(self._app.get_now(), symbol, json)
 
 
 class Quote:
@@ -36,7 +34,7 @@ class Quote:
         self._high = to_float(json['h'])
         self._low = to_float(json['l'])
         self._price = to_float(json['c'])
-        self._timestamp = datetime.fromtimestamp(to_float(json['t']))
+        self._timestamp = datetime.fromtimestamp(to_float(json['t']), tz=timezone.utc)
         self._previous_close = to_float(json['pc'])
         self._change = round(self._price - self._previous_close, 2)
         self._change_percent = '{}%'.format(round(self._change / self._previous_close * 100))
@@ -84,9 +82,7 @@ class Quote:
 
     @property
     def is_currently_trading(self):
-        delta = self._current_time - self.timestamp
-
-        if delta.days > 0:
+        if self._current_time.day != self.timestamp.day:
             return False
 
-        return TRADING_TIME_START <= self.timestamp.time() <= TRADING_TIME_END
+        return TRADING_TIME_START <= self._current_time.time() <= TRADING_TIME_END

@@ -24,13 +24,13 @@ class Automation(ConfigurableAutomation):
     def initialize(self):
         super().initialize()
 
+        # keep all template variables so they can be used in component where jinja template is initialized
+        self._variables = self.args.get("variables", {})
+
         for trigger_config in self.cfg.value("triggers"):
             # Initialize a trigger based on config
             trigger = get_trigger(self, trigger_config, self.trigger_handler)
             self.debug('Registered trigger={}'.format(trigger))
-
-        # keep all template variables so they can be used in component where jinja template is initialized
-        self._variables = self.args.get("variables", {})
 
         constraint_configs = self.args.get("constraints") or []
         for constraint_config in constraint_configs:

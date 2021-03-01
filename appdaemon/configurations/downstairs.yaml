@@ -27,7 +27,7 @@ washroom_lighting:
   turn_off_delay: 600
   lighting_scenes:
     Default:
-      - switch.zwave_washroom_light
+      - switch.sh_washroom_light
 
 
 ###############################################################################

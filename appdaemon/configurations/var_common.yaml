@@ -80,7 +80,7 @@ var_downstairs_lights: &var_downstairs_lights
   - light.zwave_stairway_light
   - switch.zwave_kitchen_counter_light
   - switch.zwave_living_room_light
-  - switch.zwave_washroom_light
+  - switch.sh_washroom_light
 
 var_upstairs_lights: &var_upstairs_lights
   - light.hue_lynn_s_room_ceiling_light

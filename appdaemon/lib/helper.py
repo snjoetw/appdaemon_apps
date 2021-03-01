@@ -61,8 +61,7 @@ def to_float(raw, default_value=None):
     return default_value
 
 
-def create_ios_push_data(category, entity_id=None, action_data=None,
-                         attachment=None):
+def create_ios_push_data(category, entity_id=None, action_data=None, attachment=None):
     data = {
         'push': {
             'category': category

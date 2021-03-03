@@ -1,3 +1,7 @@
+from datetime import datetime
+
+from pytz import timezone
+
 from triggers import TriggerInfo
 
 
@@ -19,3 +23,7 @@ def now_is_between(hass_functions, start, end):
         return _start == start and _end == end
 
     hass_functions['now_is_between'].side_effect = now_is_between_mock
+
+
+def create_datetime(year, month, day, hour, minute, second, tzinfo=timezone('US/Pacific')):
+    return datetime(year, month, day, hour, minute, second, tzinfo=tzinfo)

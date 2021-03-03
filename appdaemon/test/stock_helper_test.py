@@ -1,9 +1,7 @@
 import unittest
-from datetime import datetime
-
-from pytz import timezone
 
 from lib.stock_helper import Quote
+from test_helper import create_datetime
 
 QUOTE_JSON = {
     "c": 261.74,
@@ -15,10 +13,6 @@ QUOTE_JSON = {
     # February 24, 2021 4:00:00 PM GMT-08:00
     "t": 1614211200,
 }
-
-
-def create_datetime(year, month, day, hour, minute, second, tzinfo=timezone('US/Pacific')):
-    return datetime(year, month, day, hour, minute, second, tzinfo=tzinfo)
 
 
 class StockQuoteTest(unittest.TestCase):

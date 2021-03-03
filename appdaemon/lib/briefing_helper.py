@@ -290,51 +290,50 @@ class StockPriceProvider(BriefingProvider):
             self.debug('Now is in trading time')
             return to_stock_current_price_briefing_text(quotes)
 
-        return to_stock_closed_price_briefing_text(quotes)
+        return to_stock_closed_price_briefing_text(datetime.now(), quotes)
 
 
 def to_stock_current_price_briefing_text(quotes):
     parts = []
 
     for quote in quotes:
-        parts.append('{} is {} {}, to ${}'.format(
+        parts.append('{} is {} {}, to ${}{}'.format(
             to_stock_name(quote),
             to_stock_direction(quote),
             to_stock_change(quote),
             to_stock_price(quote),
+            SHORT_PAUSE,
         ))
 
-    return 'Currently, {}{}'.format(
-        SHORT_PAUSE,
-        concat_list(parts, ', ' + SHORT_PAUSE))
+    return 'Currently, {}'.format(
+        concat_list(parts, ', '))
 
 
-def to_stock_closed_price_briefing_text(quotes):
-    last_trading_day = quotes[0].timestamp
-    delta = datetime.now() - last_trading_day
-    day = None
+def to_stock_closed_price_briefing_text(current_time, quotes):
+    quote = quotes[0]
 
-    if delta.days == 0:
+    day_diff = current_time.day - quote.timestamp.day
+    if day_diff == 0:
         day = 'Today'
-    elif delta.days == 1:
+    elif day_diff == 1:
         day = 'Yesterday'
     else:
-        day = 'Last {}'.format(calendar.day_name[last_trading_day.weekday()])
+        day = 'Last {}'.format(calendar.day_name[quote.timestamp.weekday()])
 
     parts = []
 
     for quote in quotes:
-        parts.append('{} was {} {}, to ${}'.format(
+        parts.append('{} was {} {}, to ${}{}'.format(
             to_stock_name(quote),
             to_stock_direction(quote),
             to_stock_change(quote),
             to_stock_price(quote),
+            SHORT_PAUSE,
         ))
 
-    return '{}, {}{}'.format(
+    return '{}, {}'.format(
         day,
-        SHORT_PAUSE,
-        concat_list(parts, ', ' + SHORT_PAUSE))
+        concat_list(parts, ', '))
 
 
 def to_stock_name(quote):
@@ -358,9 +357,9 @@ def to_stock_direction(quote):
 def to_stock_change(quote):
     change_percent = quote.change_percent
     change_percent = float(change_percent.replace('%', ''))
-    change_percent = round(change_percent, 1)
+    change_percent = round(change_percent)
 
-    if change_percent >= 1 or change_percent <= -1:
+    if change_percent > 0 or change_percent < 0:
         return '{}%'.format(change_percent)
 
     change = quote.change
@@ -371,6 +370,11 @@ def to_stock_change(quote):
 def to_stock_price(quote):
     price = quote.price
     price = round(price, 2)
+
+    # remove trailing .0
+    if price % 1 == 0:
+        return int(price)
+
     return price
 
 

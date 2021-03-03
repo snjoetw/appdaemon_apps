@@ -1,11 +1,11 @@
 import googlemaps
 
-from lib.component import Component
+from lib.core.app_accessible import AppAccessible
 
 
-class TravelTimeFetcher(Component):
+class TravelTimeFetcher(AppAccessible):
     def __init__(self, app, api_key):
-        super().__init__(app, {})
+        super().__init__(app)
 
         self.maps_api = googlemaps.Client(key=api_key)
 

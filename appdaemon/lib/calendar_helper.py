@@ -2,7 +2,8 @@ from datetime import datetime, timezone, timedelta
 from enum import Enum
 
 import requests
-from lib.component import Component
+
+from lib.core.app_accessible import AppAccessible
 
 
 def is_no_school_event(event):
@@ -58,9 +59,9 @@ def from_date_str(date_str):
     return datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ').astimezone()
 
 
-class CalendarEventFetcher(Component):
+class CalendarEventFetcher(AppAccessible):
     def __init__(self, app, api_base_url, api_token):
-        super().__init__(app, {})
+        super().__init__(app)
 
         self.api_headers = {
             'Authorization': api_token,

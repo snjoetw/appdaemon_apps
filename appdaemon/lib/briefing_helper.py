@@ -357,13 +357,16 @@ def to_stock_direction(quote):
 def to_stock_change(quote):
     change_percent = quote.change_percent
     change_percent = float(change_percent.replace('%', ''))
-    change_percent = round(change_percent)
+    change_percent = abs(round(change_percent, 1))
 
-    if change_percent > 0 or change_percent < 0:
+    if change_percent % 1 == 0:
+        change_percent = int(change_percent)
+
+    if change_percent >= 1:
         return '{}%'.format(change_percent)
 
     change = quote.change
-    change = round(change, 2)
+    change = abs(round(change, 2))
     return '${}'.format(change)
 
 

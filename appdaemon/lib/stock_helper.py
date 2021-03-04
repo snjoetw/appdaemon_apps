@@ -37,7 +37,7 @@ class Quote:
         self._timestamp = datetime.fromtimestamp(to_float(json['t']), tz=timezone.utc)
         self._previous_close = to_float(json['pc'])
         self._change = round(self._price - self._previous_close, 2)
-        self._change_percent = '{}%'.format(round(self._change / self._previous_close * 100))
+        self._change_percent = '{}%'.format(round(self._change / self._previous_close * 100, 2))
         self._current_time = current_time
 
     @property

@@ -26,33 +26,33 @@ class StockPriceProviderTest(TestCase):
 
         text = to_stock_current_price_briefing_text(create_quotes(current_time))
         self.assertEqual(text,
-                         'Currently, Apple is up 5%, to $127.79<break time=".2s" />,'
-                         ' Tesla is up 6%, to $718.43<break time=".2s" />'
-                         ' and SQ is up 5%, to $241<break time=".2s" />')
+                         'Currently, Apple is up 5.4%, to $127.79<break time=".2s" />,'
+                         ' Tesla is up 6.4%, to $718.43<break time=".2s" />'
+                         ' and SQ is up 4.8%, to $241<break time=".2s" />')
 
     def test_today_closed_price_briefing_text(self):
         current_time = create_datetime(2021, 3, 1, 13, 13, 59)
 
         text = to_stock_closed_price_briefing_text(current_time, create_quotes(current_time))
         self.assertEqual(text,
-                         'Today, Apple was up 5%, to $127.79<break time=".2s" />,'
-                         ' Tesla was up 6%, to $718.43<break time=".2s" />'
-                         ' and SQ was up 5%, to $241<break time=".2s" />')
+                         'Today, Apple was up 5.4%, to $127.79<break time=".2s" />,'
+                         ' Tesla was up 6.4%, to $718.43<break time=".2s" />'
+                         ' and SQ was up 4.8%, to $241<break time=".2s" />')
 
     def test_yesterday_closed_price_briefing_text(self):
         current_time = create_datetime(2021, 3, 2, 6, 13, 59)
 
         text = to_stock_closed_price_briefing_text(current_time, create_quotes(current_time))
         self.assertEqual(text,
-                         'Yesterday, Apple was up 5%, to $127.79<break time=".2s" />,'
-                         ' Tesla was up 6%, to $718.43<break time=".2s" />'
-                         ' and SQ was up 5%, to $241<break time=".2s" />')
+                         'Yesterday, Apple was up 5.4%, to $127.79<break time=".2s" />,'
+                         ' Tesla was up 6.4%, to $718.43<break time=".2s" />'
+                         ' and SQ was up 4.8%, to $241<break time=".2s" />')
 
     def test_last_monday_closed_price_briefing_text2(self):
         current_time = create_datetime(2021, 3, 5, 6, 13, 59)
 
         text = to_stock_closed_price_briefing_text(current_time, create_quotes(current_time))
         self.assertEqual(text,
-                         'Last Monday, Apple was up 5%, to $127.79<break time=".2s" />,'
-                         ' Tesla was up 6%, to $718.43<break time=".2s" />'
-                         ' and SQ was up 5%, to $241<break time=".2s" />')
+                         'Last Monday, Apple was up 5.4%, to $127.79<break time=".2s" />,'
+                         ' Tesla was up 6.4%, to $718.43<break time=".2s" />'
+                         ' and SQ was up 4.8%, to $241<break time=".2s" />')

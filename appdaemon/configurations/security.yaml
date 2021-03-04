@@ -1037,16 +1037,16 @@ nest_app_open_action:
             topic: app/action/Nest
             payload: "open_app"
 
-nest_camera_events:
-  debug: true
-  module: automation
-  class: Automation
-  triggers:
-    - platform: event
-      event_type: nest_event
-  handlers:
-    - constraints:
-      actions:
-        - platform: debug
+#nest_camera_events:
+#  debug: true
+#  module: automation
+#  class: Automation
+#  triggers:
+#    - platform: event
+#      event_type: nest_event
+#  handlers:
+#    - constraints:
+#      actions:
+#        - platform: debug
 
 

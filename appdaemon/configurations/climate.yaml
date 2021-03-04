@@ -176,12 +176,12 @@ auto_thermostat_mode:
 #      ignore_presence_mode: true
 #      enabler_entity_id: input_boolean.is_auto_fan_enabled_office
 #    - temperature_entity_id: sensor.template_lynn_s_room_temperature
-#      fan_entity_id: fan.lynns_room
+#      fan_entity_id: fan.dyson_lynns_room
 #      fan_on_temperature_offset: 0
 #      fan_off_temperature_offset: -0.3
 #      enabler_entity_id: input_boolean.is_auto_fan_enabled_lynns_room
 #    - temperature_entity_id: sensor.template_master_bedroom_temperature
-#      fan_entity_id: fan.master_bedroom
+#      fan_entity_id: fan.dyson_master_bedroom
 #      fan_on_temperature_offset: 0
 #      fan_off_temperature_offset: -0.3
 #      enabler_entity_id: input_boolean.is_auto_fan_enabled_master_bedroom
@@ -244,17 +244,17 @@ air_quality_monitor:
   bad_air_quality_mode_entity_id: input_boolean.is_bad_air_quality_mode
   monitors:
     - air_quality_entity_id: air_quality.dyson_master_bedroom
-      fan_entity_id: fan.master_bedroom
+      fan_entity_id: fan.dyson_master_bedroom
       threshold: 15
       name: Master Bedroom
 
     - air_quality_entity_id: air_quality.dyson_lynn_s_room
-      fan_entity_id: fan.lynns_room
+      fan_entity_id: fan.dyson_lynns_room
       threshold: 15
       name: Lynn's Room
 
     - air_quality_entity_id: sensor.dyson_office_dust
-      fan_entity_id: fan.office
+      fan_entity_id: fan.dyson_office
       threshold: 5
       name: Office
 
@@ -265,8 +265,8 @@ fan_auto_night_mode:
   triggers:
     - platform: state
       entity_ids:
-        - fan.lynns_room
-        - fan.master_bedroom
+        - fan.dyson_lynns_room
+        - fan.dyson_master_bedroom
     - platform: state
       entity_ids: binary_sensor.sleeping_time
   handlers:
@@ -278,12 +278,12 @@ fan_auto_night_mode:
         - platform: service
           service: dyson/set_night_mode
           data:
-            entity_id: fan.master_bedroom
+            entity_id: fan.dyson_master_bedroom
             night_mode: true
         - platform: service
           service: dyson/set_night_mode
           data:
-            entity_id: fan.lynns_room
+            entity_id: fan.dyson_lynns_room
             night_mode: true
 
     - constraints:
@@ -294,12 +294,12 @@ fan_auto_night_mode:
         - platform: service
           service: dyson/set_night_mode
           data:
-            entity_id: fan.master_bedroom
+            entity_id: fan.dyson_master_bedroom
             night_mode: false
         - platform: service
           service: dyson/set_night_mode
           data:
-            entity_id: fan.lynns_room
+            entity_id: fan.dyson_lynns_room
             night_mode: false
 
 climate_preset_mode_overrider:

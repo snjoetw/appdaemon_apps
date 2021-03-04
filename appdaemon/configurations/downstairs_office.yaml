@@ -115,3 +115,35 @@ office_wall_switch:
             - entity_id: light.hue_office_light
               brightness: 254
 
+
+office_meeting_dnd:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id:
+        - binary_sensor.joes_imac_pro_3_microphone_in_use
+        - binary_sensor.zb_office_door
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.joes_imac_pro_3_microphone_in_use
+          state: 'on'
+        - platform: state
+          entity_id: binary_sensor.zb_office_door
+          state: 'off'
+      actions:
+        - platform: enable_dnd
+          player_entity_id: media_player.office
+
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.joes_imac_pro_3_microphone_in_use
+          state: 'off'
+        - platform: state
+          entity_id: binary_sensor.zb_office_door
+          state: 'on'
+      actions:
+        - platform: disable_dnd
+          player_entity_id: media_player.office

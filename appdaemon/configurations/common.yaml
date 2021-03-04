@@ -23,44 +23,37 @@ sonos_announcer:
   api_base_url: !secret homeassistant_internal_url
   api_token: !secret appdaemon_hass_api_token
   enabler_entity_id: input_boolean.is_announcer_enabled
+  default_volume:
+    dnd: 0
+    sleeping: 0.45
+    regular: 0.6
+    critical: 0.75
   players:
     - type: google
       player_entity_id: media_player.gh_laundry_room
       motion_entity_id: binary_sensor.zb_laundry_room_motion
       keep_alive: true
-      volumes:
-        sleeping: 0.45
-        regular: 0.6
-        critical: 0.75
     - type: google
       player_entity_id: media_player.gh_family_room
       motion_entity_id:
         - binary_sensor.zb_family_room_motion
         - binary_sensor.zb_kitchen_motion
       keep_alive: true
-      volumes:
-        sleeping: 0.45
-        regular: 0.6
-        critical: 0.75
     - type: google
       player_entity_id: media_player.gh_dining_room
       motion_entity_id: binary_sensor.zb_living_room_motion
       keep_alive: true
-      volumes:
-        sleeping: 0.45
-        regular: 0.6
-        critical: 0.75
     - type: sonos
       player_entity_id: media_player.office
       motion_entity_id: binary_sensor.zb_office_motion
-      volumes:
+      volume:
         sleeping: 0.25
         regular: 0.45
         critical: 0.7
     - type: sonos
       player_entity_id: media_player.master_bathroom
       motion_entity_id: binary_sensor.zb_master_bedroom_motion
-      volumes:
+      volume:
         sleeping: 0.35
         regular: 0.45
         critical: 0.45

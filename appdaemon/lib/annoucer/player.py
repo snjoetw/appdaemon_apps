@@ -6,6 +6,8 @@ from lib.core.app_accessible import AppAccessible
 
 
 def create_player(app, raw_player_config, media_manager):
+    app.debug('Creating player with config={}'.format(raw_player_config))
+
     player_config = PlayerConfig(raw_player_config)
     player_type = raw_player_config.get('type')
     if player_type == 'sonos':
@@ -17,22 +19,17 @@ def create_player(app, raw_player_config, media_manager):
 
 
 class PlayerConfig:
-    def __init__(self, config):
-        self._type = config['type']
-        self._dnd_entity_id = config.get('dnd_entity_id', None)
-        self._player_entity_ids = config['player_entity_id']
-        self._motion_entity_ids = config.get('motion_entity_id', ())
-        self._targeted_only = config.get('targeted_only', False)
-        self._volumes = config.get('volumes', None)
-        self._keep_alive = config.get('keep_alive', False)
+    def __init__(self, raw_config):
+        self._type = raw_config['type']
+        self._player_entity_ids = raw_config['player_entity_id']
+        self._motion_entity_ids = raw_config.get('motion_entity_id', ())
+        self._targeted_only = raw_config.get('targeted_only', False)
+        self._keep_alive = raw_config.get('keep_alive', False)
+        self._volumes = raw_config.get('volume', {})
 
     @property
     def type(self):
         return self._type
-
-    @property
-    def dnd_entity_id(self):
-        return self._dnd_entity_id
 
     @property
     def player_entity_ids(self):
@@ -88,13 +85,14 @@ class Player(AppAccessible):
         for player_entity_id in self._config.player_entity_ids:
             self._update_volume(player_entity_id, volume_mode)
 
-    def _update_volume(self, player_entity_id, volume_mode):
-        dnd_player_entity_ids = self._figure_dnd_player_entity_ids()
-        if player_entity_id in dnd_player_entity_ids:
-            self._set_volume(player_entity_id, 0)
-            return
+    def update_player_volume(self, player_entity_id, volume_mode):
+        self._update_volume(player_entity_id, volume_mode)
 
+    def _update_volume(self, player_entity_id, volume_mode):
+        self.debug('Updating {} to use volume_mode={}'.format(player_entity_id, volume_mode))
+        
         current_volume = self.get_state(player_entity_id, attribute='volume_level')
+        # TODO: this maybe not needed?
         if current_volume == 0:
             volume = self._config.volumes.get(volume_mode, 0.2)
             self._set_volume(player_entity_id, volume)
@@ -139,16 +137,6 @@ class Player(AppAccessible):
 
     def _sleep(self, duration):
         self.app.sleep(duration)
-
-    def _figure_dnd_player_entity_ids(self):
-        if self._config.dnd_entity_id is None:
-            return ()
-
-        value = self.get_state(self._config.dnd_entity_id)
-        if value is None:
-            return ()
-
-        return value.split(',')
 
 
 class GoogleMediaPlayer(Player):

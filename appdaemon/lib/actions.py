@@ -1,7 +1,6 @@
 import random
 import time
 from datetime import timedelta, datetime
-
 from typing import List
 
 from alarm_notifier import AlarmNotifier
@@ -51,6 +50,10 @@ def get_action(app, config):
         return SetFanMinOnTimeAction(app, config)
     elif platform == "announcement":
         return AnnouncementAction(app, config)
+    elif platform == "enable_dnd":
+        return EnablePlayerDndAction(app, config)
+    elif platform == "disable_dnd":
+        return DisablePlayerDndAction(app, config)
     elif platform == "debug":
         return DebugAction(app, config)
     elif platform == "motion_announcer":
@@ -665,6 +668,28 @@ class AnnouncementAction(Action):
 
         announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
         announcer.announce(message, use_cache=use_cache, player_entity_ids=player_entity_id, prelude_name=prelude_name)
+
+
+class EnablePlayerDndAction(Action):
+    def __init__(self, app, action_config):
+        super().__init__(app, action_config)
+
+    def do_action(self, trigger_info):
+        player_entity_ids = self.cfg.list('player_entity_id', [])
+        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        for player_entity_id in player_entity_ids:
+            announcer.enable_do_not_disturb(player_entity_id)
+
+
+class DisablePlayerDndAction(Action):
+    def __init__(self, app, action_config):
+        super().__init__(app, action_config)
+
+    def do_action(self, trigger_info):
+        player_entity_ids = self.cfg.list('player_entity_id', [])
+        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        for player_entity_id in player_entity_ids:
+            announcer.disable_do_not_disturb(player_entity_id)
 
 
 class MotionAnnouncementAction(Action):

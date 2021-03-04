@@ -1,12 +1,46 @@
 import concurrent
 from threading import Lock
-from typing import List
+from typing import List, Dict
 
 from base_automation import BaseAutomation
 from lib.annoucer.media_manager import MediaManager
 from lib.annoucer.player import Player
 from lib.annoucer.player import create_player
-from lib.helper import list_value
+
+
+class AnnouncerConfig:
+    _default_volume: Dict
+    _enabler_entity_id: str
+    _api_token: str
+    _api_base_url: str
+    _sleeping_time_entity_id: str
+
+    def __init__(self, config):
+        self._sleeping_time_entity_id = config['sleeping_time_entity_id']
+        self._api_base_url = config['api_base_url']
+        self._api_token = config['api_token']
+        self._enabler_entity_id = config['enabler_entity_id']
+        self._default_volume = config['default_volume']
+
+    @property
+    def sleeping_time_entity_id(self):
+        return self._sleeping_time_entity_id
+
+    @property
+    def api_base_url(self):
+        return self._api_base_url
+
+    @property
+    def api_token(self):
+        return self._api_token
+
+    @property
+    def enabler_entity_id(self):
+        return self._enabler_entity_id
+
+    @property
+    def default_volume(self):
+        return self._default_volume
 
 
 class Announcement:
@@ -51,66 +85,71 @@ class Announcement:
 
 
 class SonosAnnouncer(BaseAutomation):
+    _dnd_player_entity_ids: List
+    _announcer_config: AnnouncerConfig
     _players: List[Player]
     _media_manager: MediaManager
     _dnd_entity_id: str
-    _enabler_entity_id: str
-    _sleeping_time_entity_id: str
     _queue: List
     _announcer_lock: Lock
 
     def initialize(self):
+        self._announcer_config = AnnouncerConfig({
+            'api_base_url': self.cfg.value('api_base_url'),
+            'api_token': self.cfg.value('api_token'),
+            'default_volume': self.cfg.value('default_volume'),
+            'enabler_entity_id': self.cfg.value('enabler_entity_id'),
+            'sleeping_time_entity_id': self.cfg.value('sleeping_time_entity_id'),
+        })
+
         self._announcer_lock = Lock()
         self._queue = []
-        self._sleeping_time_entity_id = self.cfg.value('sleeping_time_entity_id')
-        self._enabler_entity_id = self.cfg.value('enabler_entity_id')
-        self._dnd_entity_id = self.cfg.value('dnd_entity_id')
         self._dnd_player_entity_ids = []
 
         self._media_manager = MediaManager(self, self.args)
         self._players = [self._create_player(p) for p in self.cfg.value('players')]
 
-        self.listen_state(self._sleeping_time_state_change_handler, self._sleeping_time_entity_id)
+        self.listen_state(self._sleeping_time_state_change_handler, self._announcer_config.sleeping_time_entity_id)
+
+        self.disable_do_not_disturb('media_player.office')
 
     def _create_player(self, raw_player_config):
-        self.debug('Creating player with player_config={}'.format(raw_player_config))
-        raw_player_config['dnd_entity_id'] = self.cfg.value('dnd_entity_id')
+        player_volume = raw_player_config.get('volume', {})
+        raw_player_config['volume'] = {**self._announcer_config.default_volume, **player_volume}
         return create_player(self, raw_player_config, self._media_manager)
 
     def _sleeping_time_state_change_handler(self, entity, attribute, old, new, kwargs):
-        volume_mode = 'regular'
-        if new == 'on':
-            volume_mode = 'sleeping'
+        self._update_player_volumes()
 
+    def _update_player_volumes(self):
         for player in self._players:
-            player.update_volume(volume_mode)
+            for player_entity_id in player.player_entity_ids:
+                volume_mode = self._figure_volume_mode(player_entity_id)
+                player.update_player_volume(player_entity_id, volume_mode)
+
+    def _figure_volume_mode(self, player_entity_id):
+        if player_entity_id in self._dnd_player_entity_ids:
+            return 'dnd'
+
+        if self.get_state(self._announcer_config.sleeping_time_entity_id) == 'on':
+            return 'sleeping'
+
+        return 'regular'
 
     def enable_do_not_disturb(self, player_entity_id):
-        enable_entity_ids = set(list_value(player_entity_id))
-        dnd_entity_ids = sorted(self._current_do_not_disturb_entity_ids().union(enable_entity_ids))
-        self._update_do_not_disturb(','.join(dnd_entity_ids))
+        if player_entity_id not in self._dnd_player_entity_ids:
+            self._dnd_player_entity_ids.append(player_entity_id)
+
+        self._update_player_volumes()
 
     def disable_do_not_disturb(self, player_entity_id):
-        disabled_entity_ids = set(list_value(player_entity_id))
-        dnd_entity_ids = sorted(self._current_do_not_disturb_entity_ids() - disabled_entity_ids)
-        self._update_do_not_disturb(','.join(dnd_entity_ids))
+        if player_entity_id in self._dnd_player_entity_ids:
+            self._dnd_player_entity_ids.remove(player_entity_id)
 
-    def _current_do_not_disturb_entity_ids(self):
-        value = self.get_state(self._dnd_entity_id)
-        if value is None:
-            return {}
-
-        return set([v for v in value.split(',') if v.startswith('media_player.')])
-
-    def _update_do_not_disturb(self, value):
-        data = {
-            'entity_id': self._dnd_entity_id,
-            'value': value
-        }
-        self.call_service("input_text/set_value", **data)
+        self._update_player_volumes()
 
     def announce(self, message, use_cache=True, player_entity_ids=[], motion_entity_id=None, prelude_name=None):
-        if self.get_state(self._enabler_entity_id) != 'on':
+        if self.get_state(self._announcer_config.enabler_entity_id) != 'on':
             self.log('Skipping ... announcer disable')
             return
 

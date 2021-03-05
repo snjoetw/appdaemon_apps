@@ -106,7 +106,7 @@ class MotionLighting(BaseAutomation):
 
     def turn_on_lights(self):
         light_settings = self.figure_light_settings()
-        if light_settings is None:
+        if light_settings is None or not light_settings:
             return
 
         actions = [TurnOnAction(self, {'entity_ids': [light_setting]}) for light_setting in light_settings]
@@ -119,19 +119,24 @@ class MotionLighting(BaseAutomation):
 
             period, scene = scene.split(',')
             if not period or not scene:
+                self.debug('Skipping time based scene, missing period={} or scene={}'.format(period, scene))
                 continue
 
             start, end = period.split('-')
             if not start or not end:
+                self.debug('Skipping time based scene, missing start={} or end={}'.format(start, end))
                 continue
 
             if not self.now_is_between(start, end):
+                self.debug('Skipping time based scene, now is not between start={} and end={}'.format(start, end))
                 continue
 
             current_scene = DEFAULT_SCENE if self.scene_entity_id is None else self.get_state(self.scene_entity_id)
-            if current_scene != scene:
+            if scene is not None and current_scene != scene:
+                self.debug('Skipping time based scene, scene={} does not match current={}'.format(scene, current_scene))
                 continue
 
+            self.debug('Using time based scene, period={} light_settings={}'.format(period, scene, light_settings))
             return light_settings
 
         scene = DEFAULT_SCENE if self.scene_entity_id is None else self.get_state(self.scene_entity_id)

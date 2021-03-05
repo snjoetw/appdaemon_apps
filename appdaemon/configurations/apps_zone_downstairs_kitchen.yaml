@@ -1,4 +1,5 @@
 kitchen_lighting:
+  debug: true
   module: motion_lighting
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_kitchen
@@ -13,6 +14,9 @@ kitchen_lighting:
       entity_id: light.zwave_kitchen_light
       state: "off"
   lighting_scenes:
+    "22:00:00-00:00:00,Sleep":
+    "04:00:00-08:00:00,Dark":
+      - entity_id: light.zwave_kitchen_light
     Dark:
       - entity_id: light.zwave_kitchen_light
     Sleeping:
@@ -20,8 +24,6 @@ kitchen_lighting:
         brightness: 254
         rgb_color: [255, 203, 114]
       - entity_id: switch.zwave_kitchen_counter_light
-    "04:00:00-08:00:00,Dark":
-      - entity_id: light.zwave_kitchen_light
 
 
 kitchen_lighting_2:

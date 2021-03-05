@@ -16,8 +16,7 @@ class Briefer(ConfigurableAutomation):
         super().initialize()
 
         def briefing_text_provider():
-            self.providers = [get_briefing_provider(self, p) for p in
-                              self.cfg.list('providers')]
+            self.providers = [get_briefing_provider(self, p) for p in self.cfg.list('providers')]
 
             return self.build_briefing_text()
 

@@ -1008,6 +1008,7 @@ nest_app_front_door_open_action:
             event_type:
               - package_left
               - doorbell
+            home: Joe
             location: Front Door
       actions:
         - platform: service

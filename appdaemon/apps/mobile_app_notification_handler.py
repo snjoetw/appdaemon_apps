@@ -107,6 +107,10 @@ class NestEventType(Enum):
     KNOWN_FACE_DETECTED = 'known_face_detected'
 
 
+HOME_JOE = 'Joe'
+HOME_DAD = 'Dad'
+
+
 class NestHandler(Handler):
     def __init__(self, app):
         super().__init__(app, 'Nest')
@@ -117,18 +121,19 @@ class NestHandler(Handler):
             self.log('Unable to handle title={}'.format(title))
             return
 
+        home = self._figure_home(location)
         event_type = self._figure_event_type(event)
         if event_type:
-            return self._handle_event(event_type, location)
+            return self._handle_event(event_type, home, location)
 
         if text.startswith('Your camera thinks it spotted a familiar face'):
-            return self._handle_event(NestEventType.KNOWN_FACE_DETECTED, location, face_detected=event)
+            return self._handle_event(NestEventType.KNOWN_FACE_DETECTED, home, location, face_detected=event)
 
         self.error('Unsupported event, not handling title={}, text={}'.format(title, text))
 
-    def _handle_event(self, event_type, location, **kwargs):
-        self.log('Handling {} event, location={}, kwargs={}'.format(event_type, location, kwargs))
-        self.app.fire_event(AD_EVENT_NEST, event_type=event_type.value, location=location, **kwargs)
+    def _handle_event(self, event_type, home, location, **kwargs):
+        self.log('Handling {} event, home={}, location={}, kwargs={}'.format(event_type, home, location, kwargs))
+        self.app.fire_event(AD_EVENT_NEST, event_type=event_type.value, home=home, location=location, **kwargs)
 
     @staticmethod
     def _figure_event_type(event):
@@ -139,6 +144,12 @@ class NestHandler(Handler):
             return NestEventType(event.lower().replace(' ', '_'))
         except ValueError:
             return
+
+    @staticmethod
+    def _figure_home(location):
+        if 'Dad' in location:
+            return HOME_DAD
+        return HOME_JOE
 
 
 AD_EVENT_UBER_EATS = 'ad.uber_eats_event'

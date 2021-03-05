@@ -1,7 +1,7 @@
 import traceback
 from datetime import datetime, timedelta
 
-from lib.annoucer.media_manager import MediaManager, LIBRARY_URL_PATH, MediaData
+from lib.annoucer.media_manager import MediaManager
 from lib.core.app_accessible import AppAccessible
 
 
@@ -90,7 +90,7 @@ class Player(AppAccessible):
 
     def _update_volume(self, player_entity_id, volume_mode):
         self.debug('Updating {} to use volume_mode={}'.format(player_entity_id, volume_mode))
-        
+
         current_volume = self.get_state(player_entity_id, attribute='volume_level')
         # TODO: this maybe not needed?
         if current_volume == 0:
@@ -142,8 +142,6 @@ class Player(AppAccessible):
 class GoogleMediaPlayer(Player):
     def __init__(self, app, config, media_manager):
         super().__init__(app, config, media_manager)
-        # TODO: move this whole url to media_manager?
-        self.empty_media_url = '{}{}'.format(media_manager.api_base_url, LIBRARY_URL_PATH.format('empty.mp3'))
 
         if config.keep_alive:
             now = datetime.now() + timedelta(seconds=2)
@@ -154,7 +152,8 @@ class GoogleMediaPlayer(Player):
         try:
             for player_entity_id in self.player_entity_ids:
                 if self.get_state(player_entity_id) != 'playing':
-                    self._play_media(player_entity_id, MediaData(self.empty_media_url, 0))
+                    empty_media = self._media_manager.get_sound_media('empty', duration=0)
+                    self._play_media(player_entity_id, empty_media)
         finally:
             self.app._announcer_lock.release()
 

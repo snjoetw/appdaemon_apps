@@ -15,10 +15,22 @@ notifier:
     recipients: !secret facebook_recipients_by_name
     access_token: !secret facebook_meesenger_page_access_token
 
-sonos_announcer:
+announcer:
   debug: true
-  module: sonos_announcer
-  class: SonosAnnouncer
+  module: announcer
+  class: Announcer
+  tts_platform: amazon_polly
+  tts_base_filepath: /conf/tts/
+  library_base_filepath: /conf/www/library/
+  library_base_url_path: /local/library/
+  sound_path:
+    chime: 'sound/chime.mp3'
+    empty: 'sound/empty.mp3'
+    alarm_siren: 'sound/alarm_siren.mp3'
+    door_beep: 'sound/door_beep.mp3'
+    window_beep: 'sound/window_beep.mp3'
+    garage_beep: 'sound/garage_beep.mp3'
+
   sleeping_time_entity_id: binary_sensor.sleeping_time
   api_base_url: !secret homeassistant_internal_url
   api_token: !secret appdaemon_hass_api_token

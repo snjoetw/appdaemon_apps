@@ -1,90 +1,16 @@
 import concurrent
 from threading import Lock
-from typing import List, Dict
+from typing import List
 
 from base_automation import BaseAutomation
+from lib.annoucer.announcement import Announcement
+from lib.annoucer.announcer_config import AnnouncerConfig
 from lib.annoucer.media_manager import MediaManager
 from lib.annoucer.player import Player
 from lib.annoucer.player import create_player
 
 
-class AnnouncerConfig:
-    _default_volume: Dict
-    _enabler_entity_id: str
-    _api_token: str
-    _api_base_url: str
-    _sleeping_time_entity_id: str
-
-    def __init__(self, config):
-        self._sleeping_time_entity_id = config['sleeping_time_entity_id']
-        self._api_base_url = config['api_base_url']
-        self._api_token = config['api_token']
-        self._enabler_entity_id = config['enabler_entity_id']
-        self._default_volume = config['default_volume']
-
-    @property
-    def sleeping_time_entity_id(self):
-        return self._sleeping_time_entity_id
-
-    @property
-    def api_base_url(self):
-        return self._api_base_url
-
-    @property
-    def api_token(self):
-        return self._api_token
-
-    @property
-    def enabler_entity_id(self):
-        return self._enabler_entity_id
-
-    @property
-    def default_volume(self):
-        return self._default_volume
-
-
-class Announcement:
-    def __init__(self, message, use_cache, prelude_name, is_critical):
-        self._message = message
-        self._use_cache = use_cache
-        self._prelude_name = prelude_name
-        self._is_critical = is_critical
-
-    @property
-    def message(self):
-        return self._message
-
-    @property
-    def use_cache(self):
-        return self._use_cache
-
-    @property
-    def prelude_name(self):
-        return self._prelude_name
-
-    @property
-    def is_critical(self):
-        return self._is_critical
-
-    def __repr__(self):
-        return "{}(message={}, use_cache={}, prelude_name={}, is_critical={})".format(
-            self.__class__.__name__,
-            self.message,
-            self.use_cache,
-            self.prelude_name,
-            self.is_critical)
-
-    def __eq__(self, other):
-        if not isinstance(other, Announcement):
-            return NotImplemented
-
-        return self.message == other.message \
-               and self.use_cache == other.use_cache \
-               and self.prelude_name == other.prelude_name \
-               and self.is_critical == other.is_critical
-
-
-class SonosAnnouncer(BaseAutomation):
+class Announcer(BaseAutomation):
     _dnd_player_entity_ids: List
     _announcer_config: AnnouncerConfig
     _players: List[Player]
@@ -95,18 +21,23 @@ class SonosAnnouncer(BaseAutomation):
 
     def initialize(self):
         self._announcer_config = AnnouncerConfig({
+            'tts_platform': self.cfg.value('tts_platform'),
             'api_base_url': self.cfg.value('api_base_url'),
             'api_token': self.cfg.value('api_token'),
             'default_volume': self.cfg.value('default_volume'),
             'enabler_entity_id': self.cfg.value('enabler_entity_id'),
             'sleeping_time_entity_id': self.cfg.value('sleeping_time_entity_id'),
+            'library_base_filepath': self.cfg.value('library_base_filepath'),
+            'library_base_url_path': self.cfg.value('library_base_url_path'),
+            'tts_base_filepath': self.cfg.value('tts_base_filepath'),
+            'sound_path': self.cfg.value('sound_path'),
         })
 
         self._announcer_lock = Lock()
         self._queue = []
         self._dnd_player_entity_ids = []
 
-        self._media_manager = MediaManager(self, self.args)
+        self._media_manager = MediaManager(self, self._announcer_config)
         self._players = [self._create_player(p) for p in self.cfg.value('players')]
 
         self.listen_state(self._sleeping_time_state_change_handler, self._announcer_config.sleeping_time_entity_id)

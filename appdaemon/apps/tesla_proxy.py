@@ -235,7 +235,7 @@ class AnnouncementUnlockCommand(UnlockCommand):
     def __init__(self, app, vehicle, motion_entity_id, params={}):
         super().__init__(app, vehicle, params=params)
         self.wakeup_count = 0
-        self.announcer = self.app.get_app('sonos_announcer')
+        self.announcer = self.app.get_app('announcer')
 
         self.motion_entity_id = motion_entity_id
 

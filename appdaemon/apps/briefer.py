@@ -1,14 +1,13 @@
-from datetime import time
-
 import traceback
+from datetime import time
 from enum import Enum
 
+from announcer import Announcer
 from configurable_automation import ConfigurableAutomation
 from lib.actions import Action
 from lib.briefing_helper import get_briefing_provider, MEDIUM_PAUSE
 from lib.context import Context
 from lib.helper import figure_parts_of_day
-from sonos_announcer import SonosAnnouncer
 
 
 class Briefer(ConfigurableAutomation):
@@ -107,7 +106,7 @@ class BrieferAnnouncementAction(Action):
 
         self.app.sleep(2)
 
-        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        announcer: Announcer = self.app.get_app('announcer')
         announcer.announce(message, use_cache=False, motion_entity_id=motion_entity_id)
 
     def should_brief(self):

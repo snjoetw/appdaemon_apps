@@ -1,6 +1,7 @@
 import traceback
 from datetime import datetime
 
+from announcer import Announcer
 from configurable_automation import ConfigurableAutomation
 from lib.actions import Action
 from lib.briefing_helper import MEDIUM_PAUSE
@@ -8,7 +9,6 @@ from lib.context import Context
 from lib.helper import figure_parts_of_day
 from lib.reminder_helper import get_reminder_provider, TIME_TRIGGER_METHOD, MOTION_TRIGGER_METHOD
 from notifier import Notifier, Message, NotifierType
-from sonos_announcer import SonosAnnouncer
 
 
 class Reminder(ConfigurableAutomation):
@@ -59,7 +59,7 @@ class ReminderAction(Action):
             self.debug('No reminder message, skipping ...')
             return
 
-        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        announcer: Announcer = self.app.get_app('announcer')
         announcer.announce(message, use_cache=False, motion_entity_id=motion_entity_id)
 
         notifier: Notifier = self.app.get_app('notifier')

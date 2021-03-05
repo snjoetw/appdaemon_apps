@@ -4,6 +4,7 @@ from datetime import timedelta, datetime
 from typing import List
 
 from alarm_notifier import AlarmNotifier
+from announcer import Announcer
 from base_automation import do_action
 from lib.component import Component
 from lib.constraints import Constraint
@@ -11,7 +12,6 @@ from lib.constraints import get_constraint
 from lib.helper import to_int, list_value
 from lib.schedule_job import cancel_job, schedule_job, schedule_repeat_job
 from notifier import Message, NotifierType, Notifier
-from sonos_announcer import SonosAnnouncer
 
 
 def get_action(app, config):
@@ -666,7 +666,7 @@ class AnnouncementAction(Action):
         use_cache = self.cfg.value('use_cache', True)
         prelude_name = self.cfg.value('prelude_name', None)
 
-        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        announcer: Announcer = self.app.get_app('announcer')
         announcer.announce(message, use_cache=use_cache, player_entity_ids=player_entity_id, prelude_name=prelude_name)
 
 
@@ -676,7 +676,7 @@ class EnablePlayerDndAction(Action):
 
     def do_action(self, trigger_info):
         player_entity_ids = self.cfg.list('player_entity_id', [])
-        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        announcer: Announcer = self.app.get_app('announcer')
         for player_entity_id in player_entity_ids:
             announcer.enable_do_not_disturb(player_entity_id)
 
@@ -687,7 +687,7 @@ class DisablePlayerDndAction(Action):
 
     def do_action(self, trigger_info):
         player_entity_ids = self.cfg.list('player_entity_id', [])
-        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        announcer: Announcer = self.app.get_app('announcer')
         for player_entity_id in player_entity_ids:
             announcer.disable_do_not_disturb(player_entity_id)
 
@@ -709,7 +709,7 @@ class MotionAnnouncementAction(Action):
 
         message = 'Incoming message from {}: {}'.format(message_from, message)
 
-        announcer: SonosAnnouncer = self.app.get_app('sonos_announcer')
+        announcer: Announcer = self.app.get_app('announcer')
         announcer.announce(message, use_cache=False, motion_entity_id=triggered_entity_id)
 
 

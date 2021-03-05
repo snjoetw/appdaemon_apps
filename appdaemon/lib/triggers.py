@@ -90,6 +90,9 @@ class StateTrigger(Trigger):
         if not entity_ids:
             entity_ids.extend(self.cfg.list('entity_id', []))
 
+        if not entity_ids:
+            raise ValueError("Missing entity_ids in config: {}".format(trigger_config))
+
         for entity_id in entity_ids:
             self.app.listen_state(self._state_change_handler, entity_id, **settings)
 

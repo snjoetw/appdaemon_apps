@@ -5,6 +5,13 @@ from jinja2 import Environment
 from lib.helper import to_int, to_float, to_datetime, is_float, is_int
 
 
+def safe_eval(value):
+    try:
+        return eval(value)
+    except:
+        return value
+
+
 class TemplateRenderer:
     def __init__(self, app):
         self._app = app
@@ -99,6 +106,8 @@ class TemplateRenderer:
                 rendered = to_float(rendered)
             elif is_int(rendered):
                 rendered = to_int(rendered)
+            elif rendered.startswith('[') or rendered.startswith('{'):
+                rendered = safe_eval(rendered)
 
             if self._should_render_template(rendered):
                 rendered = self.render(rendered, **kwargs)

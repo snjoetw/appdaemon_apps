@@ -985,16 +985,21 @@ nest_app_front_door_open_action:
   debug: true
   module: automation
   class: Automation
+  variables:
+    monitored_entity_ids:
+      - input_boolean.nest_front_door_doorbell_pressed
+      - input_boolean.nest_front_door_activity_detected
   triggers:
     - platform: state
-      entity_ids:
-        - input_boolean.nest_front_door_doorbell_pressed
-        - input_boolean.nest_front_door_activity_detected
+      entity_ids: "{{ monitored_entity_ids }}"
       to: "on"
     - platform: event
       event_type: ad.nest_event
   handlers:
     - constraints:
+        - platform: triggered_state
+          entity_id: "{{ monitored_entity_ids }}"
+          to: "on"
       actions:
         - platform: service
           service: mqtt/publish

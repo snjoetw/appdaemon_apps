@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from lib.component import Component
+from lib.core.component import Component
 
 
 def get_trigger(app, config, callback):

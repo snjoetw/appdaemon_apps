@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 from commute_time_monitor import CommuteTimeMonitor
 from lib.calendar_helper import CalendarEventFetcher
-from lib.component import Component
 from lib.context import PartsOfDay
+from lib.core.component import Component
 from lib.helper import to_int, concat_list
 from lib.stock_helper import StockQuoteFetcher
 

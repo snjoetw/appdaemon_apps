@@ -1,6 +1,6 @@
 from base_automation import BaseAutomation
-from lib.config import Config
 from lib.core.app_accessible import AppAccessible
+from lib.core.config import Config
 from lib.time_wrapper import NowWrapper
 
 

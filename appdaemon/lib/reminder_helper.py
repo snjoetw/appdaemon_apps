@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from lib.calendar_helper import CalendarEventFetcher, is_no_school_event
-from lib.component import Component
+from lib.core.component import Component
 from lib.helper import concat_list, to_float
 from lib.presence_helper import PRESENCE_MODE_SOMEONE_IS_HOME, PRESENCE_MODE_EVERYONE_IS_HOME
-from lib.travel_time_helper import TravelTimeFetcher
 from lib.time_wrapper import DateTimeWrapper
+from lib.travel_time_helper import TravelTimeFetcher
 
 TIME_TRIGGER_METHOD = 'time'
 MOTION_TRIGGER_METHOD = 'motion'

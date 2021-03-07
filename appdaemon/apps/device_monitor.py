@@ -5,7 +5,7 @@ from typing import List
 
 from configurable_automation import ConfigurableAutomation
 from lib.actions import Action
-from lib.component import Component
+from lib.core.component import Component
 from lib.helper import to_float, to_datetime
 
 CHECKER_RESULT_CACHE = {}

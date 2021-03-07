@@ -5,7 +5,7 @@ import traceback
 import appdaemon.plugins.hass.hassapi as hass
 import appdaemon.utils as utils
 
-from lib.config import Config
+from lib.core.config import Config
 
 
 class BaseAutomation(hass.Hass):

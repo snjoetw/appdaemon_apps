@@ -2,7 +2,7 @@ import calendar
 import operator
 from datetime import datetime, date
 
-from lib.component import Component
+from lib.core.component import Component
 from lib.helper import to_float, flatten_dict
 from lib.schedule_job import has_scheduled_job
 

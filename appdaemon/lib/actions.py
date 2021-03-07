@@ -6,9 +6,9 @@ from typing import List
 from alarm_notifier import AlarmNotifier
 from announcer import Announcer
 from base_automation import do_action
-from lib.component import Component
 from lib.constraints import Constraint
 from lib.constraints import get_constraint
+from lib.core.component import Component
 from lib.helper import to_int, list_value
 from lib.schedule_job import cancel_job, schedule_job, schedule_repeat_job
 from notifier import Message, NotifierType, Notifier

@@ -4,7 +4,7 @@ from threading import Lock
 import appdaemon.plugins.mqtt.mqttapi as mqtt
 
 from base_automation import BaseAutomation
-from lib.component import Component
+from lib.core.component import Component
 from lib.helper import to_int
 from lib.teslajson import Connection
 

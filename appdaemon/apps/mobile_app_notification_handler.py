@@ -4,7 +4,7 @@ from typing import List
 import appdaemon.plugins.mqtt.mqttapi as mqtt
 
 from base_automation import BaseAutomation
-from lib.component import Component
+from lib.core.component import Component
 
 BASE_TOPIC = 'app/notification/'
 

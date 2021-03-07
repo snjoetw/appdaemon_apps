@@ -217,7 +217,7 @@ lynns_room_temperature_difference_heater_booster:
   handlers:
     - constraints:
         - platform: state
-          entity_id: climate.lynns_room
+          entity_id: climate.dyson_lynns_room
           state: heat
           negate: true
         - platform: template
@@ -236,24 +236,24 @@ lynns_room_temperature_difference_heater_booster:
         - platform: service
           service: climate/set_temperature
           data:
-            entity_id: climate.lynns_room
+            entity_id: climate.dyson_lynns_room
             temperature: 25
             hvac_mode: heat
         - platform: service
           service: climate/turn_on
           data:
-            entity_id: climate.lynns_room
+            entity_id: climate.dyson_lynns_room
         - platform: delay
-          delay: 900
+          delay: 1200
           actions:
             - platform: service
               service: climate/turn_off
               data:
-                entity_id: climate.lynns_room
+                entity_id: climate.dyson_lynns_room
 
     - constraints:
         - platform: state
-          entity_id: climate.lynns_room
+          entity_id: climate.dyson_lynns_room
           state: heat
         - platform: template
           template: >
@@ -268,7 +268,7 @@ lynns_room_temperature_difference_heater_booster:
         - platform: service
           service: climate/turn_off
           data:
-            entity_id: climate.lynns_room
+            entity_id: climate.dyson_lynns_room
 
 
 
@@ -295,7 +295,7 @@ lynns_room_morning_heater_booster:
           start_time: "06:30:00"
           end_time: "07:00:00"
         - platform: state
-          entity_id: climate.lynns_room
+          entity_id: climate.dyson_lynns_room
           state: heat
           negate: true
         - platform: state
@@ -308,24 +308,24 @@ lynns_room_morning_heater_booster:
         - platform: service
           service: climate/set_temperature
           data:
-            entity_id: climate.lynns_room
+            entity_id: climate.dyson_lynns_room
             temperature: '{{temperature_threshold}}'
             hvac_mode: heat
         - platform: service
           service: climate/turn_on
           data:
-            entity_id: climate.lynns_room
+            entity_id: climate.dyson_lynns_room
         - platform: delay
           delay: 1800
           actions:
             - platform: service
               service: climate/turn_off
               data:
-                entity_id: climate.lynns_room
+                entity_id: climate.dyson_lynns_room
 
     - constraints:
         - platform: state
-          entity_id: climate.lynns_room
+          entity_id: climate.dyson_lynns_room
           state: heat
         - platform: state
           entity_id: sensor.template_lynn_s_room_temperature
@@ -334,7 +334,7 @@ lynns_room_morning_heater_booster:
         - platform: service
           service: climate/turn_off
           data:
-            entity_id: climate.lynns_room
+            entity_id: climate.dyson_lynns_room
 
 
 lynn_s_room_temperature_monitor:

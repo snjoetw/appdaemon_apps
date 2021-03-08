@@ -54,7 +54,7 @@ def cancel_job(app, trigger_info=None):
                 SCHEDULED_HANDLES.pop(job_name, None)
                 app.log('Cancelled job: {}'.format(job_name))
             except:
-                app.error('Error when cancel job: ' + traceback.format_exc())
+                app.warn('Error when cancel job: ' + traceback.format_exc())
 
 
 def build_job_name(app, trigger_info=None):

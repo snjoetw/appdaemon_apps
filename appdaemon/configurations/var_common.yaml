@@ -2,7 +2,7 @@ var_door_locks: &var_door_locks
   - lock.front_door_lock_locked
   - lock.entry_door_lock_locked
 #  - lock.mqtt_garage_door_lock
-#  - lock.tesla_modelx_door
+#  - lock.mqtt_tesla_model_x_door
 
 
 var_door_sensors: &var_door_sensors
@@ -59,6 +59,7 @@ var_upstairs_motion_sensors: &var_upstairs_motion_sensors
 
 var_basement_motion_sensors: &var_basement_motion_sensors
   - binary_sensor.zb_basement_stairway_motion
+  - binary_sensor.zb_basement_kitchen_motion
 
 
 var_motion_sensors: &var_motion_sensors

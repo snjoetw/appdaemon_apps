@@ -1,3 +1,4 @@
 pydub==0.24.1
 googlemaps==2.5.1
 finnhub-python==2.4.0
+teslajson==2.0.0

@@ -10,3 +10,51 @@ basement_stairway_lighting:
     Default:
       - light.hue_basement_stairway_light
 
+
+basement_living_room_lighting:
+  module: motion_lighting
+  class: MotionLighting
+  motion_entity_id:
+    - binary_sensor.zb_basement_kitchen_motion
+  turn_off_delay: 7200
+  dim_light_before_turn_off: false
+  lighting_scenes:
+    Default:
+      - switch.zwave_basement_living_room_light
+
+
+basement_living_room_wall_switch:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: zha_event
+  constraints:
+    - platform: triggered_event
+      event_data:
+        device_ieee: '00:15:8d:00:01:63:97:9a'
+        cluster_id: 6
+        #        endpoint_id: [1, 2]
+        args:
+          attribute_id: 0
+          attribute_name: on_off
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: switch.zwave_basement_living_room_light
+          state: 'on'
+      actions:
+        - platform: turn_off
+          dim_light_before_turn_off: false
+          entity_ids:
+            - switch.zwave_basement_living_room_light
+
+    - constraints:
+        - platform: state
+          entity_id: switch.zwave_basement_living_room_light
+          state: 'off'
+      actions:
+        - platform: turn_on
+          entity_ids:
+            - switch.zwave_basement_living_room_light

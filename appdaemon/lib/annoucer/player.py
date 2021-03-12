@@ -71,37 +71,27 @@ class Player(AppAccessible):
 
     @property
     def player_entity_ids(self):
-        return self._config.player_entity_ids
+        return self.config.player_entity_ids
 
     @property
     def motion_entity_ids(self):
-        return self._config.motion_entity_ids
+        return self.config.motion_entity_ids
 
     @property
     def targeted_only(self):
-        return self._config.targeted_only
+        return self.config.targeted_only
 
     def update_volume(self, volume_mode):
-        for player_entity_id in self._config.player_entity_ids:
-            self._update_volume(player_entity_id, volume_mode)
+        for player_entity_id in self.config.player_entity_ids:
+            self.update_player_volume(player_entity_id, volume_mode)
 
     def update_player_volume(self, player_entity_id, volume_mode):
-        self._update_volume(player_entity_id, volume_mode)
-
-    def _update_volume(self, player_entity_id, volume_mode):
         self.debug('Updating {} to use volume_mode={}'.format(player_entity_id, volume_mode))
-
-        current_volume = self.get_state(player_entity_id, attribute='volume_level')
-        # TODO: this maybe not needed?
-        if current_volume == 0:
-            volume = self._config.volumes.get(volume_mode, 0.2)
-            self._set_volume(player_entity_id, volume)
-            return
 
         if volume_mode is None:
             return
 
-        volume = self._config.volumes.get(volume_mode, 0.2)
+        volume = self.config.volumes.get(volume_mode, 0.2)
         self._set_volume(player_entity_id, volume)
 
     def _set_volume(self, player_entity_id, volume):
@@ -115,11 +105,9 @@ class Player(AppAccessible):
         if current_volume != volume:
             self.call_service('media_player/volume_set', entity_id=player_entity_id, volume_level=volume)
 
-    def play_media(self, medias, volume_mode):
+    def play_media(self, medias):
         try:
-            for player_entity_id in self._config.player_entity_ids:
-                self._update_volume(player_entity_id, volume_mode)
-
+            for player_entity_id in self.config.player_entity_ids:
                 for media_data in medias:
                     self._play_media(player_entity_id, media_data)
         except:
@@ -162,7 +150,7 @@ class SonosMediaPlayer(Player):
     def __init__(self, app, config, media_manager):
         super().__init__(app, config, media_manager)
 
-    def play_media(self, medias, volume_mode):
+    def play_media(self, medias):
         requires_snapshot = self._requires_snapshot()
         if requires_snapshot:
             # take a snapshot of how sonos entities are joined
@@ -173,7 +161,6 @@ class SonosMediaPlayer(Player):
 
         master_entity_id = self.player_entity_ids[0]
 
-        self._update_volume(master_entity_id, volume_mode)
         for media_data in medias:
             self._play_media(master_entity_id, media_data)
 

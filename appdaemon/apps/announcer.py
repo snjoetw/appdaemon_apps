@@ -160,11 +160,9 @@ class Announcer(BaseAutomation):
 
             with_chime = False
 
-        volume_mode = None
-
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = {
-                executor.submit(p.play_media, medias, volume_mode) for p in players
+                executor.submit(p.play_media, medias) for p in players
             }
 
             for future in concurrent.futures.as_completed(futures):

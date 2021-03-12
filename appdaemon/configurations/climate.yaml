@@ -275,32 +275,21 @@ fan_auto_night_mode:
           entity_id: binary_sensor.sleeping_time
           state: "on"
       actions:
-        - platform: service
-          service: dyson/set_night_mode
-          data:
-            entity_id: fan.dyson_master_bedroom
-            night_mode: true
-        - platform: service
-          service: dyson/set_night_mode
-          data:
-            entity_id: fan.dyson_lynns_room
-            night_mode: true
+        - platform: turn_on
+          entity_ids:
+            - switch.dyson_lynns_room_night_mode
+            - switch.dyson_master_bedroom_night_mode
 
     - constraints:
         - platform: state
           entity_id: binary_sensor.sleeping_time
           state: "off"
       actions:
-        - platform: service
-          service: dyson/set_night_mode
-          data:
-            entity_id: fan.dyson_master_bedroom
-            night_mode: false
-        - platform: service
-          service: dyson/set_night_mode
-          data:
-            entity_id: fan.dyson_lynns_room
-            night_mode: false
+        - platform: turn_off
+          entity_ids:
+            - switch.dyson_lynns_room_night_mode
+            - switch.dyson_master_bedroom_night_mode
+
 
 climate_preset_mode_overrider:
   debug: true

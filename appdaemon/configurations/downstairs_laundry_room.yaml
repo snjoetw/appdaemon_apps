@@ -85,6 +85,6 @@ washer_is_done_announement:
             - platform: announcement
               tts_message: "{{ message }}"
             - platform: notify
-              message: "{{ message }}"
+              message: "👖{{ message }}"
               recipient: all
               notifier: ios

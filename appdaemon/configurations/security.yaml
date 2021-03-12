@@ -672,7 +672,7 @@ alarm_arm_checker:
         - platform: announcement
           tts_message: "{{ message }}"
         - platform: notify
-          message: "{{ message }}"
+          message: "⚠️ {{ message }}"
           recipient: all
           notifier: ios
 

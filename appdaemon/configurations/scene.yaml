@@ -70,7 +70,7 @@ shower_time_scene:
           recipient: all
           notifier: ios
           message: |
-            Shower time activated, remember to take the towel!
+            💦 Shower time activated, remember to take the towel!
             Do you want to change music?
           ios:
             category: "shower_time_music"

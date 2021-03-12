@@ -39,7 +39,7 @@ backyard_lighting:
   class: TimerMotionLighting
   scene_entity_id: input_select.lighting_mode_backyard
   motion_entity_id:
-    - binary_sensor.backyard_multisensor_sensor
+    - binary_sensor.zwave_backyard_motion
     - input_boolean.nest_rear_driveway_activity_detected
     - input_boolean.nest_backyard_activity_detected
   turn_off_delay: 300

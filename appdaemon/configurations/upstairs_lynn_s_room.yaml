@@ -359,7 +359,7 @@ lynn_s_room_temperature_monitor:
         - platform: notify
           recipient: all
           notifier: ios
-          message: Lynn's room temperature is too high ({{ state(trigger_info.data.entity_id) }}°C)
+          message: "🥵 Lynn's room temperature is too high ({{ state(trigger_info.data.entity_id) }}°C)"
           camera_entity_id: camera.lynn_s_room_cam
           ios:
             critical: 1
@@ -372,7 +372,7 @@ lynn_s_room_temperature_monitor:
         - platform: notify
           recipient: all
           notifier: ios
-          message: Lynn's room temperature is too low ({{ state(trigger_info.data.entity_id) }}°C)
+          message: "😰 Lynn's room temperature is too low ({{ state(trigger_info.data.entity_id) }}°C)"
           camera_entity_id: camera.lynn_s_room_cam
           ios:
             critical: 1
@@ -398,7 +398,7 @@ lynn_s_room_window_monitor:
         - platform: notify
           recipient: all
           notifier: ios
-          message: Lynn's room window is opened
+          message: "⚠️ Lynn's room window is opened"
           camera_entity_id: camera.lynn_s_room_cam
           ios:
             critical: 1

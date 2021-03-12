@@ -173,7 +173,7 @@ master_bathroom_window:
               tts_message: "{{ message }}"
             - platform: alarm_notifier
               trigger_entity_id: binary_sensor.mqtt_master_bathroom_window
-              message: "{{ message }}"
+              message: "⚠️ {{ message }}"
               notifier: ios
               ios:
                 thread_id: Door Monitor

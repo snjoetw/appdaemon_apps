@@ -26,7 +26,7 @@ garage_light_left_on:
             - platform: announcement
               tts_message: "{{ message }}"
             - platform: notify
-              message: "{{ message }}"
+              message: "💡 {{ message }}"
               recipient: all
               notifier: ios
     - constraints:

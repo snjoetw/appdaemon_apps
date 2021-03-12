@@ -443,9 +443,9 @@ uber_eats_notifier:
   class: Automation
   variables:
     order_delivered_message: "Uber Eats order is delivered at front door."
-    order_almost_delivered_message: "Uber Eats order is delivered at front door."
     order_on_the_move_message: "Uber Eats order is on the move."
     preparing_order_message: "Restaurant is preparing your Uber eats order."
+    order_ready_for_pickup_message: "Uber Eats order is ready, time to pick it up."
   triggers:
     - platform: event
       event_type: ad.uber_eats_event
@@ -458,7 +458,7 @@ uber_eats_notifier:
         - platform: announcement
           tts_message: "{{ order_delivered_message }}"
         - platform: notify
-          message: "{{ order_delivered_message }}"
+          message: "🍴 {{ order_delivered_message }}"
           recipient: all
           notifier: ios
 
@@ -470,7 +470,7 @@ uber_eats_notifier:
         - platform: announcement
           tts_message: "{{ order_on_the_move_message }}"
         - platform: notify
-          message: "{{ order_on_the_move_message }}"
+          message: "🚗 {{ order_on_the_move_message }}"
           recipient: all
           notifier: ios
 
@@ -482,7 +482,7 @@ uber_eats_notifier:
         - platform: announcement
           tts_message: "{{ preparing_order_message }}"
         - platform: notify
-          message: "{{ preparing_order_message }}"
+          message: "🥡 {{ preparing_order_message }}"
           recipient: all
           notifier: ios
 
@@ -494,6 +494,6 @@ uber_eats_notifier:
         - platform: announcement
           tts_message: "{{ order_ready_for_pickup_message }}"
         - platform: notify
-          message: "{{ order_ready_for_pickup_message }}"
+          message: "🚙 {{ order_ready_for_pickup_message }}"
           recipient: all
           notifier: ios

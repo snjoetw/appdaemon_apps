@@ -1,0 +1,92 @@
+tesla_model_x_left_open:
+  module: automation
+  class: Automation
+  variables:
+    message: "{{ friendly_name(trigger_info.data.entity_id) | capitalize }} has been left open for too long."
+  triggers:
+    - platform: state
+      entity_ids:
+        - binary_sensor.mqtt_tesla_model_x_trunk
+        - binary_sensor.mqtt_tesla_model_x_frunk
+        - binary_sensor.mqtt_tesla_model_x_doors
+        - binary_sensor.mqtt_tesla_model_x_windows
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: repeat
+          delay: 600
+          repeat: 600
+          actions:
+            - platform: announcement
+              tts_message: "{{ message }}"
+              constraints:
+                - platform: state
+                  entity_id: binary_sensor.tesla_model_x_user_present
+                  state: "off"
+            - platform: notify
+              message: "⚠️ {{ message }}"
+              recipient: all
+              notifier: ios
+              ios:
+                thread_id: Tesla Model X Monitor
+                url: /lovelace/view_garage
+              constraints:
+                - platform: state
+                  entity_id: binary_sensor.tesla_model_x_user_present
+                  state: "off"
+
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: cancel_job
+
+
+tesla_model_x_left_unlock:
+  module: automation
+  class: Automation
+  variables:
+    message: "Model X has been left unlock for too long."
+  triggers:
+    - platform: state
+      entity_ids:
+        - lock.mqtt_tesla_model_x_door
+  constraints:
+    - platform: state
+      entity_id: device_tracker.tesla_model_x_lan
+      negate: true
+      state: home
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: repeat
+          delay: 600
+          repeat: 600
+          actions:
+            - platform: announcement
+              tts_message: "{{ message }}"
+              constraints:
+                - platform: state
+                  entity_id: binary_sensor.tesla_model_x_user_present
+                  state: "off"
+            - platform: notify
+              message: "⚠️ {{ message }}"
+              recipient: all
+              notifier: ios
+              ios:
+                thread_id: Tesla Model X Monitor
+                url: /lovelace/view_garage
+              constraints:
+                - platform: state
+                  entity_id: binary_sensor.tesla_model_x_user_present
+                  state: "off"
+
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: cancel_job

@@ -9,6 +9,8 @@ class AutoClimateVentMonitor(BaseAutomation):
     def initialize(self):
         self.enabler_entity_id = self.cfg.value('enabler_entity_id')
         self.climate_entity_id = self.cfg.value('climate_entity_id')
+        self.climat_target_temp_high = self.cfg.value('target_temp_high')
+        self.climat_target_temp_low = self.cfg.value('target_temp_low')
         self.hvac_action_entity_id = self.cfg.value('hvac_action_entity_id')
         self.last_hvac_action_entity_id = self.cfg.value('last_hvac_action_entity_id')
         self.zone_configs = [ZoneConfig(z) for z in self.cfg.list('zones')]
@@ -43,6 +45,11 @@ class AutoClimateVentMonitor(BaseAutomation):
         for config in self.zone_configs:
             current = to_float(self.get_state(config.temperature_entity_id))
             target = self.target_temperature()
+
+            if current == None or target == None:
+                self.warn('Skipping ... current={} or target={} is None'.format(current, target))
+                continue
+
             adjusted_current = self.adjusted_current_temperature(target, current, config)
             open_percent = self.calculate_open_percent(target, adjusted_current, config)
             open_position = round(open_percent * 100)
@@ -58,9 +65,9 @@ class AutoClimateVentMonitor(BaseAutomation):
 
         # if high & low temp mode
         if self.is_heating_mode():
-            target = self.get_state(self.climate_entity_id, attribute="target_temp_low")
+            target = self.get_state(self.climat_target_temp_low)
         else:
-            target = self.get_state(self.climate_entity_id, attribute="target_temp_high")
+            target = self.get_state(self.climat_target_temp_high)
 
         return to_float(target)
 

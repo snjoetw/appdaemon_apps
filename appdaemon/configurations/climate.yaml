@@ -193,6 +193,8 @@ auto_climate_vent_monitor:
   class: AutoClimateVentMonitor
   enabler_entity_id: input_boolean.is_auto_vent_enabled
   climate_entity_id: climate.main_floor
+  target_temp_high: input_number.main_floor_target_temp_high
+  target_temp_low: input_number.main_floor_target_temp_low
   last_hvac_action_entity_id: input_select.last_climate_hvac_action
   hvac_action_entity_id: sensor.template_climate_main_floor_hvac_action
   zones:

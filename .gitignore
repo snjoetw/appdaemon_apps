@@ -14,3 +14,7 @@ __pycache__
 *.pyc
 .uuid
 .idea/*
+/appdaemon/.idea/
+**/._.DS_Store
+/apps/apps.yaml.example
+/apps/hello.py

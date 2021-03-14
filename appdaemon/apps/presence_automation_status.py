@@ -124,7 +124,7 @@ class PresenceStatusAutomation(BaseAutomation):
             return False
 
         distance = to_int(proximity.get('state'), -1)
-        if distance <= 0 or distance >= 5:
+        if distance < 0 or distance >= 5:
             self.log('Is heading home but still too far away: {}'.format(distance))
             return False
 

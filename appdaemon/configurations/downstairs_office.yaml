@@ -139,9 +139,6 @@ office_meeting_dnd:
 
     - constraints:
         - platform: state
-          entity_id: binary_sensor.joes_imac_pro_3_microphone_in_use
-          state: 'off'
-        - platform: state
           entity_id: binary_sensor.zb_office_door
           state: 'on'
       actions:

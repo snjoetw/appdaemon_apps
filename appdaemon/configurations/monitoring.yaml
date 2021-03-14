@@ -117,6 +117,37 @@ package_delivered_notifier:
             thread_id: Mail Monitor
 
 
+package_retrieved_notifier:
+  debug: true
+  module: automation
+  class: Automation
+  variables:
+    message: "Someone just retrieved your package."
+  triggers:
+    - platform: event
+      event_type: ad.nest_event
+  constraints:
+    - platform: triggered_event
+      event_data:
+        event_type: package_picked_up
+        home: Joe
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: binary_sensor.mqtt_front_door
+          state: ["on", "off"]
+          last_changed_seconds: "<=60"
+      actions:
+        - platform: announcement
+          tts_message: "{{ message }}"
+        - platform: notify
+          message: "📦 {{ message }}"
+          recipient: all
+          notifier: ios
+          camera_entity_id: camera.front_door
+          ios:
+            thread_id: Mail Monitor
+
 
 runtime_accumulator:
   module: runtime_accumulator

@@ -29,5 +29,8 @@ class AppAccessible:
     def debug(self, msg):
         return self.app.debug(msg)
 
+    def warn(self, msg):
+        return self.app.warn(msg)
+
     def error(self, msg):
         return self.app.error(msg)

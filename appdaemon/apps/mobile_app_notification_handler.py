@@ -129,7 +129,7 @@ class NestHandler(Handler):
         if text.startswith('Your camera thinks it spotted a familiar face'):
             return self._handle_event(NestEventType.KNOWN_FACE_DETECTED, home, location, face_detected=event)
 
-        self.error('Unsupported event, not handling title={}, text={}'.format(title, text))
+        self.warn('Unsupported event, not handling title={}, text={}'.format(title, text))
 
     def _handle_event(self, event_type, home, location, **kwargs):
         self.log('Handling {} event, home={}, location={}, kwargs={}'.format(event_type, home, location, kwargs))
@@ -172,7 +172,7 @@ class UberEatsHandler(Handler):
         if event_type:
             return self._handle_event(event_type)
 
-        self.error('Unsupported event, not handling title={}, text={}'.format(title, text))
+        self.warn('Unsupported event, not handling title={}, text={}'.format(title, text))
 
     def _handle_event(self, event_type):
         self.log('Handling {} event'.format(event_type))

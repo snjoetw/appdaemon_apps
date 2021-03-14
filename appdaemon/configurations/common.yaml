@@ -461,6 +461,7 @@ uber_eats_notifier:
           message: "🍴 {{ order_delivered_message }}"
           recipient: all
           notifier: ios
+          camera_entity_id: camera.front_door
 
     - constraints:
         - platform: triggered_event

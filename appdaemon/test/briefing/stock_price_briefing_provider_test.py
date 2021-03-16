@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-# 1614556800 => Monday, March 1, 2021 12:00:00 AM
 from briefing_helper import to_stock_current_price_briefing_text, to_stock_closed_price_briefing_text
 from stock_helper import Quote
 from test_helper import create_datetime
 
+# 1614556800 => Monday, March 1, 2021 12:00:00 AM
 QUOTES_JSON = {
     'AAPL': {'c': 127.79, 'h': 127.93, 'l': 122.79, 'o': 123.75, 'pc': 121.26, 't': 1614556800},
     'TSLA': {'c': 718.43, 'h': 872, 'l': 685.05, 'o': 690.11, 'pc': 675.5, 't': 1614556800},

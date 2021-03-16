@@ -170,7 +170,9 @@ class BriefingState(Enum):
     EARLY_MORNING = 1
     MORNING = 2
     NOON = 3
-    WELCOME_BACK = 4
+    EVENING = 4
+    NIGHT = 5
+    WELCOME_BACK = 50
     NONE = 99
 
 

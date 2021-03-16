@@ -243,6 +243,9 @@ briefer:
     - state: NOON
       start_time: '12:00:00'
       end_time: '15:00:00'
+    - state: EVENING
+      start_time: '17:00:00'
+      end_time: '20:00:00'
   providers:
     - provider: greet
     - provider: weather_forecast

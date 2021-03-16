@@ -1,9 +1,10 @@
 import calendar
 from datetime import datetime, timedelta
+from typing import List
 
 from commute_time_monitor import CommuteTimeMonitor
-from lib.calendar_helper import CalendarEventFetcher
-from lib.context import PartsOfDay
+from lib.calendar_helper import CalendarEventFetcher, CalendarEvent
+from lib.context import PartsOfDay, Context
 from lib.core.component import Component
 from lib.helper import to_int, concat_list
 from lib.stock_helper import StockQuoteFetcher
@@ -23,8 +24,6 @@ def get_briefing_provider(app, config):
         return CommuteTimeBriefingProvider(app, config)
     elif provider == 'calendar':
         return CalendarBriefingProvider(app, config)
-    elif provider == 'reminder':
-        return ReminderBriefingProvider(app, config)
     elif provider == 'stock':
         return StockPriceProvider(app, config)
     elif provider == 'low_battery_device':
@@ -37,10 +36,10 @@ class BriefingProvider(Component):
     def __init__(self, app, briefing_config):
         super().__init__(app, briefing_config)
 
-    def can_brief(self, context):
+    def can_brief(self, context: Context):
         return False
 
-    def briefing(self, context):
+    def briefing(self, context: Context):
         pass
 
 
@@ -48,10 +47,10 @@ class GreetBriefingProvider(BriefingProvider):
     def __init__(self, app, briefing_config):
         super().__init__(app, briefing_config)
 
-    def can_brief(self, context):
+    def can_brief(self, context: Context):
         return True
 
-    def briefing(self, context):
+    def briefing(self, context: Context):
         if context.parts_of_day == PartsOfDay.MORNING:
             return 'Good morning!'
         elif context.parts_of_day == PartsOfDay.AFTERNOON:
@@ -68,14 +67,14 @@ class CommuteTimeBriefingProvider(BriefingProvider):
         self.start_time = self.cfg.value('start_time', None)
         self.end_time = self.cfg.value('end_time', None)
 
-    def can_brief(self, context):
+    def can_brief(self, context: Context):
         return self.get_state(self.workday_entity_id) == 'on' \
                and self.is_in_monitoring_time()
 
     def is_in_monitoring_time(self):
         return self.app.now_is_between(self.start_time, self.end_time)
 
-    def briefing(self, context):
+    def briefing(self, context: Context):
         commute_time_monitor: CommuteTimeMonitor = self.app.get_app('commute_time_monitor')
         departure_time = datetime.now() + timedelta(minutes=10)
         routes = commute_time_monitor.get_routes(departure_time)
@@ -92,10 +91,10 @@ class WeatherForecastBriefingProvider(BriefingProvider):
     def __init__(self, app, briefing_config):
         super().__init__(app, briefing_config)
 
-    def can_brief(self, context):
+    def can_brief(self, context: Context):
         return True
 
-    def briefing(self, context):
+    def briefing(self, context: Context):
         today_summary = self.transform_summary(
             self.get_state("sensor.dark_sky_hourly_summary"))
         max_temp = to_int(
@@ -145,67 +144,102 @@ class CalendarBriefingProvider(BriefingProvider):
         )
 
         self.calendar_entity_id = self.cfg.value('calendar_entity_id', None)
+        self.waste_collection_calendar_entity_id = self.cfg.value('waste_collection_calendar_entity_id', None)
 
-    def can_brief(self, context):
+    def can_brief(self, context: Context):
         return True
 
-    def briefing(self, context):
-        regular_events = self.fetch_regular_events()
-        if not regular_events:
+    def briefing(self, context: Context):
+        start_date = self.figure_start_time(context)
+        regular_events = self.fetch_regular_events(start_date)
+        waste_collection_event = self.fetch_waste_collection_event(context, start_date)
+
+        if not regular_events and not waste_collection_event:
             return
 
-        return 'Today you have {} {}, {}'.format(
+        today_or_tomorrow = self.figure_today_or_tomorrow(context)
+        if not waste_collection_event:
+            return '{} you have {} {}, {}'.format(
+                today_or_tomorrow,
+                len(regular_events),
+                'appointments' if len(regular_events) > 1 else 'appointment',
+                create_regular_event_text(context, regular_events),
+            )
+
+        if not regular_events:
+            return '{} is {}'.format(
+                to_event_date_briefing_text(waste_collection_event),
+                to_waste_collection_briefing_text(waste_collection_event)
+            )
+
+        return '{} is {}. {}You also have {} other {} {}, {}'.format(
+            today_or_tomorrow,
+            to_waste_collection_briefing_text(waste_collection_event),
+            MEDIUM_PAUSE,
             len(regular_events),
             'appointments' if len(regular_events) > 1 else 'appointment',
-            create_regular_event_text(regular_events),
+            today_or_tomorrow,
+            create_regular_event_text(context, regular_events),
         )
 
-    def fetch_regular_events(self):
-        regular_events = self.events_fetcher.fetch_regular_events(
-            self.calendar_entity_id,
-            datetime.today())
+    @staticmethod
+    def figure_start_time(context: Context):
+        if CalendarBriefingProvider.is_for_tomorrow(context):
+            return datetime.today() + timedelta(days=1)
 
-        self.debug('Found {} events'.format(len(regular_events)))
-        for e in regular_events:
-            self.debug(
-                '- {}: {} to {}, location={}, all_day={}, today={}, tomorrow={}'.format(
-                    e.title,
-                    e.start_time,
-                    e.end_time,
-                    e.location,
-                    e.is_all_day,
-                    e.is_today,
-                    e.is_tomorrow
-                ))
+        return datetime.today()
+
+    @staticmethod
+    def is_for_tomorrow(context: Context):
+        return context.parts_of_day.value >= PartsOfDay.EVENING.value
+
+    @staticmethod
+    def figure_today_or_tomorrow(context: Context):
+        if CalendarBriefingProvider.is_for_tomorrow(context):
+            return 'Tomorrow'
+
+        return 'Today'
+
+    def fetch_regular_events(self, start_date) -> List[CalendarEvent]:
+        regular_events = self.events_fetcher.fetch_regular_events(self.calendar_entity_id, start_date)
+        self.debug(self.get_debug_event_message('Found {} events'.format(len(regular_events)), regular_events))
 
         now = datetime.now()
-        filtered = [e for e in regular_events if
-                    e.start_time.replace(tzinfo=None) > now]
-
-        self.debug('Found {} future events'.format(len(filtered)))
-
-        for e in filtered:
-            self.debug('- {}: {}-{}, all_day={}, today={}, tomorrow={}'.format(
-                e.title,
-                e.start_time,
-                e.end_time,
-                e.is_all_day,
-                e.is_today,
-                e.is_tomorrow
-            ))
-
+        filtered = [e for e in regular_events if e.start_time.replace(tzinfo=None) > now]
+        self.debug(self.get_debug_event_message('Found {} filtered events'.format(len(filtered)), filtered))
         return filtered
 
+    def fetch_waste_collection_event(self, context: Context, start_date) -> CalendarEvent:
+        event = self.events_fetcher.fetch_waste_collection_event(self.waste_collection_calendar_entity_id, start_date)
+        self.debug('Found waste collection event: {}'.format(event))
 
-def create_regular_event_text(regular_events):
-    regular_events.sort(key=lambda e: e.start_time)
+        if event is None:
+            return
 
-    last_regular_event = regular_events.pop()
+        if event.is_today and context.parts_of_day != PartsOfDay.MORNING:
+            return
 
-    if not regular_events:
+        return event
+
+    @staticmethod
+    def get_debug_event_message(prefix, events):
+        message = prefix + '\n'
+        for e in events:
+            message = message + '- {}\n'.format(e)
+        return message
+
+
+def create_regular_event_text(context: Context, events: List[CalendarEvent]):
+    events.sort(key=lambda e: e.start_time)
+
+    if len(events) > 1 and CalendarBriefingProvider.is_for_tomorrow(context):
+        return '{} the first event is {}'.format(MEDIUM_PAUSE, to_event_briefing_text(events[0]))
+
+    last_regular_event = events.pop()
+    if not events:
         return to_event_briefing_text(last_regular_event)
 
-    text = ', '.join([to_event_briefing_text(e) for e in regular_events])
+    text = ', '.join([to_event_briefing_text(e) for e in events])
     text += '{} and {}'.format(
         SHORT_PAUSE,
         to_event_briefing_text(last_regular_event),
@@ -214,7 +248,7 @@ def create_regular_event_text(regular_events):
     return text
 
 
-def to_event_briefing_text(event):
+def to_event_briefing_text(event: CalendarEvent):
     start_time_text = event.start_time.strftime("%I:%M %p")
     if start_time_text == '12:00 PM':
         start_time_text = 'noon'
@@ -223,40 +257,6 @@ def to_event_briefing_text(event):
                                  start_time_text,
                                  SHORT_PAUSE,
                                  event.title)
-
-
-class ReminderBriefingProvider(BriefingProvider):
-    def __init__(self, app, briefing_config):
-        super().__init__(app, briefing_config)
-
-        self.events_fetcher = CalendarEventFetcher(
-            self,
-            self.cfg.value('api_base_url', None),
-            self.cfg.value('api_token', None),
-        )
-
-        self.waste_collection_calendar_entity_id = self.cfg.value('waste_collection_calendar_entity_id', None)
-
-    def can_brief(self, context):
-        return True
-
-    def briefing(self, context):
-        waste_collection_event = self.events_fetcher.fetch_waste_collection_event(
-            self.waste_collection_calendar_entity_id,
-            datetime.today(),
-        )
-
-        self.debug('Found waste_collection_event: {}'.format(
-            waste_collection_event)
-        )
-
-        if waste_collection_event is None:
-            return
-
-        return '{} is {}'.format(
-            to_event_date_briefing_text(waste_collection_event),
-            to_waste_collection_briefing_text(waste_collection_event)
-        )
 
 
 def to_event_date_briefing_text(event):
@@ -280,10 +280,10 @@ class StockPriceProvider(BriefingProvider):
         self.stock_symbols = self.cfg.list('stock_symbols')
         self.workday_entity_id = self.cfg.value('workday_entity_id', None)
 
-    def can_brief(self, context):
+    def can_brief(self, context: Context):
         return self.get_state(self.workday_entity_id) == 'on'
 
-    def briefing(self, context):
+    def briefing(self, context: Context):
         quotes = [self.quote_fetcher.fetch_quote(s) for s in self.stock_symbols]
 
         if quotes[0].is_currently_trading:
@@ -385,10 +385,10 @@ class LowBatteryDeviceBriefingProvider(BriefingProvider):
     def __init__(self, app, briefing_config):
         super().__init__(app, briefing_config)
 
-    def can_brief(self, context):
+    def can_brief(self, context: Context):
         return True
 
-    def briefing(self, context):
+    def briefing(self, context: Context):
         device_monitor = self.app.get_app('device_monitor')
         checker_result = device_monitor.get_checker_result('battery_level')
 

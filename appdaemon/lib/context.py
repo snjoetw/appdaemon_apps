@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 
 class PartsOfDay(Enum):
@@ -9,7 +10,10 @@ class PartsOfDay(Enum):
 
 
 class Context:
-    def __init__(self, parts_of_day, presence_mode=None, trigger_time=None):
+    _presence_mode: Optional[str]
+    _parts_of_day: PartsOfDay
+
+    def __init__(self, parts_of_day: PartsOfDay, presence_mode: str = None, trigger_time=None):
         self._parts_of_day = parts_of_day
         self._presence_mode = presence_mode
         self._trigger_time = trigger_time

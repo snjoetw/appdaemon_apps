@@ -1,25 +1,103 @@
 from datetime import datetime, timezone, timedelta
 from enum import Enum
+from typing import List
 
 import requests
 
 from lib.core.app_accessible import AppAccessible
 
 
-def is_no_school_event(event):
+class CalendarEvent:
+    def __init__(self, json):
+        self._end_time = from_datetime_str(json.get('end').get('dateTime'))
+        self._start_time = from_datetime_str(json.get('start').get('dateTime'))
+        self._location = json.get('location')
+        self._title = json.get('summary')
+        self._description = json.get('description')
+
+        if self._start_time is None:
+            self._start_time = from_date_str(json.get('start').get('date'))
+
+        if self._end_time is None:
+            self._end_time = from_date_str(json.get('end').get('date'))
+
+        delta = self.end_time - self.start_time
+        self._is_all_day = delta.days >= 1
+
+    @property
+    def end_time(self):
+        return self._end_time
+
+    @property
+    def start_time(self):
+        return self._start_time
+
+    @property
+    def location(self):
+        return self._location
+
+    @property
+    def title(self):
+        return self._title
+
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def is_all_day(self):
+        return self._is_all_day
+
+    @property
+    def is_today(self):
+        if not self.start_time:
+            return False
+        return self.start_time.date() <= datetime.today().date() <= self.end_time.date();
+
+    @property
+    def is_tomorrow(self):
+        if not self.start_time:
+            return False
+        tomorrow = datetime.today() + timedelta(days=1)
+        return self.start_time.date() == tomorrow.date()
+
+    def __repr__(self):
+        return "{}(title={}, location={}, start_time={}, end_time={}, is_all_day={}, is_today={}, is_tomorrow={})".format(
+            self.__class__.__name__,
+            self.title,
+            self.location,
+            self.start_time,
+            self.end_time,
+            self.is_all_day,
+            self.is_today,
+            self.is_tomorrow)
+
+
+def is_no_school_event(event: CalendarEvent):
     if event is None or not event.title or not event.is_today:
         return False
 
-    title = event.title.lower()
-    if 'no school' in title:
+    if has_no_school_keyword(event.title):
         return True
-    elif 'students do not attend' in title:
+    elif has_no_school_keyword(event.description):
         return True
-    elif 'thanksgiving day' in title:
+
+    return False
+
+
+def has_no_school_keyword(value: str):
+    value = value.lower()
+    if 'pro – d day' in value:
         return True
-    elif 'christmas break' in title:
+    if 'no school' in value:
         return True
-    elif 'spring break' in title:
+    elif 'students do not attend' in value:
+        return True
+    elif 'thanksgiving day' in value:
+        return True
+    elif 'christmas break' in value:
+        return True
+    elif 'spring break' in value:
         return True
 
     return False
@@ -69,13 +147,12 @@ class CalendarEventFetcher(AppAccessible):
         }
         self.api_url = "{}/api/calendars/".format(api_base_url)
 
-    def fetch_upcoming_event(self, calendar_entity_id, start_date, end_date=None):
+    def fetch_upcoming_event(self, calendar_entity_id, start_date, end_date=None) -> CalendarEvent:
         regular_events = self.fetch_regular_events(calendar_entity_id, start_date, end_date)
 
         self.debug('Found {} events'.format(len(regular_events)))
         now = datetime.now()
-        filtered = [e for e in regular_events if
-                    e.start_time.replace(tzinfo=None) > now and e.location]
+        filtered = [e for e in regular_events if e.start_time.replace(tzinfo=None) > now and e.location]
 
         self.debug('Found {} future events'.format(len(filtered)))
 
@@ -84,20 +161,19 @@ class CalendarEventFetcher(AppAccessible):
 
         return filtered[0]
 
-    def fetch_regular_events(self, calendar_entity_id, start_date, end_date=None):
+    def fetch_regular_events(self, calendar_entity_id, start_date, end_date=None) -> List[CalendarEvent]:
         events = self.fetch_events(calendar_entity_id, start_date, end_date)
         events.sort(key=lambda e: e.start_time)
 
         return [e for e in events if not e.is_all_day]
 
-    def fetch_all_day_events(self, calendar_entity_id, start_date,
-                             end_date=None):
+    def fetch_all_day_events(self, calendar_entity_id, start_date, end_date=None) -> List[CalendarEvent]:
         events = self.fetch_events(calendar_entity_id, start_date, end_date)
         events.sort(key=lambda e: e.start_time)
 
         return [e for e in events if e.is_all_day]
 
-    def fetch_events(self, calendar_entity_id, start_date, end_date=None):
+    def fetch_events(self, calendar_entity_id, start_date, end_date=None) -> List[CalendarEvent]:
         api_url = self.api_url + calendar_entity_id
         params = create_date_range_params(start_date, end_date)
         self.debug(
@@ -111,22 +187,19 @@ class CalendarEventFetcher(AppAccessible):
             params=params,
             headers=self.api_headers)
 
-        self.debug('Received API response={}, json={}'.format(response,
-                                                              response.json()))
+        self.debug('Received API response={}, json={}'.format(response, response.json()))
 
         response.raise_for_status()
 
         return [CalendarEvent(json_event) for json_event in response.json()]
 
-    def fetch_waste_collection_event(self, calendar_entity_id, date):
+    def fetch_waste_collection_event(self, calendar_entity_id, date) -> CalendarEvent:
         events = self.fetch_events(calendar_entity_id, date, date + timedelta(days=1))
         events.sort(key=lambda e: e.start_time)
 
         events_by_type = {}
 
         for e in events:
-            if not e.is_all_day:
-                continue
             if 'Garbage Collection' in e.title:
                 events_by_type[WasteCollectionType.GARBAGE] = e
             if 'Recycling Collection' in e.title:
@@ -139,67 +212,6 @@ class CalendarEventFetcher(AppAccessible):
             return events_by_type[WasteCollectionType.RECYCLING]
 
         return None
-
-
-class CalendarEvent:
-    def __init__(self, json):
-        self._end_time = from_datetime_str(json.get('end').get('dateTime'))
-        self._start_time = from_datetime_str(json.get('start').get('dateTime'))
-        self._location = json.get('location')
-        self._title = json.get('summary')
-
-        if self._start_time is None:
-            self._start_time = from_date_str(json.get('start').get('date'))
-
-        if self._end_time is None:
-            self._end_time = from_date_str(json.get('end').get('date'))
-
-        delta = self.end_time - self.start_time
-        self._is_all_day = delta.days >= 1
-
-    @property
-    def end_time(self):
-        return self._end_time
-
-    @property
-    def start_time(self):
-        return self._start_time
-
-    @property
-    def location(self):
-        return self._location
-
-    @property
-    def title(self):
-        return self._title
-
-    @property
-    def is_all_day(self):
-        return self._is_all_day
-
-    @property
-    def is_today(self):
-        if not self.start_time:
-            return False
-        return self.start_time.date() <= datetime.today().date() <= self.end_time.date();
-
-    @property
-    def is_tomorrow(self):
-        if not self.start_time:
-            return False
-        tomorrow = datetime.today() + timedelta(days=1)
-        return self.start_time.date() == tomorrow.date()
-
-    def __repr__(self):
-        return "{}(title={}, location={}, start_time={}, end_time={}, is_all_day={}, is_today={}, is_tomorrow={})".format(
-            self.__class__.__name__,
-            self.title,
-            self.location,
-            self.start_time,
-            self.end_time,
-            self.is_all_day,
-            self.is_today,
-            self.is_tomorrow)
 
 
 class WasteCollectionType(Enum):

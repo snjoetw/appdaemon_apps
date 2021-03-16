@@ -254,10 +254,6 @@ briefer:
       api_base_url: !secret homeassistant_internal_url
       api_token: !secret appdaemon_hass_api_token
       calendar_entity_id: calendar.google_home
-
-    - provider: reminder
-      api_base_url: !secret homeassistant_internal_url
-      api_token: !secret appdaemon_hass_api_token
       waste_collection_calendar_entity_id: calendar.google_my_waste
 
     - provider: commute_time
@@ -288,6 +284,10 @@ reminder:
     - binary_sensor.zb_living_room_motion
   providers:
     - provider: device_battery
+      trigger_method: motion
+      interval: 180
+
+    - provider: vent_issue
       trigger_method: motion
       interval: 180
 

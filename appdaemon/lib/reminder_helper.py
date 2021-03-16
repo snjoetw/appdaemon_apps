@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from device_monitor import DeviceMonitor
 from lib.calendar_helper import CalendarEventFetcher, is_no_school_event
 from lib.core.component import Component
 from lib.helper import concat_list, to_float
@@ -27,6 +28,8 @@ def get_reminder_provider(app, config):
         return ExceedsThresholdMonitor(app, config)
     elif provider == 'climate_away_mode':
         return ClimateAwayModeReminder(app, config)
+    elif provider == 'vent_issue':
+        return VentIssueReminder(app, config)
     else:
         raise ValueError("Invalid reminder provider config: {}".format(config))
 
@@ -64,7 +67,7 @@ class DeviceBatteryReminder(ReminderProvider):
         super().__init__(app, reminder_config)
 
     def provide(self, context):
-        device_monitor = self.app.get_app('device_monitor')
+        device_monitor: DeviceMonitor = self.app.get_app('device_monitor')
         checker_result = device_monitor.get_checker_result('battery_level')
 
         if checker_result is None or not checker_result.has_error_device_result:
@@ -85,6 +88,40 @@ class DeviceBatteryReminder(ReminderProvider):
 
         device_names = concat_list(low_battery_device_names)
         return '{} are running low'.format(device_names)
+
+
+class VentIssueReminder(ReminderProvider):
+    def __init__(self, app, reminder_config):
+        super().__init__(app, reminder_config)
+
+    def provide(self, context):
+        device_monitor: DeviceMonitor = self.app.get_app('device_monitor')
+        checker_result = device_monitor.get_checker_result('vent')
+
+        if checker_result is None or not checker_result.has_error_device_result:
+            return
+
+        device_names = set()
+        for result in checker_result.error_device_results:
+            device_name = self.get_state(result.entity_id, attribute='friendly_name') \
+                .replace('Temperature', '') \
+                .replace('Battery', '') \
+                .strip()
+
+            device_names.add(device_name)
+
+        if not device_names:
+            return None
+
+        device_names = list(device_names)
+        if len(device_names) == 1:
+            return '{} is having issue, please have a look.'.format(
+                device_names[0])
+
+        device_names = concat_list(device_names)
+        return '{} and {} other vent are having issue, please have a look.'.format(
+            device_names[0],
+            len(device_names) - 1)
 
 
 class SchoolDropOffTimeReminder(ReminderProvider):

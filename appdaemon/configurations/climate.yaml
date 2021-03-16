@@ -255,9 +255,9 @@ air_quality_monitor:
       threshold: 15
       name: Lynn's Room
 
-    - air_quality_entity_id: sensor.dyson_office_dust
+    - air_quality_entity_id: air_quality.dyson_office
       fan_entity_id: fan.dyson_office
-      threshold: 5
+      threshold: 15
       name: Office
 
 

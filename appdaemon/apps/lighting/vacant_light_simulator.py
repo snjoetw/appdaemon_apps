@@ -3,6 +3,7 @@ from enum import Enum
 from random import randint
 
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 
 PRESENCE_MODE_ENTITY_ID = 'presence_mode_entity_id'
 SCHEDULED_JOB_HANDLES = {}
@@ -28,13 +29,10 @@ class VacantLightSimulator(BaseAutomation):
         self._configs = [SimulatorConfig(c) for c in self.cfg.value('simulators')]
 
         presence_mode_entity_id = self.cfg.value('presence_mode_entity_id')
-        self.listen_state(self._presence_mode_change_handler, presence_mode_entity_id)
+        self.listen_state(self._presence_mode_change_handler, presence_mode_entity_id, immediate=True)
 
-        presence_mode = self.get_state(presence_mode_entity_id)
-        self._presence_mode_change_handler(None, None, None, presence_mode, None)
-
-    def _presence_mode_change_handler(self, entity, attribute, old, new,
-                                      kwargs):
+    @monitored_callback
+    def _presence_mode_change_handler(self, entity, attribute, old, new, kwargs):
         if new != 'No One is Home':
             for handle in SCHEDULED_JOB_HANDLES.values():
                 self.cancel_timer(handle)

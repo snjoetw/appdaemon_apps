@@ -1,4 +1,5 @@
 from lib.actions import TurnOnAction, TurnOffAction
+from lib.core.monitored_callback import monitored_callback
 from lib.triggers import TriggerInfo
 from lighting.motion_lighting import MotionLighting
 
@@ -49,6 +50,7 @@ class ImageProcessingMotionLighting(MotionLighting):
         enabler_entity_id = self.image_processing_settings.enabler_entity_id
         self.do_actions([TurnOffAction(self, {'entity_ids': enabler_entity_id})])
 
+    @monitored_callback
     def image_processing_state_change_handler(self, entity, attribute, old, new, kwargs):
         self.debug('Image processing state changed entity_id={}, new={}, old={}'.format(entity, new, old))
 

@@ -8,6 +8,7 @@ from lib.annoucer.announcer_config import AnnouncerConfig
 from lib.annoucer.media_manager import MediaManager
 from lib.annoucer.player import Player
 from lib.annoucer.player import create_player
+from lib.core.monitored_callback import monitored_callback
 
 
 class Announcer(BaseAutomation):
@@ -49,6 +50,7 @@ class Announcer(BaseAutomation):
         raw_player_config['volume'] = {**self._announcer_config.default_volume, **player_volume}
         return create_player(self, raw_player_config, self._media_manager)
 
+    @monitored_callback
     def _sleeping_time_state_change_handler(self, entity, attribute, old, new, kwargs):
         self._update_player_volumes()
 

@@ -1,4 +1,5 @@
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_float
 
 CHECKER_RESULT_CACHE = {}
@@ -14,6 +15,7 @@ class AirQualityMonitor(BaseAutomation):
         for setting in self.monitor_settings:
             self.listen_state(self.air_quality_change_handler, setting.air_quality_entity_id)
 
+    @monitored_callback
     def air_quality_change_handler(self, entity, attribute, old, new, kwargs):
         if new == old:
             return

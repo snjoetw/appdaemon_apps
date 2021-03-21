@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from lib.core.monitored_callback import monitored_callback
 from lighting.motion_lighting import MotionLighting
 
 CHECK_FREQUENCY = 300
@@ -15,6 +16,7 @@ class TimerMotionLighting(MotionLighting):
         now = datetime.now() + timedelta(seconds=2)
         self.run_every(self.run_every_handler, now, CHECK_FREQUENCY)
 
+    @monitored_callback
     def run_every_handler(self, time=None, **kwargs):
         if self.is_in_timer_turn_off_period():
             self.turn_off_lights()

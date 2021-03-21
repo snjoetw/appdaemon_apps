@@ -1,6 +1,7 @@
 from threading import Lock
 
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_int
 from lib.presence_helper import PERSON_STATUS_HOME, \
     PERSON_STATUS_JUST_ARRIVED, \
@@ -42,6 +43,7 @@ class PresenceStatusAutomation(BaseAutomation):
             else:
                 self.select_option(status_entity_id, PERSON_STATUS_AWAY)
 
+    @monitored_callback
     def presence_change_handler(self, entity, attribute, old, new, kwargs):
         self._lock.acquire()
 
@@ -84,6 +86,7 @@ class PresenceStatusAutomation(BaseAutomation):
             device_entity_id=device_entity_id,
             previous_state=previous_state)
 
+    @monitored_callback
     def proximity_change_handler(self, entity, attribute, old, new, kwargs):
         self._lock.acquire()
 

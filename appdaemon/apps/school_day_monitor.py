@@ -2,6 +2,7 @@ from datetime import datetime, time
 
 from base_automation import BaseAutomation
 from lib.calendar_helper import CalendarEventFetcher, is_no_school_event
+from lib.core.monitored_callback import monitored_callback
 
 
 class SchoolDayMonitor(BaseAutomation):
@@ -23,6 +24,7 @@ class SchoolDayMonitor(BaseAutomation):
         # force a run first
         self.run_daily_hanlder()
 
+    @monitored_callback
     def run_daily_hanlder(self, time=None, **kwargs):
         if not self.get_state(self.workday_entity_id) == 'on':
             self.debug('Not workday')

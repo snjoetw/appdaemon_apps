@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_int
 
 PARTICIPATE_MIDNIGHT_TIME = 'participate_midnight_time'
@@ -94,6 +95,7 @@ class LightingModeMonitor(BaseAutomation):
             config = _to_mode_config(mode)
 
             def run_every_handler_provider(_app, _config):
+                @monitored_callback
                 def run_every_handler(self, time=None, **kwargs):
                     _check(_app, _config)
 

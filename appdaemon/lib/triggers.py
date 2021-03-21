@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from lib.core.component import Component
+from lib.core.monitored_callback import monitored_callback
 
 
 def get_trigger(app, config, callback):
@@ -96,6 +97,7 @@ class StateTrigger(Trigger):
         for entity_id in entity_ids:
             self.app.listen_state(self._state_change_handler, entity_id, **settings)
 
+    @monitored_callback
     def _state_change_handler(self, entity_id, attribute, old, new, kwargs):
         if old == new:
             return
@@ -124,6 +126,7 @@ class TimeTrigger(Trigger):
             self.app.debug('Scheduled time trigger to run at {}'.format(time))
             self.app.run_daily(self._run_every_handler, time)
 
+    @monitored_callback
     def _run_every_handler(self, time=None, **kwargs):
         self._callback(TriggerInfo("time", {
             "time": time,
@@ -146,6 +149,7 @@ class EventTrigger(Trigger):
         else:
             self.app.listen_event(self._event_change_handler, event_type)
 
+    @monitored_callback
     def _event_change_handler(self, event_name, data, kwargs):
         for data_key, data_value in self._event_data.items():
             if data.get(data_key) != data_value:
@@ -169,6 +173,7 @@ class SunriseTrigger(Trigger):
         offset = self.cfg.value("offset", 0)
         self.app.run_at_sunrise(self._run_at_sunrise_handler, offset=offset)
 
+    @monitored_callback
     def _run_at_sunrise_handler(self, kwargs):
         self.app.log(kwargs)
         self._callback(TriggerInfo("sunrise", {
@@ -182,6 +187,7 @@ class SunsetTrigger(Trigger):
         offset = self.cfg.value("offset", 0)
         self.app.run_at_sunset(self._run_at_sunset_handler, offset=offset)
 
+    @monitored_callback
     def _run_at_sunset_handler(self, kwargs):
         self.app.log(kwargs)
         self._callback(TriggerInfo("sunset", {
@@ -195,6 +201,7 @@ class ActionTrigger(Trigger):
         self.app.listen_event(self._event_change_handler, 'ios.action_fired')
         self._target_name = self.cfg.value('action_name', None)
 
+    @monitored_callback
     def _event_change_handler(self, event_name, data, kwargs):
         action_name = data.get('actionName')
         if self._target_name is not None and self._target_name != action_name:

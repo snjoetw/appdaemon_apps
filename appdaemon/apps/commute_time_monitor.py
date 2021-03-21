@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import googlemaps
 
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 
 BEST_ROUTE_NOTIFY_MESSAGE_TEMPLATE = 'Best route to work is via {} which ' \
                                      'takes about {} min. '
@@ -29,6 +30,7 @@ class CommuteTimeMonitor(BaseAutomation):
 
         # self.run_every(self.run_every_handler, datetime.now(), 900)
 
+    @monitored_callback
     def run_every_handler(self, time=None, **kwargs):
         if not self.should_monitor():
             return

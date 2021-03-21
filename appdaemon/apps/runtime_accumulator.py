@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_float
 
 ACCUMULATOR_CACHE = {}
@@ -35,6 +36,7 @@ class RuntimeAccumulator(BaseAutomation):
         now = datetime.now() + timedelta(seconds=2)
         self._handle = self.run_every(self._run_every_handler, now, 60)
 
+    @monitored_callback
     def _run_every_handler(self, time=None, **kwargs):
         for config in self._accumulator_configs:
             if self._should_reset():

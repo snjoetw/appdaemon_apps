@@ -7,6 +7,7 @@ from configurable_automation import ConfigurableAutomation
 from lib.actions import Action
 from lib.briefing_helper import get_briefing_provider, MEDIUM_PAUSE
 from lib.context import Context
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import figure_parts_of_day
 
 
@@ -40,6 +41,7 @@ class Briefer(ConfigurableAutomation):
         midnight = time(0, 0, 0)
         self.run_daily(self.run_daily_handler, midnight)
 
+    @monitored_callback
     def run_daily_handler(self, time=None, **kwargs):
         self.select_option(self.briefing_state_entity_id, BriefingState.EARLY_MORNING.name)
 

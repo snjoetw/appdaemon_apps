@@ -1,9 +1,9 @@
+import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from itertools import repeat
 
-import traceback
-
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 
 
 class LightSetting:
@@ -68,6 +68,7 @@ class NoiseLevelMonitor(BaseAutomation):
             if setting.light_entity_id != setting.delegate_light_entity_id:
                 self.listen_state(self.light_state_change_handler, setting.delegate_light_entity_id)
 
+    @monitored_callback
     def noise_state_change_handler(self, entity, attribute, old, new, kwargs):
         if new != 'on':
             return
@@ -89,6 +90,7 @@ class NoiseLevelMonitor(BaseAutomation):
                 except Exception as e:
                     self.error('Error when running actions: {}\n{}'.format(e, traceback.format_exc()))
 
+    @monitored_callback
     def light_state_change_handler(self, entity, attribute, old, new, kwargs):
         if self.should_monitor():
             self.start_monitor()

@@ -2,6 +2,7 @@ from base_automation import BaseAutomation
 from lib.actions import TurnOnAction, get_action, TurnOffAction
 from lib.actions import figure_light_settings
 from lib.constraints import get_constraint
+from lib.core.monitored_callback import monitored_callback
 from lib.triggers import TriggerInfo
 
 DEFAULT_SCENE = 'Default'
@@ -56,6 +57,7 @@ class MotionLighting(BaseAutomation):
                                       for motion_entity_id in self.motion_entity_ids]
         self.debug('Registered motion state handler, entity_ids={}'.format(self.motion_entity_ids))
 
+    @monitored_callback
     def enabler_state_change_handler(self, entity, attribute, old, new, kwargs):
         if new == 'on':
             self.register_motion_state_change_event()
@@ -64,6 +66,7 @@ class MotionLighting(BaseAutomation):
         [self.cancel_listen_state(handle) for handle in self.motion_event_handlers]
         self.debug('Cancelled motion state handler, entity_ids={}'.format(self.motion_entity_ids))
 
+    @monitored_callback
     def motion_state_change_handler(self, entity, attribute, old, new, kwargs):
         self.cancel_turn_off_delay()
 

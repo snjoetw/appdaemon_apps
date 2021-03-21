@@ -1,4 +1,5 @@
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_float
 
 
@@ -10,6 +11,7 @@ class ClimateComfortModeMonitor(BaseAutomation):
 
         self.listen_state(self.state_change_handler, self.climate_entity_id)
 
+    @monitored_callback
     def state_change_handler(self, entity, attribute, old, new, kwargs):
         climate_entity = self.get_state(self.climate_entity_id, attribute='all')
         attributes = climate_entity.get('attributes')

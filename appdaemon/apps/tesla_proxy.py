@@ -2,11 +2,12 @@ import time
 from threading import Lock
 
 import appdaemon.plugins.mqtt.mqttapi as mqtt
+from teslajson import Connection
 
 from base_automation import BaseAutomation
 from lib.core.component import Component
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_int
-from teslajson import Connection
 
 
 class TeslaProxy(mqtt.Mqtt, BaseAutomation):
@@ -38,6 +39,7 @@ class TeslaProxy(mqtt.Mqtt, BaseAutomation):
             namespace='mqtt',
             topic='hass_tesla/268372268/charge/limit')
 
+    @monitored_callback
     def _door_lock_handler(self, event_name, data, kwargs):
         self.debug('Received data: {}'.format(data))
 
@@ -53,6 +55,7 @@ class TeslaProxy(mqtt.Mqtt, BaseAutomation):
 
         self._lock_and_process()
 
+    @monitored_callback
     def _actuate_trunk_handler(self, event_name, data, kwargs):
         self.debug('Received data: {}'.format(data))
 
@@ -65,6 +68,7 @@ class TeslaProxy(mqtt.Mqtt, BaseAutomation):
 
         self._lock_and_process()
 
+    @monitored_callback
     def _set_charge_limit_handler(self, event_name, data, kwargs):
         self.debug('Received data: {}'.format(data))
 

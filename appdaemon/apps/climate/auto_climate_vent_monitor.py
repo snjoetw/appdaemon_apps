@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from base_automation import BaseAutomation
 from lib.actions import set_cover_position
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_float
 
 
@@ -23,9 +24,11 @@ class AutoClimateVentMonitor(BaseAutomation):
         now = datetime.now() + timedelta(seconds=2)
         self.run_every(self.run_every_handler, now, 60)
 
+    @monitored_callback
     def temperature_change_handler(self, entity, attribute, old, new, kwargs):
         self.adjust_vent_openess()
 
+    @monitored_callback
     def run_every_handler(self, kwargs):
         self.adjust_vent_openess()
 

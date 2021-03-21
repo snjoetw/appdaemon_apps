@@ -1,4 +1,5 @@
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 
 
 class DeviceOnCounter(BaseAutomation):
@@ -9,6 +10,7 @@ class DeviceOnCounter(BaseAutomation):
         for device_entity_id in self.device_entity_ids:
             self.listen_state(self._state_change_handler, device_entity_id)
 
+    @monitored_callback
     def _state_change_handler(self, entity, attribute, old, new, kwargs):
         count = 0
 

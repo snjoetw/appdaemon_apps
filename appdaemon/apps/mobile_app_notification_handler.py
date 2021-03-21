@@ -5,6 +5,7 @@ import appdaemon.plugins.mqtt.mqttapi as mqtt
 
 from base_automation import BaseAutomation
 from lib.core.component import Component
+from lib.core.monitored_callback import monitored_callback
 
 BASE_TOPIC = 'app/notification/'
 
@@ -40,6 +41,7 @@ class MobileAppNotificationHandler(mqtt.Mqtt, BaseAutomation):
             mqtt_app = super(mqtt.Mqtt, self)
             mqtt_app.listen_event(self._notification_handler, 'MQTT_MESSAGE', namespace='mqtt', topic=handler.topic)
 
+    @monitored_callback
     def _notification_handler(self, event_name, data, kwargs):
         for handler in self._handlers:
             if handler.topic == data['topic']:

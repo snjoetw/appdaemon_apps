@@ -4,6 +4,7 @@ import requests
 
 from base_automation import BaseAutomation
 from lib.calendar_helper import CalendarEventFetcher
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_float
 from lib.travel_time_helper import TravelTimeFetcher
 
@@ -48,6 +49,7 @@ class TeslaAutoScheduledCharging(BaseAutomation):
 
         self.run_every(self.run_every_handler, datetime.now(), CHECK_FREQUENCY)
 
+    @monitored_callback
     def run_every_handler(self, time=None, **kwargs):
         if self.last_check_time.date() != datetime.today().date():
             self.set_auto_charge_state(STATE_WAITING)

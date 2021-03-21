@@ -2,6 +2,7 @@ import re
 from datetime import datetime, timedelta
 
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_datetime
 
 
@@ -12,6 +13,7 @@ class LightRuntimeMonitor(BaseAutomation):
         now = datetime.now() + timedelta(seconds=2)
         self.run_every(self._run_every_handler, now, self.cfg.value('check_frequency'))
 
+    @monitored_callback
     def _run_every_handler(self, time=None, **kwargs):
         checked_entities = []
 

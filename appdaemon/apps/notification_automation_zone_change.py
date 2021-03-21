@@ -1,6 +1,5 @@
-import appdaemon.plugins.hass.hassapi as hass
-
 from base_automation import BaseAutomation
+from lib.core.monitored_callback import monitored_callback
 
 HOME_ZONE = "home"
 AWAY = "not_home"
@@ -18,6 +17,7 @@ class ZoneChangeNotificationAutomation(BaseAutomation):
         for device in self.device_entity_ids:
             self.listen_state(self.device_state_change_handler, device)
 
+    @monitored_callback
     def device_state_change_handler(self, entity, attribute, old, new, kwargs):
         if old != AWAY and new == AWAY:
             self.log("{} left {}".format(entity, old))

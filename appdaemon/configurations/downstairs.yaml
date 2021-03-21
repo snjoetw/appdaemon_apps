@@ -189,3 +189,26 @@ dining_room_lighting:
             - platform: time
               start_time: "{{ turn_on_time }}"
               end_time: "{{ turn_off_time }}"
+
+
+dining_room_meeting_dnd:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: binary_sensor.zoom_joe
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: enable_dnd
+          player_entity_id: media_player.gh_dining_room
+
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: disable_dnd
+          player_entity_id: media_player.gh_dining_room

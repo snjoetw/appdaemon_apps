@@ -3,7 +3,7 @@ import operator
 from datetime import datetime, date
 
 from lib.core.component import Component
-from lib.helper import to_float, flatten_dict
+from lib.helper import to_float, flatten_dict, is_float
 from lib.schedule_job import has_scheduled_job
 
 
@@ -82,7 +82,7 @@ class Constraint(Component):
     def _matches_numeric_value(self, op, expected, actual):
         expected = expected.replace(op, '')
         expected = to_float(expected)
-        actual = to_float(actual)
+        actual = to_float(actual) if is_float(actual) else None
         operator_fn = get_operator_fn(op)
 
         if actual is None:

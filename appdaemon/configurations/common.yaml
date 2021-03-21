@@ -501,3 +501,13 @@ uber_eats_notifier:
           message: "🚙 {{ order_ready_for_pickup_message }}"
           recipient: all
           notifier: ios
+
+timer_monitor:
+  debug: true
+  module: timer_monitor
+  class: TimerMonitor
+  timer_entity_id:
+    - sensor.family_room_speaker_next_timer
+    - sensor.dining_room_wifi_next_timer
+    - sensor.kitchen_display_next_timer
+    - sensor.laundry_room_speaker_next_timer

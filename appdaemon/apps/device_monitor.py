@@ -243,7 +243,7 @@ class UnavailableEntityChecker(EntityNameFilteringChecker):
 
         state = entity['state']
 
-        if state == 'unavailable':
+        if state in ('unavailable', 'dead'):
             return error(entity_id, ResultType.UNAVAILABLE)
 
         return ok(entity_id)

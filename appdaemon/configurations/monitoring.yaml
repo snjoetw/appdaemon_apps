@@ -3,7 +3,7 @@ water_leak_detected:
   class: Automation
   cancel_job_when_no_match: true
   variables:
-    message: "{{ friendly_name(trigger_info.data.entity_id) }} detected water leak."
+    message: "Water detected around {{ friendly_name(trigger_info.data.entity_id) | replace(' Water Leak', '') | lower }}."
   triggers:
     - platform: state
       entity_ids:
@@ -238,8 +238,6 @@ device_monitor:
     - type: unavailable_entity
       pattern:
         - pattern: (^sensor|^binary_sensor|^light|^switch)\.zb.+
-        - pattern: ^binary_sensor\.wink_relay.*
-          ignore: true
         - pattern: (zwave)
     - type: ge_bulb
       pattern: '^light\.ge_.*'

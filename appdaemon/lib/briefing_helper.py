@@ -297,11 +297,10 @@ def to_stock_current_price_briefing_text(quotes):
     parts = []
 
     for quote in quotes:
-        parts.append('{} is {} {}, to ${}{}'.format(
+        parts.append('{} is {} {}{}'.format(
             to_stock_name(quote),
             to_stock_direction(quote),
             to_stock_change(quote),
-            to_stock_price(quote),
             SHORT_PAUSE,
         ))
 
@@ -323,11 +322,10 @@ def to_stock_closed_price_briefing_text(current_time, quotes):
     parts = []
 
     for quote in quotes:
-        parts.append('{} was {} {}, to ${}{}'.format(
+        parts.append('{} was {} {}{}'.format(
             to_stock_name(quote),
             to_stock_direction(quote),
             to_stock_change(quote),
-            to_stock_price(quote),
             SHORT_PAUSE,
         ))
 

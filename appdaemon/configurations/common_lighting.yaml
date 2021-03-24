@@ -57,7 +57,7 @@ lighting_mode_monitor:
         0: Dark
     - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_hallway
-      participate_sleeping_time: false
+      participate_sleeping_time: true
       thresholds:
         900: Not Dark
         0: Dark
@@ -103,7 +103,7 @@ vacant_light_simulator:
   class: VacantLightSimulator
   presence_mode_entity_id: input_select.presence_mode
   simulators:
-    - light_entity_id: light.zwave_hallway_light
+    - light_entity_id: light.hue_hallway_light
       light_mode_entity_id: input_select.lighting_mode_hallway
       light_mode_states: [Dark, Sleeping]
       start_time: sunset - 00:30:00

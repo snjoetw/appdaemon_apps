@@ -46,7 +46,10 @@ hallway_lighting:
   turn_off_delay: 20
   lighting_scenes:
     Dark:
-      - entity_id: light.zwave_hallway_light
+      - entity_id: light.hue_hallway_light
+        brightness: 255
+    Sleeping:
+      - entity_id: light.hue_hallway_light
         brightness: 150
 
 

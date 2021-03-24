@@ -75,7 +75,7 @@ var_downstairs_lights: &var_downstairs_lights
   - light.hue_family_room_light
   - light.hue_basement_stairway_light
   - light.xiaomi_office_light
-  - light.zwave_hallway_light
+  - light.hue_hallway_light
   - light.zwave_kitchen_light
   - light.zwave_lobby_light
   - light.zwave_stairway_light

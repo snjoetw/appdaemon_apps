@@ -181,7 +181,6 @@ door_beep:
 # S E C U R I T Y - M O N I T O R
 ###############################################################################
 alarm_monitor:
-  debug: true
   module: automation
   class: Automation
   variables:

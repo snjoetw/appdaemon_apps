@@ -138,7 +138,7 @@ backyard_activity_detected:
     - platform: triggered_event
       event_data:
         device_id: 6edecbd31658fa303e84790204f24fc3
-        type: camera_motion
+        type: camera_person
   handlers:
     - constraints:
       actions:

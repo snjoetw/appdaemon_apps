@@ -3,7 +3,6 @@
 ###############################################################################
 
 notifier:
-  debug: true
   module: notifier
   class: Notifier
   ios:
@@ -16,7 +15,6 @@ notifier:
     access_token: !secret facebook_meesenger_page_access_token
 
 announcer:
-  debug: true
   module: announcer
   class: Announcer
   tts_platform: amazon_polly
@@ -273,7 +271,6 @@ briefer:
 
 
 reminder:
-  debug: true
   module: reminder
   class: Reminder
   presence_mode_entity_id: input_select.presence_mode
@@ -398,7 +395,6 @@ reminder:
       climate_entity_id: climate.main_floor
 
 mobile_app_notification_handler:
-  debug: true
   module: mobile_app_notification_handler
   class: MobileAppNotificationHandler
 
@@ -503,7 +499,6 @@ uber_eats_notifier:
           notifier: ios
 
 timer_monitor:
-  debug: true
   module: timer_monitor
   class: TimerMonitor
   timer_entity_id:

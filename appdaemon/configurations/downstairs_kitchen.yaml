@@ -1,5 +1,4 @@
 kitchen_lighting:
-  debug: true
   module: motion_lighting
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_kitchen

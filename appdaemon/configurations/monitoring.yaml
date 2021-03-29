@@ -118,7 +118,6 @@ package_delivered_notifier:
 
 
 package_retrieved_notifier:
-  debug: true
   module: automation
   class: Automation
   variables:

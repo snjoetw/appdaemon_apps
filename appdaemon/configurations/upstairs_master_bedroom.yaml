@@ -1,5 +1,4 @@
 master_bedroom_occupancy_monitor:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -144,7 +143,6 @@ master_bathroom_auto_fan:
 
 
 master_bathroom_window:
-  debug: true
   module: automation
   class: Automation
   variables:

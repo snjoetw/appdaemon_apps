@@ -24,7 +24,6 @@ basement_living_room_lighting:
 
 
 basement_living_room_wall_switch:
-  debug: true
   module: automation
   class: Automation
   triggers:

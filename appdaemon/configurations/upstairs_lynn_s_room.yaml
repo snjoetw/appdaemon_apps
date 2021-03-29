@@ -121,7 +121,6 @@ lynns_room_button:
 
 
 lynns_room_occupancy_monitor:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -196,7 +195,6 @@ lynns_room_wakeup_lighting:
 
 
 lynns_room_temperature_difference_heater_booster:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -380,7 +378,6 @@ lynn_s_room_temperature_monitor:
 
 
 lynn_s_room_window_monitor:
-  debug: true
   module: automation
   class: Automation
   triggers:

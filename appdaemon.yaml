@@ -6,6 +6,8 @@ appdaemon:
   app_dir: /conf/appdaemon
   secrets: /conf/secrets.yaml
   threadpool_workers: 20
+  thread_duration_warning_threshold: 20
+  internal_function_timeout: 30
   exclude_dirs:
     - configurations
     - lib

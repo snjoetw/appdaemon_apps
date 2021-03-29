@@ -1,3 +1,28 @@
+master_bedroom_light_monitor:
+  debug: true
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: binary_sensor.sh_master_bedroom_light_input
+  handlers:
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+      actions:
+        - platform: turn_on
+          entity_ids:
+            light.hue_master_bedroom_light:
+              brightness: 254
+    - constraints:
+        - platform: triggered_state
+          to: "off"
+      actions:
+        - platform: turn_off
+          dim_light_before_turn_off: false
+          entity_ids: light.hue_master_bedroom_light
+
+
 master_bedroom_occupancy_monitor:
   module: automation
   class: Automation

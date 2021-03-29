@@ -88,11 +88,11 @@ var_upstairs_lights: &var_upstairs_lights
   - light.hue_lynn_s_room_lightstrip
   - light.hue_upstairs_hallway_light
   - light.hue_kids_bathroom_light
+  - light.hue_master_bedroom_light
   - light.yeelight_strip1_7811dc691196
   - light.yeelight_lynn_s_room_bedside_lamp
-#  - switch.wink_master_bedroom_light
-#  - switch.wink_master_bedroom_wall_light
   - light.zwave_master_bathroom_light
+  - switch.sh_master_bedroom_wall_light
   - switch.zwave_master_bathroom_ceiling_light
   - switch.zwave_walkin_closet_light_switch
 

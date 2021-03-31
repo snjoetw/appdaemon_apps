@@ -53,7 +53,7 @@ hallway_lighting:
         brightness: 150
 
 
-hallway_night_light:
+hallway_pathway_light:
   module: automation
   class: Automation
   triggers:
@@ -63,21 +63,9 @@ hallway_night_light:
       to: "off"
   handlers:
     - constraints:
-        - platform: state
-          entity_id: input_select.lighting_mode_hallway
-          state: [Dark]
       actions:
-        - platform: turn_on
-          entity_ids:
-            input_boolean.is_night_light_enabled_downstairs:
-              force_on: false
-        - platform: delay
-          delay: 20
-          actions:
-            - platform: turn_off
-              entity_ids:
-                input_boolean.is_night_light_enabled_downstairs:
-
+        - platform: trigger_pathway_light
+          app_name: hallway_lighting
 
 
 ###############################################################################

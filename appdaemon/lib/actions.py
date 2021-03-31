@@ -76,6 +76,8 @@ def get_action(app, config):
         return HueActivateScene(app, config)
     elif platform == "fire_event":
         return FireEvent(app, config)
+    elif platform == "trigger_pathway_light":
+        return TriggerPathwayLightAction(app, config)
     else:
         raise ValueError("Invalid action config: {}".format(config))
 
@@ -407,8 +409,27 @@ class ToggleAction(Action):
         super().__init__(app, action_config)
 
     def do_action(self, trigger_info):
-        entity_id = self.cfg.value("entity_id", None)
-        toggle_entity(self.app, entity_id)
+        entity_ids = figure_light_settings(self.cfg.value('entity_ids', None))
+        for entity_id, config in entity_ids.items():
+            config = config or {}
+
+            self.debug({
+                'entity_id': entity_id,
+                'config': config,
+                'trigger_info': trigger_info,
+            })
+
+            toggle_entity(self.app, entity_id, config)
+
+
+class TriggerPathwayLightAction(Action):
+    def __init__(self, app, action_config):
+        super().__init__(app, action_config)
+
+    def do_action(self, trigger_info):
+        app_name = self.cfg.value('app_name')
+        motion_lighting_app = self.app.get_app(app_name)
+        motion_lighting_app.trigger_pathway_light()
 
 
 class SetCoverPositionAction(Action):

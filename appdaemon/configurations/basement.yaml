@@ -57,3 +57,18 @@ basement_living_room_wall_switch:
         - platform: turn_on
           entity_ids:
             - switch.zwave_basement_living_room_light
+
+
+basement_workout_room_pathway_light:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: state
+      entity_id: light.zwave_workout_room_light
+      from: "on"
+      to: "off"
+  handlers:
+    - constraints:
+      actions:
+        - platform: trigger_pathway_light
+          app_name: hallway_lighting

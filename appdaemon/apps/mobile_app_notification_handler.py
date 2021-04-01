@@ -20,11 +20,11 @@ class Handler(Component):
         return self._topic
 
     def handle(self, data):
-        title, text = data.split('\n')
-        self.log('Handling title={}, text={} with handler={}'.format(title, text, self))
-        self._do_handle(title, text)
+        title, text, source = data.split('\n')
+        self.log('Handling title={}, text={}, source={} with handler={}'.format(title, text, source, self))
+        self._do_handle(title, text, source)
 
-    def _do_handle(self, title, text):
+    def _do_handle(self, title, text, source):
         pass
 
 
@@ -54,7 +54,7 @@ class TelusAlarmHandler(Handler):
     def __init__(self, app):
         super().__init__(app, 'SmartHome')
 
-    def _do_handle(self, title, text):
+    def _do_handle(self, title, text, source):
         telus_alarm_state = self._figure_alarm_state(title)
         if telus_alarm_state is None:
             self.error('No alarm state defined for title={}, text={}'.format(title, text))
@@ -117,7 +117,7 @@ class NestHandler(Handler):
     def __init__(self, app):
         super().__init__(app, 'Nest')
 
-    def _do_handle(self, title, text):
+    def _do_handle(self, title, text, source):
         event, location = title.split(' • ')
         if not event or not location:
             self.log('Unable to handle title={}'.format(title))
@@ -169,15 +169,13 @@ class UberEatsHandler(Handler):
     def __init__(self, app):
         super().__init__(app, 'Uber Eats')
 
-    def _do_handle(self, title, text):
+    def _do_handle(self, title, text, source):
         event_type = self._figure_event_type(text)
-        if event_type:
-            return self._handle_event(event_type)
+        if not event_type:
+            self.warn('Unsupported event, not handling title={}, text={}'.format(title, text))
+            return
 
-        self.warn('Unsupported event, not handling title={}, text={}'.format(title, text))
-
-    def _handle_event(self, event_type):
-        self.log('Handling {} event'.format(event_type))
+        self.log('Handling {} event, title={}, text={}'.format(event_type, title, text))
         self.app.fire_event(AD_EVENT_UBER_EATS, event_type=event_type.value)
 
     @staticmethod

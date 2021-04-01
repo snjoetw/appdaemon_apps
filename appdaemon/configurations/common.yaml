@@ -465,6 +465,19 @@ uber_eats_notifier:
     - constraints:
         - platform: triggered_event
           event_data:
+            event_type: order_almost_delivered
+      actions:
+        - platform: announcement
+          tts_message: "{{ order_delivered_message }}"
+        - platform: notify
+          message: "🍴 {{ order_delivered_message }}"
+          recipient: all
+          notifier: ios
+          camera_entity_id: camera.front_door
+
+    - constraints:
+        - platform: triggered_event
+          event_data:
             event_type: order_on_the_move
       actions:
         - platform: announcement

@@ -148,18 +148,6 @@ package_retrieved_notifier:
             thread_id: Mail Monitor
 
 
-runtime_accumulator:
-  module: runtime_accumulator
-  class: RuntimeAccumulator
-  reset_start_time: '00:00:00'
-  reset_end_time: '00:00:59'
-  accumulators:
-    - accumulate_entity_id: input_number.runtime_kwh_enery_bridge
-      accumulator_type: WATTAGE
-      always_running: true
-      wattage_entity_id: sensor.mqtt_energy_bridge_usage_minute
-
-
 noise_level_monitor:
   log_level: DEBUG
   module: noise_level_monitor

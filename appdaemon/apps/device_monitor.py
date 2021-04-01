@@ -78,9 +78,19 @@ class WrapperAction(Action):
     def do_action(self, trigger_info):
         for checker in self.checkers:
             result = checker.check()
-            notification_id = checker.__class__.__name__
+            notification_id = checker.__class__.__name__.lower()
 
             self._update_result_cache(checker, result)
+
+            existing = self.get_state('persistent_notification.' + notification_id, attribute='all') or {}
+            current_state = existing.get('state')
+            current_message = existing.get('attributes', {}).get('message')
+
+            if current_state is None and not result.error_message:
+                return
+
+            if current_state is 'notifying' and current_message == result.error_message:
+                return
 
             if result.error_message:
                 self.call_service(

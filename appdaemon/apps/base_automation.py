@@ -78,6 +78,15 @@ class BaseAutomation(hass.Hass):
         return await super().call_service(service, **kwargs)
 
     def select_option(self, entity_id, option, **kwargs):
+        if self.get_state(entity_id) == option:
+            self.debug('{} already in {}, skipping ...'.format(entity_id, option))
+            return
+
+        options = self.get_state(entity_id, attribute='options')
+        if option not in options:
+            self.error('{} is not a valid option in {} ({})'.format(option, entity_id, options))
+            return
+
         self.log('Selecting {} in {}'.format(option, entity_id))
         super().select_option(entity_id, option, **kwargs)
 

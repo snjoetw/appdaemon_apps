@@ -59,7 +59,7 @@ zone_end_downstairs_movement:
     - constraints:
         - platform: state
           entity_id: *var_downstairs_motion_sensors
-          state: "off"
+          state: ["off", "unavailable"]
           match_all: true
       actions:
         - platform: turn_off
@@ -79,7 +79,7 @@ zone_end_upstairs_movement:
     - constraints:
         - platform: state
           entity_id: *var_upstairs_motion_sensors
-          state: "off"
+          state: ["off", "unavailable"]
           match_all: true
       actions:
         - platform: turn_off
@@ -119,6 +119,7 @@ door_beep:
           player_entity_id:
             - media_player.gh_laundry_room
             - media_player.gh_family_room
+            - media_player.gh_dining_room
           volume_mode: regular
         - platform: service
           service: mqtt/publish
@@ -143,6 +144,7 @@ door_beep:
           player_entity_id:
             - media_player.gh_laundry_room
             - media_player.gh_family_room
+            - media_player.gh_dining_room
         - platform: service
           service: mqtt/publish
           data:
@@ -166,6 +168,7 @@ door_beep:
           player_entity_id:
             - media_player.gh_laundry_room
             - media_player.gh_family_room
+            - media_player.gh_dining_room
         - platform: service
           service: mqtt/publish
           data:

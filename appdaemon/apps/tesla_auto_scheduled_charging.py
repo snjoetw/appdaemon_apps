@@ -14,7 +14,7 @@ STATE_CHARGED = 'CHARGED'
 STATE_SKIPPED = 'SKIPPED'
 
 # how often the app should check if auto charge is needed in seconds
-CHECK_FREQUENCY = 300
+CHECK_FREQUENCY = 600
 # time threshold between future event and now in minutes
 AUTO_CHARGE_TIME_THRESHOLD = 45
 # % to auto charge

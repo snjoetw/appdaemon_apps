@@ -4,7 +4,7 @@
 
 
 tesla_proxy:
-  debug: true
+  log_level: DEBUG
   module: tesla_proxy
   class: TeslaProxy
   tesla_username: !secret tesla_username
@@ -14,7 +14,6 @@ tesla_proxy:
 
 
 tesla_auto_scheduled_charging:
-  debug: true
   module: tesla_auto_scheduled_charging
   class: TeslaAutoScheduledCharging
   enabler_entity_id: input_boolean.is_tesla_auto_scheduled_charging_enabled

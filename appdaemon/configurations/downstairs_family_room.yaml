@@ -16,7 +16,6 @@
 
 
 family_room_person_detection:
-  debug: true
   module: automation
   class: Automation
   triggers:

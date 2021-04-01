@@ -88,7 +88,6 @@ living_room_lighting:
 
 
 living_room_person_detection:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -183,7 +182,6 @@ dining_room_lighting:
 
 
 dining_room_meeting_dnd:
-  debug: true
   module: automation
   class: Automation
   triggers:

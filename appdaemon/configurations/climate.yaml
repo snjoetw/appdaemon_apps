@@ -294,7 +294,7 @@ fan_auto_night_mode:
 
 
 climate_preset_mode_overrider:
-  debug: true
+  log_level: DEBUG
   module: climate_preset_mode_overrider
   class: ClimatePresetModeOverrider
   climate_entity_id: climate.main_floor

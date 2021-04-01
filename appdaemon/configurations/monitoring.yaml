@@ -161,7 +161,7 @@ runtime_accumulator:
 
 
 noise_level_monitor:
-  debug: true
+  log_level: DEBUG
   module: noise_level_monitor
   class: NoiseLevelMonitor
   monitor_settings:

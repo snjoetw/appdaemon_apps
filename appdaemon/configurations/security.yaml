@@ -16,6 +16,7 @@ last_home_movement:
 
 
 zone_start_movement:
+  log_level: WARNING
   module: automation
   class: Automation
   triggers:
@@ -46,6 +47,7 @@ zone_start_movement:
             input_boolean.is_motion_detected_upstairs:
 
 zone_end_downstairs_movement:
+  log_level: WARNING
   module: automation
   class: Automation
   triggers:
@@ -65,6 +67,7 @@ zone_end_downstairs_movement:
             input_boolean.is_motion_detected_downstairs:
 
 zone_end_upstairs_movement:
+  log_level: WARNING
   module: automation
   class: Automation
   triggers:
@@ -245,7 +248,7 @@ alarm_monitor:
             entity_id: "{{ alarm_entity_id }}"
 
 alarm_notifier:
-  debug: true
+  log_level: DEBUG
   module: alarm_notifier
   class: AlarmNotifier
   is_vacation_mode_entity_id: input_boolean.is_vacation_mode
@@ -292,7 +295,6 @@ alarm_notifier:
 
 
 alarm_state_announcer:
-  debug: true
   module: automation
   class: Automation
   variables:
@@ -959,7 +961,6 @@ power_outage_detector:
 
 
 alarm_state_change_events:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -981,7 +982,6 @@ alarm_state_change_events:
 
 
 nest_app_front_door_open_action:
-  debug: true
   module: automation
   class: Automation
   variables:
@@ -1023,7 +1023,6 @@ nest_app_front_door_open_action:
 
 
 nest_app_open_action:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -1043,7 +1042,6 @@ nest_app_open_action:
             payload: "open_app"
 
 #nest_camera_events:
-#  debug: true
 #  module: automation
 #  class: Automation
 #  triggers:

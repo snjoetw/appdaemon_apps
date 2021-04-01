@@ -19,7 +19,7 @@ office_lighting:
 
 
 office_person_detection:
-  debug: true
+  log_level: DEBUG
   module: automation
   class: Automation
   triggers:

@@ -56,7 +56,6 @@ backyard_lighting:
 
 
 front_door_doorbell_pressed:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -80,7 +79,6 @@ front_door_doorbell_pressed:
 
 
 front_door_activity_detected:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -104,7 +102,6 @@ front_door_activity_detected:
 
 
 front_yard_activity_detected:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -128,7 +125,6 @@ front_yard_activity_detected:
 
 
 backyard_activity_detected:
-  debug: true
   module: automation
   class: Automation
   triggers:
@@ -152,7 +148,6 @@ backyard_activity_detected:
 
 
 rear_driveway_activity_detected:
-  debug: true
   module: automation
   class: Automation
   triggers:

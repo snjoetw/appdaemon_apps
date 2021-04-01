@@ -1,5 +1,5 @@
 master_bedroom_light_monitor:
-  debug: true
+  log_level: DEBUG
   module: automation
   class: Automation
   triggers:

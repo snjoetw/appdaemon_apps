@@ -4,7 +4,7 @@ from threading import Lock
 import appdaemon.plugins.mqtt.mqttapi as mqtt
 from teslajson import Connection
 
-from base_automation import BaseAutomation
+from base_automation import BaseAutomation, LOG_LEVELS
 from lib.core.component import Component
 from lib.core.monitored_callback import monitored_callback
 from lib.helper import to_int
@@ -114,7 +114,7 @@ class TeslaProxy(mqtt.Mqtt, BaseAutomation):
             self._lock.release()
 
     def log(self, msg, level='INFO'):
-        if level == 'DEBUG' and not self.debug_enabled:
+        if LOG_LEVELS[level] < LOG_LEVELS[self.log_level]:
             return
 
         if level == 'DEBUG':

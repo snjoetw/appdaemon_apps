@@ -7,6 +7,13 @@ import appdaemon.utils as utils
 
 from lib.core.config import Config
 
+LOG_LEVELS = {
+    'DEBUG': 10,
+    'INFO': 20,
+    'WARNING': 30,
+    'ERROR': 40,
+}
+
 
 class BaseAutomation(hass.Hass):
 
@@ -18,8 +25,16 @@ class BaseAutomation(hass.Hass):
     def debug_enabled(self):
         return self.cfg.value('debug', False)
 
+    @property
+    def log_level(self):
+        log_level = self.cfg.value('log_level')
+        if log_level:
+            return log_level
+
+        return 'INFO'
+
     def log(self, msg, level='INFO'):
-        if level == 'DEBUG' and not self.debug_enabled:
+        if LOG_LEVELS[level] < LOG_LEVELS[self.log_level]:
             return
 
         if level == 'DEBUG':

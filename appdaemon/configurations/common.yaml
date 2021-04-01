@@ -409,7 +409,7 @@ mobile_app_notification_handler:
 
 
 #test:
-#  debug: true
+#  log_level: DEBUG
 #  module: automation
 #  class: Automation
 #  variables:

@@ -1,5 +1,5 @@
 vacuum_dustbin_monitor:
-  debug: true
+  log_level: DEBUG
   module: vacuum_dustbin_monitor
   class: VacuumDustbinMonitor
   runtime_entity_id: input_number.vacuum_cleaned_area_count

@@ -1,4 +1,5 @@
 last_home_movement:
+  log_level: WARNING
   module: automation
   class: Automation
   triggers:
@@ -91,6 +92,7 @@ zone_end_upstairs_movement:
 # S E C U R I T Y - B E E P
 ###############################################################################
 door_beep:
+  log_level: WARNING
   module: automation
   class: Automation
   variables:
@@ -436,6 +438,7 @@ alarm_state_announcer:
             url: /lovelace/view_alarm
 
 door_left_open:
+  log_level: WARNING
   module: automation
   class: Automation
   variables:
@@ -473,6 +476,7 @@ door_left_open:
 
 
 window_left_open:
+  log_level: WARNING
   module: automation
   class: Automation
   variables:
@@ -515,6 +519,7 @@ window_left_open:
 
 
 garage_door_left_open:
+  log_level: WARNING
   module: automation
   class: Automation
   variables:
@@ -553,6 +558,7 @@ garage_door_left_open:
 
 
 lock_left_unlocked:
+  log_level: WARNING
   module: automation
   class: Automation
   variables:

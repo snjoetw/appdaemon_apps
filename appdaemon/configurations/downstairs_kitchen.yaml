@@ -86,12 +86,16 @@ kitchen_french_door_shade_auto_open:
   class: Automation
   triggers:
     - platform: sunrise
+  constraints:
+    - platform: state
+      entity_id: input_boolean.is_auto_shade_enabled_kitchen
+      state: 'on'
+    - platform: state
+      entity_id: input_select.presence_mode
+      state: No One is Home
+      negate: true
   handlers:
     - constraints:
-        - platform: state
-          entity_id: input_select.presence_mode
-          state: No One is Home
-          negate: true
       actions:
         - platform: set_cover_position
           entity_id: cover.zb_kitchen_shade

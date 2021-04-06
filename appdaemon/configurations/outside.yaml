@@ -37,6 +37,7 @@ front_door_lighting:
 backyard_lighting:
   module: timer_motion_lighting
   class: TimerMotionLighting
+  enabler_entity_id: input_boolean.is_motion_enabled_backyard
   scene_entity_id: input_select.lighting_mode_backyard
   motion_entity_id:
     - binary_sensor.zwave_backyard_motion
@@ -50,7 +51,7 @@ backyard_lighting:
     Dark:
       - entity_id: switch.zwave_backyard_light
       - entity_id: light.hue_backyard_spot_light
-        brightness: 150
+        brightness: 255
         force_on: false
         force_off: false
 

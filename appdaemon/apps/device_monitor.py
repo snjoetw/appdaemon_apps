@@ -82,16 +82,6 @@ class WrapperAction(Action):
 
             self._update_result_cache(checker, result)
 
-            existing = self.get_state('persistent_notification.' + notification_id, attribute='all') or {}
-            current_state = existing.get('state')
-            current_message = existing.get('attributes', {}).get('message')
-
-            if current_state is None and not result.error_message:
-                return
-
-            if current_state is 'notifying' and current_message == result.error_message:
-                return
-
             if result.error_message:
                 self.call_service(
                     'persistent_notification/create', **{
@@ -183,7 +173,12 @@ class VentChecker(EntityNameFilteringChecker):
         threshold_in_min = config.get('threshold_in_min', 120)
 
         entity_id = entity['entity_id']
+        state = entity['state']
         last_updated = entity.get('last_updated')
+
+        if state == 'unavailable':
+            return error(entity_id, ResultType.UNAVAILABLE)
+
         if last_updated is None:
             return error(entity_id, ResultType.ATTRIBUTE_MISSING)
 
@@ -194,13 +189,13 @@ class VentChecker(EntityNameFilteringChecker):
         if difference_in_min > threshold_in_min:
             return error(entity_id, ResultType.LOST_CONNECTION)
 
-        current_position = entity.get("attributes", {}).get("current_position")
-        is_opened = entity['state'] == "open"
-
-        if current_position is None:
-            self._open_vent(entity_id)
-        elif current_position >= 5 and not is_opened:
-            self._open_vent(entity_id)
+        # current_position = entity.get("attributes", {}).get("current_position")
+        # is_opened = entity['state'] == "open"
+        #
+        # if current_position is None:
+        #     self._open_vent(entity_id)
+        # elif current_position >= 5 and not is_opened:
+        #     self._open_vent(entity_id)
 
         return ok(entity_id)
 

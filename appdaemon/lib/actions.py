@@ -83,7 +83,7 @@ def get_action(app, config):
 
 
 DEFAULT_BRIGHTNESS = 255
-DEFAULT_TRANSITION_TIME = 2
+DEFAULT_TRANSITION_TIME = 1.5
 DEFAULT_DIMMED_BRIGHTNESS = 80
 DEFAULT_DIMMED_DURATION = 10
 
@@ -125,7 +125,17 @@ def toggle_entity(app, entity_id, config={}):
     attributes = {}
 
     if entity_type == "light" or entity_type == "group":
-        attributes["transition"] = config.get("transition", DEFAULT_TRANSITION_TIME)
+        brightness = config.get("brightness", DEFAULT_BRIGHTNESS)
+        full_transition_time = config.get("transition", DEFAULT_TRANSITION_TIME)
+
+        if app.get_state(entity_id) == 'on':
+            brightness = 0
+
+        attributes["brightness"] = brightness
+        attributes["transition"] = figure_transition_time(app, entity_id, brightness, full_transition_time)
+
+        if "rgb_color" in config:
+            attributes["rgb_color"] = config.get("rgb_color")
 
     app.log("Toggling on {} with {}".format(entity_id, attributes))
     app.toggle(entity_id, **attributes)

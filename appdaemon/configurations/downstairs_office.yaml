@@ -1,4 +1,5 @@
 office_lighting:
+  log_level: WARNING
   module: image_processing_motion_lighting
   class: ImageProcessingMotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_office

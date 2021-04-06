@@ -60,11 +60,15 @@ class MotionLighting(BaseAutomation):
         self.turn_off_light_entity_ids = self.cfg.list('turn_off_light_entity_ids', light_entity_ids)
         self.turn_off_lights_handle = None
 
-        if self.enabler_entity_id is None or self.get_state(self.enabler_entity_id) == 'on':
+        if self.is_enabled:
             self._register_motion_state_change_event()
 
         if self.enabler_entity_id:
             self.listen_state(self._enabler_state_change_handler, self.enabler_entity_id)
+
+    @property
+    def is_enabled(self):
+        return self.enabler_entity_id is None or self.get_state(self.enabler_entity_id) == 'on'
 
     def _register_motion_state_change_event(self):
         self.motion_event_handlers = [self.listen_state(self._motion_state_change_handler, motion_entity_id)
@@ -99,6 +103,9 @@ class MotionLighting(BaseAutomation):
             self._turn_off_lights(trigger_info)
 
     def _should_turn_on_lights(self, trigger_info):
+        if not self.is_enabled:
+            return False
+
         motion_state = trigger_info.data.get('to')
         if motion_state not in TURN_ON_TRIGGER_STATES:
             return False

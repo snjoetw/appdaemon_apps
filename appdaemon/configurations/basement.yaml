@@ -59,6 +59,18 @@ basement_living_room_wall_switch:
             - switch.zwave_basement_living_room_light
 
 
+basement_workout_room_lighting:
+  log_level: WARNING
+  module: motion_lighting
+  class: MotionLighting
+  motion_entity_id: binary_sensor.zb_workout_room_motion
+  turn_off_delay: 900
+  lighting_scenes:
+    Default:
+      - entity_id: light.zwave_workout_room_light
+        brightness: 255
+
+
 basement_workout_room_pathway_light:
   module: automation
   class: Automation
@@ -71,4 +83,5 @@ basement_workout_room_pathway_light:
     - constraints:
       actions:
         - platform: trigger_pathway_light
-          app_name: hallway_lighting
+          app_name: basement_stairway_lighting
+

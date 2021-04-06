@@ -2,6 +2,7 @@
 # S T A I R W A Y
 ###############################################################################
 stairway_lighting:
+  log_level: WARNING
   module: motion_lighting
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_stairway
@@ -21,6 +22,7 @@ stairway_lighting:
 # W A S H R O O M
 ###############################################################################
 washroom_lighting:
+  log_level: WARNING
   module: motion_lighting
   class: MotionLighting
   motion_entity_id: binary_sensor.zb_washroom_motion
@@ -34,6 +36,7 @@ washroom_lighting:
 # H A L L W A Y
 ###############################################################################
 hallway_lighting:
+  log_level: WARNING
   module: motion_lighting
   class: MotionLighting
   motion_entity_id:
@@ -54,6 +57,7 @@ hallway_lighting:
 
 
 hallway_pathway_light:
+  log_level: WARNING
   module: automation
   class: Automation
   triggers:

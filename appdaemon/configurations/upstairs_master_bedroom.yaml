@@ -10,17 +10,18 @@ master_bedroom_light_monitor:
         - platform: triggered_state
           to: "on"
       actions:
-        - platform: turn_on
+        - platform: toggle
           entity_ids:
-            light.hue_master_bedroom_light:
+            - entity_id: light.hue_master_bedroom_light
               brightness: 254
     - constraints:
         - platform: triggered_state
           to: "off"
       actions:
-        - platform: turn_off
-          dim_light_before_turn_off: false
-          entity_ids: light.hue_master_bedroom_light
+        - platform: toggle
+          entity_ids:
+            - entity_id: light.hue_master_bedroom_light
+              brightness: 254
 
 
 master_bedroom_occupancy_monitor:

@@ -171,13 +171,25 @@ noise_level_monitor:
 
 
 downstairs_lights_on_counter:
+  log_level: WARNING
   module: device_on_counter
   class: DeviceOnCounter
   counter_entity_id: input_number.downstairs_lights_on_count
   device_entity_id:
     - *var_downstairs_lights
 
+
+basement_lights_on_counter:
+  log_level: WARNING
+  module: device_on_counter
+  class: DeviceOnCounter
+  counter_entity_id: input_number.basement_lights_on_count
+  device_entity_id:
+    - *var_basement_lights
+
+
 upstairs_lights_on_counter:
+  log_level: WARNING
   module: device_on_counter
   class: DeviceOnCounter
   counter_entity_id: input_number.upstairs_lights_on_count
@@ -186,6 +198,7 @@ upstairs_lights_on_counter:
     - switch.zwave_master_bathroom_fan
 
 outside_lights_on_counter:
+  log_level: WARNING
   module: device_on_counter
   class: DeviceOnCounter
   counter_entity_id: input_number.outside_lights_on_count
@@ -193,6 +206,7 @@ outside_lights_on_counter:
     - *var_outside_lights
 
 media_player_playing_counter:
+  log_level: WARNING
   module: device_on_counter
   class: DeviceOnCounter
   device_on_state: playing
@@ -206,6 +220,7 @@ media_player_playing_counter:
     - media_player.office
 
 device_monitor:
+  log_level: WARNING
   module: device_monitor
   class: DeviceMonitor
   checkers:

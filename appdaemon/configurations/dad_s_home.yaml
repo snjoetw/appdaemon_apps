@@ -45,7 +45,7 @@ dad_s_home_temperature_monitor:
   handlers:
     - constraints:
         - platform: triggered_state
-          to: '>= 26.5'
+          to: '>= 27'
       actions:
         - platform: notify
           recipient: all
@@ -54,7 +54,7 @@ dad_s_home_temperature_monitor:
             🥵 Temperature is too high ({{ state(trigger_info.data.entity_id) }}°C) in dad's {{ friendly_name(trigger_info.data.entity_id) | replace('Dad\'s Home ', '') | replace(' Temperature', '') | lower }}.
     - constraints:
         - platform: triggered_state
-          to: '<= 19'
+          to: '<= 17'
       actions:
         - platform: notify
           recipient: all

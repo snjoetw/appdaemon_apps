@@ -2,6 +2,7 @@
 # U P S T A I R S  H A L L W A Y
 ###############################################################################
 upstairs_hallway_lighting:
+  log_level: WARNING
   module: motion_lighting
   class: MotionLighting
   scene_entity_id: input_select.lighting_mode_upstairs
@@ -19,6 +20,3 @@ upstairs_hallway_lighting:
     Midnight:
       - entity_id: light.hue_upstairs_hallway_light
         brightness: 5
-#      - entity_id: light.xiaomi_upstairs_hallway_night_light
-#        brightness: 254
-#        rgb_color: [255, 119, 0]

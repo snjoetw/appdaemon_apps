@@ -96,6 +96,11 @@ var_upstairs_lights: &var_upstairs_lights
   - switch.zwave_master_bathroom_ceiling_light
   - switch.zwave_walkin_closet_light_switch
 
+var_basement_lights: &var_basement_lights
+  - light.hue_basement_stairway_light
+  - light.zwave_workout_room_light
+  - switch.zwave_basement_living_room_light
+
 var_outside_lights: &var_outside_lights
   - light.hue_backyard_spot_light
   - light.zwave_front_door_light

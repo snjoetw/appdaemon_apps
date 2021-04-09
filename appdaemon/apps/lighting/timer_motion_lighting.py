@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from lib.core.monitored_callback import monitored_callback
+from lib.triggers import TriggerInfo
 from lighting.motion_lighting import MotionLighting
 
 CHECK_FREQUENCY = 300
@@ -33,8 +34,12 @@ class TimerMotionLighting(MotionLighting):
 
     @monitored_callback
     def _run_every_handler(self, time=None, **kwargs):
+        trigger_info = TriggerInfo("time", {
+            "time": time,
+        })
+
         if self._is_in_timer_turn_off_period():
-            self._turn_off_lights()
+            self._turn_off_lights(trigger_info)
             return
 
         if not self._is_in_timer_period():

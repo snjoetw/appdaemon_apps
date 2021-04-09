@@ -169,7 +169,7 @@ class MotionLighting(BaseAutomation):
 
         return light_settings
 
-    def _turn_off_lights(self, trigger_info):
+    def _turn_off_lights(self, trigger_info=None):
         turn_off_delay = self._figure_turn_off_delay(trigger_info)
 
         if turn_off_delay is None:
@@ -192,10 +192,7 @@ class MotionLighting(BaseAutomation):
         self.do_actions(actions)
 
     def _figure_turn_off_delay(self, trigger_info):
-        self.debug(trigger_info.data.get('entity_id'))
-        self.debug(PATHWAY_LIGHT_TRIGGER_ENTITY_ID)
-        self.debug(trigger_info.data.get('entity_id') == PATHWAY_LIGHT_TRIGGER_ENTITY_ID)
-        if trigger_info.data.get('entity_id') == PATHWAY_LIGHT_TRIGGER_ENTITY_ID:
+        if trigger_info is not None and trigger_info.data.get('entity_id') == PATHWAY_LIGHT_TRIGGER_ENTITY_ID:
             return self.pathway_light_turn_off_delay
 
         return self.turn_off_delay

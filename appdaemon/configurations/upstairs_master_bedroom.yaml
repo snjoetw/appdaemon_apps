@@ -254,3 +254,12 @@ master_bedroom_sleep_music_auto_stop:
       actions:
         - platform: turn_off_media_player
           entity_id: media_player.master_bedroom
+
+
+master_bedroom_climate_comfort_level:
+  module: climate_comfort_mode_monitor
+  class: ClimateComfortModeMonitor
+  temperature_entity_id: sensor.template_master_bedroom_temperature
+  climate_comfort_level_entity_id: input_select.climate_comfort_level_master_bedroom
+  target_temp_high: input_number.main_floor_target_temp_high
+  target_temp_low: input_number.main_floor_target_temp_low

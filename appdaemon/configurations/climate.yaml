@@ -4,8 +4,10 @@
 climate_comfort_mode:
   module: climate_comfort_mode_monitor
   class: ClimateComfortModeMonitor
-  climate_entity_id: climate.main_floor
-  mode_entity_id: input_select.climate_comfort_mode
+  temperature_entity_id: sensor.template_upstairs_average_temperature
+  climate_comfort_level_entity_id: input_select.climate_comfort_mode
+  target_temp_high: input_number.main_floor_target_temp_high
+  target_temp_low: input_number.main_floor_target_temp_low
 
 
 last_climate_hvac_action:

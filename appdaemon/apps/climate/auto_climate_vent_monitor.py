@@ -56,6 +56,8 @@ class AutoClimateVentMonitor(BaseAutomation):
             adjusted_current = self.adjusted_current_temperature(target, current, config)
             open_percent = self.calculate_open_percent(target, adjusted_current, config)
             open_position = round(open_percent * 100)
+            # round to nearest 10
+            open_position = round(open_position / 10) * 10
 
             for vent_entity_id in config.vent_entity_ids:
                 set_cover_position(self, vent_entity_id, open_position, config.position_difference_threshold)
@@ -130,7 +132,7 @@ class ZoneConfig:
         self._cooling_temp_offset_low = config.get("cooling_temp_offset_low")
         self._heating_temp_offset_high = config.get("heating_temp_offset_high")
         self._heating_temp_offset_low = config.get("heating_temp_offset_low")
-        self._position_difference_threshold = config.get("position_difference_threshold", 3)
+        self._position_difference_threshold = config.get("position_difference_threshold", 5)
         self._min_open_percent = config.get('min_open_percent', 0.0)
 
     @property

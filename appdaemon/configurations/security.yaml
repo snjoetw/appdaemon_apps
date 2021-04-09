@@ -253,18 +253,17 @@ alarm_monitor:
             entity_id: "{{ alarm_entity_id }}"
 
 alarm_notifier:
-  log_level: DEBUG
   module: alarm_notifier
   class: AlarmNotifier
   is_vacation_mode_entity_id: input_boolean.is_vacation_mode
   presence_mode_entity_id: input_select.presence_mode
   entity_settings:
     binary_sensor.mqtt_kitchen_window:
-      camera_entity_id: camera.family_room_cam
+      camera_entity_id: camera.kitchen_cam
     binary_sensor.zb_kitchen_french_door:
       camera_entity_id: camera.family_room_cam
     binary_sensor.zb_kitchen_motion:
-      camera_entity_id: camera.family_room_cam
+      camera_entity_id: camera.kitchen_cam
     binary_sensor.mqtt_family_room_window:
       camera_entity_id: camera.family_room_cam
     binary_sensor.mqtt_front_door:

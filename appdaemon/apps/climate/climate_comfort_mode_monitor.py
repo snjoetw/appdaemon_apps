@@ -5,34 +5,37 @@ from lib.helper import to_float
 
 class ClimateComfortModeMonitor(BaseAutomation):
     def initialize(self):
-        self.mode_entity_id = self.cfg.value('mode_entity_id')
+        self.climate_comfort_level_entity_id = self.cfg.value('climate_comfort_level_entity_id')
         self.comfort_threshold = self.cfg.value('comfort_temp_threshold', 0.7)
-        self.climate_entity_id = self.cfg.value('climate_entity_id')
+        self.temperature_entity_id = self.cfg.value('temperature_entity_id')
+        self.climat_target_temp_high = self.cfg.value('target_temp_high')
+        self.climat_target_temp_low = self.cfg.value('target_temp_low')
 
-        self.listen_state(self.state_change_handler, self.climate_entity_id)
+        self.listen_state(self.state_change_handler, self.temperature_entity_id, immediate=True)
 
     @monitored_callback
     def state_change_handler(self, entity, attribute, old, new, kwargs):
-        climate_entity = self.get_state(self.climate_entity_id, attribute='all')
-        attributes = climate_entity.get('attributes')
-        current_temp = to_float(attributes.get('current_temperature'))
-        target_temp_high = to_float(attributes.get('target_temp_high'))
-        target_temp_low = to_float(attributes.get('target_temp_low'))
+        current_temp = self.get_current_temperature()
+        target_temp_high = to_float(self.get_state(self.climat_target_temp_high))
+        target_temp_low = to_float(self.get_state(self.climat_target_temp_low))
 
         comfort_range = self.get_comfort_range(target_temp_high, target_temp_low)
         warm_range = range_open_closed(comfort_range.end, target_temp_high)
         cool_range = range_closed_open(target_temp_low, comfort_range.start)
 
         if comfort_range.contains(current_temp):
-            self.set_mode_value(self.mode_entity_id, 'Comfort')
+            self.set_climate_comfort_level_value('Comfort')
         elif warm_range.contains(current_temp):
-            self.set_mode_value(self.mode_entity_id, 'Warm')
+            self.set_climate_comfort_level_value('Warm')
         elif cool_range.contains(current_temp):
-            self.set_mode_value(self.mode_entity_id, 'Cool')
+            self.set_climate_comfort_level_value('Cool')
         elif current_temp > warm_range.end:
-            self.set_mode_value(self.mode_entity_id, 'Hot')
+            self.set_climate_comfort_level_value('Hot')
         elif current_temp < cool_range.end:
-            self.set_mode_value(self.mode_entity_id, 'Cold')
+            self.set_climate_comfort_level_value('Cold')
+
+    def get_current_temperature(self):
+        return to_float(self.get_state(self.temperature_entity_id))
 
     def get_comfort_range(self, target_temp_high, target_temp_low):
         target_mid_temp = self.get_target_mid_temperature(target_temp_high, target_temp_low)
@@ -41,12 +44,11 @@ class ClimateComfortModeMonitor(BaseAutomation):
     def get_target_mid_temperature(self, target_temp_high, target_temp_low):
         return (target_temp_high - target_temp_low) / 2 + target_temp_low
 
-    def set_mode_value(self, mode_entity_id, new_mode_value):
-        current_mode_value = self.get_state(mode_entity_id)
+    def set_climate_comfort_level_value(self, new_mode_value):
+        current_mode_value = self.get_state(self.climate_comfort_level_entity_id)
 
         if current_mode_value != new_mode_value:
-            self.log("Setting {} to {}".format(mode_entity_id, new_mode_value))
-            self.select_option(mode_entity_id, new_mode_value)
+            self.select_option(self.climate_comfort_level_entity_id, new_mode_value)
 
 
 def range_open(start, end):

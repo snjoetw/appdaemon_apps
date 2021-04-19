@@ -125,25 +125,33 @@ living_room_person_detection:
 xmas_lighting:
   module: automation
   class: Automation
+  variables:
+    turn_on_time: "sunset + 00:30:00"
+    turn_off_time: "23:00:00"
   triggers:
     - platform: time
-      minutes: 10
+      time: "{{ turn_on_time }}"
+    - platform: time
+      time: "{{ turn_off_time }}"
   constraints:
+    - platform: state
+      entity_id: input_boolean.is_auto_light_enabled_dining_room
+      state: "on"
   handlers:
     - actions:
         - platform: turn_off
           entity_ids: switch.xmas_light
           constraints:
             - platform: time
-              start_time: "23:00:00"
-              end_time: "15:00:00"
+              start_time: "{{ turn_off_time }}"
+              end_time: "{{ turn_on_time }}"
 
         - platform: turn_on
           entity_ids: switch.xmas_light
           constraints:
             - platform: time
-              start_time: sunset + 00:30:00
-              end_time: "23:00:00"
+              start_time: "{{ turn_on_time }}"
+              end_time: "{{ turn_off_time }}"
 
 
 

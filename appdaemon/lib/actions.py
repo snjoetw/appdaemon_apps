@@ -503,13 +503,13 @@ class TurnOnMediaPLayerAction(Action):
         shuffle = self.cfg.value("shuffle", False)
         repeat = self.cfg.value("repeat", "all")
 
-        self.call_service("media_player/turn_on", entity_id=entity_ids)
-
         if volume is not None:
             self.call_service("media_player/volume_set", entity_id=entity_ids, volume_level=volume)
 
         if source is not None:
             self.call_service("media_player/select_source", entity_id=entity_ids, source=source)
+
+        self.call_service("media_player/turn_on", entity_id=entity_ids)
 
         if shuffle:
             self.call_service("media_player/shuffle_set", entity_id=entity_ids, shuffle=shuffle)

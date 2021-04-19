@@ -7,11 +7,11 @@ garage_light_left_on:
   triggers:
     - platform: state
       entity_ids:
-        - sensor.zwave_garage_luminance
+        - sensor.zwave_garage_illuminance
   handlers:
     - constraints:
         - platform: state
-          entity_id: sensor.zwave_garage_luminance
+          entity_id: sensor.zwave_garage_illuminance
           state: ">=3"
         - platform: time
           start_time: sunset + 00:30:00
@@ -31,7 +31,7 @@ garage_light_left_on:
               notifier: ios
     - constraints:
         - platform: state
-          entity_id: sensor.zwave_garage_luminance
+          entity_id: sensor.zwave_garage_illuminance
           state: "<5"
         - platform: time
           start_time: sunset + 00:30:00

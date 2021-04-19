@@ -40,17 +40,20 @@ class TimerMonitor(BaseAutomation):
     @monitored_callback
     def timer_state_change_handler(self, entity_id, attribute, old, new, kwargs):
         entity = self.get_state(entity_id, attribute='all')
-        if entity['state'] == 'unavailable':
-            return
 
         self.cancel_timer_handles(entity_id)
 
-        if entity['state'] == 'off':
+        if entity['state'] == 'unavailable':
             return
 
         attributes = entity.get('attributes', {})
-        duration = self.to_timedelta(attributes.get('duration'))
-        fire_time = datetime.fromisoformat(attributes.get('local_time_iso'))
+        timers = attributes.get('timers', [])
+        if not timers:
+            return
+
+        timer = timers[0]
+        duration = self.to_timedelta(timer.get('duration'))
+        fire_time = datetime.utcfromtimestamp(timer.get('fire_time'))
         friendly_name = attributes.get('friendly_name').lower()
         self.log('New timer, duration={}, fire_time={}'.format(duration, fire_time))
         reminders = self.figure_reminders(friendly_name, duration, fire_time)
@@ -60,8 +63,10 @@ class TimerMonitor(BaseAutomation):
             handle = self.run_at(self.reminder_runner, reminder.fire_time, reminder=reminder)
             self._handles[entity_id].append(handle)
 
+    @monitored_callback
     def reminder_runner(self, kwargs):
         reminder = kwargs['reminder']
+        self.log('Running reminder, fire_time={}, text={}'.format(reminder.fire_time, reminder.text))
         announcer: Announcer = self.get_app('announcer')
         announcer.announce(reminder.text, use_cache=True)
 

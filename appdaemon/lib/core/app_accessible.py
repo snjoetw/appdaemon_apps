@@ -1,4 +1,5 @@
 from base_automation import BaseAutomation
+from lib.helper import to_float
 
 
 class AppAccessible:
@@ -10,6 +11,9 @@ class AppAccessible:
     @property
     def app(self):
         return self._app
+
+    def float_state(self, entity_id):
+        return to_float(self.get_state(entity_id))
 
     def get_state(self, entity=None, **kwargs):
         return self.app.get_state(entity, **kwargs)

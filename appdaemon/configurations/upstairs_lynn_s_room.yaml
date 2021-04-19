@@ -220,6 +220,10 @@ lynns_room_temperature_difference_heater_booster:
           negate: true
         - platform: template
           template: >
+            {{ (state('input_number.main_floor_target_temp_low') | float) - (state('sensor.template_lynn_s_room_temperature') | float) }}
+          expected_value: ">=0.5"
+        - platform: template
+          template: >
             {{ (state('sensor.template_master_bedroom_temperature') | float) - (state('sensor.template_lynn_s_room_temperature') | float) }}
           expected_value: >
             {% if now_is_between('23:00:00', '01:00:00') %}
@@ -255,6 +259,20 @@ lynns_room_temperature_difference_heater_booster:
           state: heat
         - platform: template
           template: >
+            {{ (state('sensor.template_lynn_s_room_temperature') | float) - (state('input_number.main_floor_target_temp_low') | float) }}
+          expected_value: ">=0.1"
+      actions:
+        - platform: service
+          service: climate/turn_off
+          data:
+            entity_id: climate.dyson_lynns_room
+
+    - constraints:
+        - platform: state
+          entity_id: climate.dyson_lynns_room
+          state: heat
+        - platform: template
+          template: >
             {{ (state('sensor.template_master_bedroom_temperature') | float) - (state('sensor.template_lynn_s_room_temperature') | float) }}
           expected_value: >
             {% if now_is_between('23:00:00', '01:00:00') %}
@@ -279,7 +297,7 @@ lynns_room_morning_heater_booster:
     - platform: state
       entity_ids: sensor.template_lynn_s_room_temperature
   variables:
-    temperature_threshold: 25
+    temperature_threshold: 24
   constraints:
     - platform: state
       entity_id: input_select.last_climate_hvac_action
@@ -400,6 +418,25 @@ lynn_s_room_window_monitor:
           ios:
             critical: 1
             volume: 0.5
+
+
+lynn_s_room_sleep_music_auto_play:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: time
+      time: "05:00:00"
+  handlers:
+    - constraints:
+        - platform: state
+          entity_id: media_player.lynns_room
+          state: playing
+          negate: true
+      actions:
+        - platform: turn_on_media_player
+          entity_id: media_player.lynns_room
+          volume: 0.03
+          source: 'Baby Mozart: Essential Classical Lullabies for Sleeping Baby'
 
 
 lynn_s_room_sleep_music_auto_stop:

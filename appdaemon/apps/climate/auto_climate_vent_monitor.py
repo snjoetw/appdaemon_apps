@@ -46,7 +46,7 @@ class AutoClimateVentMonitor(BaseAutomation):
             return
 
         for config in self.zone_configs:
-            current = to_float(self.get_state(config.temperature_entity_id))
+            current = self.float_state(config.temperature_entity_id)
             target = self.target_temperature()
 
             if current == None or target == None:

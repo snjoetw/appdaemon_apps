@@ -6,6 +6,7 @@ import appdaemon.plugins.hass.hassapi as hass
 import appdaemon.utils as utils
 
 from lib.core.config import Config
+from lib.helper import to_float
 
 LOG_LEVELS = {
     'DEBUG': 10,
@@ -33,6 +34,16 @@ class BaseAutomation(hass.Hass):
 
         return 'INFO'
 
+    @property
+    def is_sleeping_time(self):
+        sleeping_time_entity_id = self.cfg.value('sleeping_time_entity_id', 'binary_sensor.sleeping_time')
+        return self.get_state(sleeping_time_entity_id) == 'on'
+
+    @property
+    def is_midnight_time(self):
+        midnight_time_entity_id = self.cfg.value('midnight_time_entity_id', 'binary_sensor.midnight_time')
+        return self.get_state(midnight_time_entity_id) == 'on'
+
     def log(self, msg, level='INFO'):
         if LOG_LEVELS[level] < LOG_LEVELS[self.log_level]:
             return
@@ -55,6 +66,9 @@ class BaseAutomation(hass.Hass):
     def sleep(self, duration):
         self.debug('About to sleep for {} sec'.format(duration))
         time.sleep(duration)
+
+    def float_state(self, entity_id):
+        return to_float(self.get_state(entity_id))
 
     @utils.sync_wrapper
     async def get_state(self, entity=None, **kwargs):

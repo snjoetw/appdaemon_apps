@@ -227,6 +227,8 @@ master_bedroom_sleep_music_auto_play:
   triggers:
     - platform: time
       time: "20:45:00"
+    - platform: time
+      time: "05:00:00"
   handlers:
     - constraints:
         - platform: state

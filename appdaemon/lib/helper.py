@@ -80,15 +80,18 @@ def create_ios_push_data(category, entity_id=None, action_data=None, attachment=
     return data
 
 
-def concat_list(items, concat_str=', '):
+def concat_list(items, concat_str=', ', sort=True):
     if not items:
         return None
 
     length = len(items)
     if length == 1:
         return items[0]
-    else:
-        return concat_str.join(items[:-1]) + " and " + str(items[-1])
+
+    if sort:
+        items = sorted(items)
+
+    return concat_str.join(items[:-1]) + " and " + str(items[-1])
 
 
 def figure_parts_of_day():

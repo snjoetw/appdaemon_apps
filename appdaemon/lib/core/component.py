@@ -20,6 +20,11 @@ class Component(AppAccessible):
     def now(self):
         return NowWrapper(self.app)
 
+    @property
+    def is_sleeping_time(self):
+        sleeping_time_entity_id = self._config.value('sleeping_time_entity_id', 'binary_sensor.sleeping_time')
+        return self.get_state(sleeping_time_entity_id) == 'on'
+
     def __repr__(self):
         return "{}(config={})".format(
             self.__class__.__name__,

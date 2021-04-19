@@ -78,8 +78,7 @@ class TeslaAutoScheduledCharging(BaseAutomation):
         self.sleep(10)
 
         self.set_auto_charge_state(STATE_CHARGING)
-        self.original_charge_limit = to_float(self.get_state(
-            self.tesla_charge_limit_entity_id))
+        self.original_charge_limit = self.float_state(self.tesla_charge_limit_entity_id)
         auto_charge_limit = self.original_charge_limit + AUTO_CHARGE_PERCENT
 
         tesla_proxy = self.get_app('tesla_proxy')
@@ -96,7 +95,7 @@ class TeslaAutoScheduledCharging(BaseAutomation):
             self.debug('Skipping ... still charging')
             return
 
-        current_charge_limit = to_float(self.get_state(self.tesla_charge_limit_entity_id))
+        current_charge_limit = self.float_state(self.tesla_charge_limit_entity_id)
         if current_charge_limit == self.original_charge_limit:
             self.debug('Auto charge limit not being set, fixing ...')
             self.handle_idle_state()
@@ -158,7 +157,7 @@ class TeslaAutoScheduledCharging(BaseAutomation):
             self.debug('Skipping ... already charging')
             return False
 
-        charge_limit = to_float(self.get_state(self.tesla_charge_limit_entity_id))
+        charge_limit = self.float_state(self.tesla_charge_limit_entity_id)
         if charge_limit >= 85:
             self.debug('Skipping ... charge limit is {}'.format(charge_limit))
             return False

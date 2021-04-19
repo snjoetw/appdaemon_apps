@@ -1,7 +1,10 @@
 from datetime import datetime
 
+from climate.air_quality_monitor import AirQualityMonitor
+
 from device_monitor import DeviceMonitor
 from lib.calendar_helper import CalendarEventFetcher, is_no_school_event
+from lib.climate.air_quality_level import AirQualityLevel
 from lib.core.component import Component
 from lib.helper import concat_list, to_float
 from lib.presence_helper import PRESENCE_MODE_SOMEONE_IS_HOME, PRESENCE_MODE_EVERYONE_IS_HOME
@@ -354,13 +357,29 @@ class BadAirQualityReminder(ReminderProvider):
         return True
 
     def provide(self, context):
-        names = self.app.get_app('air_quality_monitor').bad_air_quality_names()
+        app: AirQualityMonitor = self.app.get_app('air_quality_monitor')
+        bad_monitors = []
+        very_bad_monitors = []
+        for monitor, level in app.get_bad_air_quality_monitors().items():
+            if level is AirQualityLevel.BAD or level is AirQualityLevel.MODERATE:
+                bad_monitors.append(monitor.name)
+            elif level is AirQualityLevel.VERY_BAD:
+                very_bad_monitors.append(monitor.name)
 
-        if not names:
+        if not bad_monitors and not very_bad_monitors:
             return
 
-        name = concat_list(names)
-        return 'Attention, air quality is bad in {}'.format(name)
+        if not bad_monitors:
+            name = concat_list(very_bad_monitors)
+            return 'Attention, air quality is very bad in {}'.format(name)
+        if not very_bad_monitors:
+            name = concat_list(bad_monitors)
+            return 'Attention, air quality is bad in {}'.format(name)
+
+        return 'Attention, air quality is bad in {} and very bad in {}'.format(
+            concat_list(bad_monitors),
+            concat_list(very_bad_monitors)
+        )
 
 
 class ClimateAwayModeReminder(ReminderProvider):

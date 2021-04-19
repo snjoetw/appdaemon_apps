@@ -37,30 +37,31 @@ climate_auto_fan_min_on_time:
   module: automation
   class: Automation
   triggers:
-    - platform: time
-      seconds: 60
+    - platform: state
+      entity_ids:
+        - input_select.air_quality_level
+        - input_select.climate_comfort_mode
+        - climate.main_floor
+    - platform: state
+      entity_ids:
+        - climate.main_floor
+      attribute: preset_mode
   handlers:
     - constraints:
         - platform: state
-          entity_id: input_boolean.is_bad_air_quality_mode
-          state: 'on'
+          entity_id: input_select.air_quality_level
+          state:
+            - Bad
+            - Very Bad
       actions:
         - platform: set_fan_min_on_time
           entity_id: climate.main_floor
-          fan_min_on_time: 0
+          fan_min_on_time: 15
     - constraints:
         - platform: attribute
           entity_id: climate.main_floor
           attribute: preset_mode
           value: "Away"
-      actions:
-        - platform: set_fan_min_on_time
-          entity_id: climate.main_floor
-          fan_min_on_time: 0
-    - constraints:
-        - platform: time
-          start_time: "04:00:00"
-          end_time: "08:00:00"
       actions:
         - platform: set_fan_min_on_time
           entity_id: climate.main_floor
@@ -242,25 +243,74 @@ auto_climate_vent_monitor:
       heating_temp_offset_high: 0
       heating_temp_offset_low: -0.8
 
+
 air_quality_monitor:
   module: air_quality_monitor
   class: AirQualityMonitor
   bad_air_quality_mode_entity_id: input_boolean.is_bad_air_quality_mode
+  air_quality_level_entity_id: input_select.air_quality_level
+  appdaemon_user_id: !secret user_id_appdaemon
   monitors:
-    - air_quality_entity_id: air_quality.dyson_master_bedroom
+    - air_quality_entity_id: sensor.airthings_kitchen_voc
+      name: Kitchen
+      thresholds:
+        - level: Moderate
+          threshold: 300
+        - level: Bad
+          threshold: 1000
+        - level: Very Bad
+          threshold: 2000
+
+    - air_quality_entity_id: sensor.airthings_master_bedroom_voc
+      climate_comfort_level_entity_id: input_select.climate_comfort_level_master_bedroom
+      front_airflow_entity_id: switch.dyson_master_bedroom_front_airflow
       fan_entity_id: fan.dyson_master_bedroom
       threshold: 15
       name: Master Bedroom
+      thresholds:
+        - level: Moderate
+          threshold: 300
+          fan_speed: 10
+        - level: Bad
+          threshold: 1000
+          fan_speed: 20
+        - level: Very Bad
+          threshold: 2000
+          fan_speed: 40
+      allowed_periods:
+        - "10:00:00-21:00:00"
+        - "22:30:00-05:30:00"
 
-    - air_quality_entity_id: air_quality.dyson_lynn_s_room
+    - air_quality_entity_id: sensor.airthings_lynns_room_voc
+      climate_comfort_level_entity_id: input_select.climate_comfort_level_lynn_s_room
+      front_airflow_entity_id: switch.switch.dyson_lynns_room_front_airflow
       fan_entity_id: fan.dyson_lynns_room
       threshold: 15
       name: Lynn's Room
+      thresholds:
+        - level: Moderate
+          threshold: 300
+          fan_speed: 10
+        - level: Bad
+          threshold: 1000
+          fan_speed: 20
+        - level: Very Bad
+          threshold: 2000
+          fan_speed: 40
+      allowed_periods:
+        - "09:00:00-21:00:00"
+        - "22:30:00-06:30:00"
 
     - air_quality_entity_id: air_quality.dyson_office
       fan_entity_id: fan.dyson_office
       threshold: 15
       name: Office
+      thresholds:
+        - level: Bad
+          threshold: 15
+          fan_speed: 40
+      allowed_periods:
+        - "00:00:00-23:59:59"
 
 
 fan_auto_night_mode:

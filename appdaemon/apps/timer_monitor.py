@@ -53,7 +53,7 @@ class TimerMonitor(BaseAutomation):
 
         timer = timers[0]
         duration = self.to_timedelta(timer.get('duration'))
-        fire_time = datetime.utcfromtimestamp(timer.get('fire_time'))
+        fire_time = datetime.fromtimestamp(timer.get('fire_time'))
         friendly_name = attributes.get('friendly_name').lower()
         self.log('New timer, duration={}, fire_time={}'.format(duration, fire_time))
         reminders = self.figure_reminders(friendly_name, duration, fire_time)
@@ -85,11 +85,11 @@ class TimerMonitor(BaseAutomation):
             return reminders
 
         reminders.append(TimerReminder(fire_time, TIMER_IS_UP_REMINDER_TEXT.format(timer_name)))
-        if duration < FIVE_MINUTES:
+        if duration <= FIVE_MINUTES:
             return reminders
 
         reminders.append(TimerReminder(fire_time - FIVE_MINUTES, TIMER_REMINDER_TEXT.format(5, timer_name)))
-        if duration < TEN_MINUTES:
+        if duration <= TEN_MINUTES:
             return reminders
 
         reminders.append(TimerReminder(fire_time - TEN_MINUTES, TIMER_REMINDER_TEXT.format(10, timer_name)))

@@ -3,7 +3,7 @@ washer_mode:
   class: Automation
   triggers:
     - platform: state
-      entity_id: sensor.template_washer_watts
+      entity_id: sensor.zb_washer_watts
     - platform: state
       entity_id: binary_sensor.zb_washer_door
   handlers:
@@ -21,7 +21,7 @@ washer_mode:
 
     - constraints:
         - platform: state
-          entity_id: sensor.template_washer_watts
+          entity_id: sensor.zb_washer_watts
           state: ">=2"
       actions:
         - platform: select_input_select_option
@@ -30,7 +30,7 @@ washer_mode:
 
     - constraints:
         - platform: state
-          entity_id: sensor.template_washer_watts
+          entity_id: sensor.zb_washer_watts
           state: "<2"
         - platform: state
           entity_id: input_select.washer_status
@@ -42,7 +42,7 @@ washer_mode:
 
     - constraints:
         - platform: state
-          entity_id: sensor.template_washer_watts
+          entity_id: sensor.zb_washer_watts
           state: "<2"
         - platform: state
           entity_id: input_select.washer_status
@@ -55,7 +55,7 @@ washer_mode:
 
     - constraints:
         - platform: state
-          entity_id: sensor.template_washer_watts
+          entity_id: sensor.zb_washer_watts
           state: "<1"
       actions:
         - platform: select_input_select_option

@@ -122,6 +122,12 @@ def to_datetime(raw):
     return None
 
 
+def to_date(raw):
+    if raw is None:
+        return None
+    return datetime.strptime(raw, '%Y-%m-%d')
+
+
 def to_time(raw):
     return datetime.strptime(raw, '%H:%M:%S').time()
 

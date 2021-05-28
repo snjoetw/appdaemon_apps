@@ -114,6 +114,22 @@ class MediaManager(AppAccessible):
             combined += prelude
 
         if speech_file:
-            combined += AudioSegment.from_mp3(speech_file.filepath)
+            combined += self._retrieve_speech_file(speech_file.filepath)
 
         return combined
+
+    def _retrieve_speech_file(self, speech_filepath):
+        error = None
+        for i in range(0, 1):
+            try:
+                return AudioSegment.from_mp3(speech_filepath)
+            except FileNotFoundError as ex:
+                self.warn('Unable to retrieve speech file, retrying ...: {}'.format(speech_filepath))
+                error = ex
+
+            self.app.sleep(0.5)
+
+        if error is not None:
+            raise error
+
+        self.error('Unable to retrieve speech file: {}'.format(speech_filepath))

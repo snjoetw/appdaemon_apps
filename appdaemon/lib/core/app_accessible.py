@@ -1,5 +1,5 @@
 from base_automation import BaseAutomation
-from lib.helper import to_float
+from lib.helper import to_float, to_int
 
 
 class AppAccessible:
@@ -11,6 +11,9 @@ class AppAccessible:
     @property
     def app(self):
         return self._app
+
+    def int_state(self, entity_id):
+        return to_int(self.get_state(entity_id), -1)
 
     def float_state(self, entity_id):
         return to_float(self.get_state(entity_id))
@@ -31,10 +34,10 @@ class AppAccessible:
         return self.app.log(msg, level=level)
 
     def debug(self, msg):
-        return self.app.debug(msg)
+        return self.log(msg, level='DEBUG')
 
     def warn(self, msg):
-        return self.app.warn(msg)
+        return self.log(msg, level='WARNING')
 
     def error(self, msg):
-        return self.app.error(msg)
+        return self.log(msg, level='ERROR')

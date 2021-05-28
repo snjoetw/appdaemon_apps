@@ -39,6 +39,8 @@ class TimerMonitor(BaseAutomation):
 
     @monitored_callback
     def timer_state_change_handler(self, entity_id, attribute, old, new, kwargs):
+        self.debug('Timer ({}) changed ({}), {} => {}'.format(entity_id, attribute, old, new))
+
         entity = self.get_state(entity_id, attribute='all')
 
         self.cancel_timer_handles(entity_id)

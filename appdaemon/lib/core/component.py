@@ -22,8 +22,17 @@ class Component(AppAccessible):
 
     @property
     def is_sleeping_time(self):
-        sleeping_time_entity_id = self._config.value('sleeping_time_entity_id', 'binary_sensor.sleeping_time')
+        sleeping_time_entity_id = self.cfg.value('sleeping_time_entity_id', 'binary_sensor.sleeping_time')
         return self.get_state(sleeping_time_entity_id) == 'on'
+
+    @property
+    def is_midnight_time(self):
+        midnight_time_entity_id = self.cfg.value('midnight_time_entity_id', 'binary_sensor.midnight_time')
+        return self.get_state(midnight_time_entity_id) == 'on'
+
+    @property
+    def is_sun_down(self):
+        return self.app.sun_down()
 
     def __repr__(self):
         return "{}(config={})".format(

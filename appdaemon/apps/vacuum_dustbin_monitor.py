@@ -1,5 +1,6 @@
 from base_automation import BaseAutomation
-from lib.helper import to_float, to_int
+from lib.core.monitored_callback import monitored_callback
+from lib.helper import to_int
 
 NONE_STATE = 'NONE'
 AWAITING_FULL_CHARGE_STATE = 'AWAITING_FULL_CHARGE'
@@ -45,55 +46,72 @@ class VacuumDustbinMonitor(BaseAutomation):
 
         self.listen_state(self.vacuum_state_change_handler, self.vacuum_entity_id, attribute="all")
 
-    def event_change_handler(self, event_name, data, kwargs):
-        self.debug('Received event change, {}, {}, {}'.format(event_name, data, kwargs))
-
-        args = data.get('args', {});
-        if not args:
-            return
-
-        tilt_degrees = to_float(args[0].get('degrees'))
-        if not tilt_degrees:
-            return
-
-        self.log('Received tilt change, {}'.format(tilt_degrees))
-
-        if tilt_degrees > 80:
-            self.handle_dustbin_open()
-        else:
-            self.handle_dustbin_close()
-
-    def handle_dustbin_open(self):
-        if self.current_monitor_state() != AWAITING_DUSTBIN_REMOVAL_STATE:
-            return
-
-        self.update_clean_count(0)
-        self.update_monitor_state(AWAITING_CLEANED_DUSTBIN_STATE)
-
-    def handle_dustbin_close(self):
-        if self.current_monitor_state() != AWAITING_CLEANED_DUSTBIN_STATE:
-            return
-
-        self.update_monitor_state(RETURNING_HOME_STATE)
-
+    @monitored_callback
     def vacuum_state_change_handler(self, entity, attribute, old, new, kwargs):
-        self.debug('Received vacuum state change, {}, {}, {}, {}, {}'.format(entity, attribute, old, new, kwargs))
+        self.debug('Received vacuum state change, entity_id={}\nold={}\nnew={}'.format(entity, old, new))
+        self.diff(old, new)
 
-        if self.is_attribute_changed(old, new, 'cleaning_count'):
-            self.handle_cleaning_count_change(new)
+        if get_state(old) == 'unavailable' or get_state(new) == 'unavailable':
+            self.debug('New state is unavailable, skipping ...')
             return
 
-        if self.is_attribute_changed(old, new, 'battery_level'):
-            self.handle_battery_level_change(new)
+        if self.started_new_cleaning_job(old, new):
+            self.update_monitor_state(NONE_STATE)
+
+        current_monitor_state = self.current_monitor_state()
+
+        if NONE_STATE == current_monitor_state:
+            return self.handle_state_none(old, new)
+        elif AWAITING_FULL_CHARGE_STATE == current_monitor_state:
+            return self.handle_state_awaiting_full_charge(old, new)
+        elif HEADING_TO_LAUNDRY_ROOM_STATE == current_monitor_state:
+            return self.handle_state_heading_to_laundry_room(old, new)
+        elif AWAITING_DUSTBIN_REMOVAL_STATE == current_monitor_state:
+            return self.handle_state_awaiting_dustbin_removal(old, new)
+
+        self.error('Unsupported monitor_state={}, old={}, new={}'.format(current_monitor_state, old, new))
+
+    def handle_state_none(self, old_entity, new_entity):
+        cleaned_area_count = to_int(self.get_state(self.cleaned_count_entity_id))
+
+        if self.is_attribute_changed(old_entity, new_entity, 'cleaned_area'):
+            cleaned_area_count = cleaned_area_count + get_int_attribute(new_entity, 'cleaned_area')
+            self.update_clean_count(cleaned_area_count)
+
+        if cleaned_area_count < self.cleaned_count_threshold:
+            self.update_monitor_state(NONE_STATE)
             return
 
-        if self.is_arrived_dumping_area(old, new):
-            self.update_monitor_state(AWAITING_DUSTBIN_REMOVAL_STATE)
+        battery_level = get_int_attribute(new_entity, 'battery_level')
+        if battery_level < 100:
+            self.update_monitor_state(AWAITING_FULL_CHARGE_STATE)
+        else:
+            self.go_to_dumping_area()
+
+    def handle_state_awaiting_full_charge(self, old_entity, new_entity):
+        battery_level = get_int_attribute(new_entity, 'battery_level')
+        if battery_level < 100:
             return
 
-        if self.is_state_changed(old, new):
-            self.handle_state_change(new)
+        self.go_to_dumping_area()
+
+    def handle_state_heading_to_laundry_room(self, old_entity, new_entity):
+        if not self.is_arrived_dumping_area(old_entity, new_entity):
+            self.debug('handle_state_heading_to_laundry_room => NOT arrived dumping area')
+            self.diff(old_entity, new_entity)
             return
+
+        self.update_monitor_state(AWAITING_DUSTBIN_REMOVAL_STATE)
+
+    def handle_state_awaiting_dustbin_removal(self, old_entity, new_entity):
+        state = get_state(new_entity)
+        if state != 'returning':
+            self.debug('handle_state_awaiting_dustbin_removal => NOT returning')
+            self.diff(old_entity, new_entity)
+            return
+
+        self.update_monitor_state(NONE_STATE)
+        self.update_clean_count(0)
 
     def is_state_changed(self, old, new):
         old_state = get_state(old)
@@ -114,70 +132,54 @@ class VacuumDustbinMonitor(BaseAutomation):
 
         return True
 
-    def handle_cleaning_count_change(self, vacuum_entity):
-        existing_cleaned_area_count = to_int(self.get_state(self.cleaned_count_entity_id))
-        new_cleaned_area_count = existing_cleaned_area_count + get_int_attribute(vacuum_entity, 'cleaned_area')
-        self.update_clean_count(new_cleaned_area_count)
+    def started_new_cleaning_job(self, old, new):
+        old_state = get_state(old)
+        new_state = get_state(new)
+        if old_state == 'cleaning' or new_state != 'cleaning':
+            self.log('Not new cleaning job, {} vs {}'.format(old_state, new_state))
+            return False
 
-        if new_cleaned_area_count < self.cleaned_count_threshold:
-            self.update_monitor_state(NONE_STATE)
-            return
+        old_status = get_attribute(old, 'status')
+        new_status = get_attribute(new, 'status')
+        if old_status == 'Segment cleaning' or new_status != 'Segment cleaning':
+            self.log('Not new cleaning job, {} vs {}'.format(old_status, new_status))
+            return False
 
-        battery_level = get_int_attribute(vacuum_entity, 'battery_level')
-        if battery_level < 100:
-            self.update_monitor_state(AWAITING_FULL_CHARGE_STATE)
-        else:
-            self.go_to_dumping_area()
+        self.log('Started new cleaning job')
 
-    def handle_battery_level_change(self, vacuum_entity):
-        battery_level = get_int_attribute(vacuum_entity, 'battery_level')
-
-        if battery_level < 100:
-            return
-
-        if self.current_monitor_state() != AWAITING_FULL_CHARGE_STATE:
-            return
-
-        self.go_to_dumping_area()
+        return True
 
     def is_arrived_dumping_area(self, old, new):
         if self.current_monitor_state() != HEADING_TO_LAUNDRY_ROOM_STATE:
+            self.debug('is_arrived_dumping_area => NOT HEADING_TO_LAUNDRY_ROOM_STATE')
             return False
 
         old_state = get_state(old)
         new_state = get_state(new)
         if old_state != 'cleaning' or new_state != 'idle':
+            self.debug('is_arrived_dumping_area => old_state ({}) NOT cleaning or new_state NOT idle ({})'.format(
+                old_state, new_state))
             return False
 
         old_status = get_attribute(old, 'status')
         new_status = get_attribute(new, 'status')
 
         if old_status != 'Going to target' or new_status != 'Idle':
+            self.debug('is_arrived_dumping_area => old_state ({}) NOT "Going to target" or new_state NOT Idle ({})'
+                       .format(old_status, new_status))
             return False
 
         self.log('Arrived dumping area')
 
         return True
 
-    def handle_state_change(self, vacuum_entity):
-        state = get_state(vacuum_entity)
-
-        if state != 'returning':
-            return
-
-        if self.current_monitor_state() != AWAITING_DUSTBIN_REMOVAL_STATE:
-            return
-
-        self.update_monitor_state(NONE_STATE)
-        self.update_clean_count(0)
-
     def go_to_dumping_area(self):
-        self.update_monitor_state(HEADING_TO_LAUNDRY_ROOM_STATE)
         self.call_service(
             'xiaomi_miio/vacuum_goto',
             entity_id=self.vacuum_entity_id,
             x_coord=self.dumping_spot_x_coord,
             y_coord=self.dumping_spot_y_coord)
+        self.update_monitor_state(HEADING_TO_LAUNDRY_ROOM_STATE)
 
     def update_clean_count(self, count):
         self.call_service('input_number/set_value', entity_id=self.cleaned_count_entity_id, value=count)
@@ -187,3 +189,19 @@ class VacuumDustbinMonitor(BaseAutomation):
 
     def current_monitor_state(self):
         return self.get_state(self.monitor_state_entity_id)
+
+    def diff(self, old, new):
+        msg = 'Current: state={}, status={}\n'.format(get_state(new), get_attribute(new, 'status'))
+        old_state = get_state(old)
+        new_state = get_state(new)
+        if old_state != new_state:
+            msg = msg + 'state: {}->{}\n'.format(old_state, new_state)
+
+        for attribute in ['status', 'cleaning_time', 'cleaned_area', 'battery_level', 'clean_start', 'clean_stop']:
+            old_attribute = get_attribute(old, attribute)
+            new_attribute = get_attribute(new, attribute)
+            if old_attribute != new_attribute:
+                msg = msg + '{}: {}->{}\n'.format(attribute, old_attribute, new_attribute)
+
+        if msg:
+            self.log(msg)

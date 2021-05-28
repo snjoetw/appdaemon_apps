@@ -6,7 +6,7 @@ from commute_time_monitor import CommuteTimeMonitor
 from lib.calendar_helper import CalendarEventFetcher, CalendarEvent
 from lib.context import PartsOfDay, Context
 from lib.core.component import Component
-from lib.helper import to_int, concat_list
+from lib.helper import to_int, concat_list, to_date
 from lib.stock_helper import StockQuoteFetcher
 
 SHORT_PAUSE = '<break time=".2s" />'
@@ -28,6 +28,8 @@ def get_briefing_provider(app, config):
         return StockPriceProvider(app, config)
     elif provider == 'low_battery_device':
         return LowBatteryDeviceBriefingProvider(app, config)
+    elif provider == 'covid19':
+        return Covid19BriefingProvider(app, config)
     else:
         raise ValueError("Invalid briefing provider config: " + config)
 
@@ -402,3 +404,29 @@ class LowBatteryDeviceBriefingProvider(BriefingProvider):
 
         return 'There {} devices that are running low in battery, please change the battery soon.'.format(
             len(device_results))
+
+
+class Covid19BriefingProvider(BriefingProvider):
+    def __init__(self, app, briefing_config):
+        super().__init__(app, briefing_config)
+
+    def can_brief(self, context: Context):
+        return True
+
+    def briefing(self, context: Context):
+        entity = self.get_state(self.cfg.value('covid19_cases_entity_id'), attribute='all')
+        cases = to_int(entity['state'], -1)
+        if cases <= 0:
+            return
+
+        report_date = to_date(entity.get('attributes', {}).get('date'))
+
+        day_diff = datetime.today().day - report_date.day
+        if day_diff == 0:
+            day = 'today'
+        elif day_diff == 1:
+            day = 'yesterday'
+        else:
+            return
+
+        return 'Total Covid-19 cases for {} is {}{}.'.format(day, SHORT_PAUSE, cases)

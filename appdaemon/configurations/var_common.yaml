@@ -103,6 +103,7 @@ var_basement_lights: &var_basement_lights
 
 var_outside_lights: &var_outside_lights
   - light.hue_backyard_spot_light
+  - light.hue_backyard_wall_light
   - light.zwave_front_door_light
   - light.zwave_front_yard_light
   - switch.zwave_backyard_light

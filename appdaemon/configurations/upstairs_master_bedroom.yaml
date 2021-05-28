@@ -106,7 +106,7 @@ master_bathroom_shower_mode:
   module: automation
   class: Automation
   variables:
-    shower_watt_threshold: 8.0
+    shower_watt_threshold: 15.0
   triggers:
     - platform: state
       entity_id:

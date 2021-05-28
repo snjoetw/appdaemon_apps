@@ -6,6 +6,7 @@ front_yard_lighting:
   motion_entity_id:
     - input_boolean.nest_front_yard_activity_detected
     - input_boolean.nest_front_door_activity_detected
+    - input_boolean.hk_bridge_front_side_yard_motion
   turn_off_delay: 300
   timer:
     turn_on_start_time: '16:00:00'
@@ -43,6 +44,7 @@ backyard_lighting:
     - binary_sensor.zwave_backyard_motion
     - input_boolean.nest_rear_driveway_activity_detected
     - input_boolean.nest_backyard_activity_detected
+    - input_boolean.hk_bridge_back_side_yard_motion
   turn_off_delay: 300
   timer:
     turn_on_start_time: '16:00:00'
@@ -50,10 +52,10 @@ backyard_lighting:
   lighting_scenes:
     Dark:
       - entity_id: switch.zwave_backyard_light
+      - entity_id: light.hue_backyard_wall_light
+        brightness: 255
       - entity_id: light.hue_backyard_spot_light
         brightness: 255
-        force_on: false
-        force_off: false
 
 
 front_door_doorbell_pressed:

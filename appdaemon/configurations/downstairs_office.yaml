@@ -76,6 +76,45 @@ office_monitor_random_lighting:
             - Savanna sunset
 
 
+office_cube:
+  module: automation
+  class: Automation
+  triggers:
+    - platform: event
+      event_type: zha_event
+  constraints:
+    - platform: triggered_event
+      event_data:
+        device_ieee: '00:15:8d:00:01:0a:e6:64'
+  handlers:
+    - constraints:
+        - platform: triggered_event
+          event_data:
+            command: 'flip'
+      actions:
+        - platform: turn_off
+          dim_light_before_turn_off: false
+          entity_ids:
+            - light.xiaomi_office_light
+            - light.hue_office_light
+          constraints:
+            - platform: state
+              entity_id: light.xiaomi_office_light
+              state: 'on'
+
+        - platform: turn_on
+          entity_ids:
+            - entity_id: light.xiaomi_office_light
+              brightness: 254
+            - entity_id: light.hue_office_light
+              brightness: 254
+          constraints:
+            - platform: state
+              entity_id: light.xiaomi_office_light
+              state: 'off'
+
+
+
 office_wall_switch:
   module: automation
   class: Automation
@@ -123,13 +162,9 @@ office_meeting_dnd:
   triggers:
     - platform: state
       entity_id:
-        - binary_sensor.joes_imac_pro_3_microphone_in_use
         - binary_sensor.zb_office_door
   handlers:
     - constraints:
-        - platform: state
-          entity_id: binary_sensor.joes_imac_pro_3_microphone_in_use
-          state: 'on'
         - platform: state
           entity_id: binary_sensor.zb_office_door
           state: 'off'

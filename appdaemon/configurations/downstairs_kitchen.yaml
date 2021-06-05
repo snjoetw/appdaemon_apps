@@ -39,6 +39,7 @@ kitchen_lighting_2:
           state: "on"
       actions:
         - platform: turn_off
+          dim_light_before_turn_off: false
           entity_ids:
             switch.zwave_kitchen_counter_light:
             light.hue_kitchen_lightstrip:

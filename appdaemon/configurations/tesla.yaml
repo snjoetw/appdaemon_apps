@@ -55,7 +55,7 @@ tesla_model_x_left_unlock:
         - lock.mqtt_tesla_model_x_door
   constraints:
     - platform: state
-      entity_id: device_tracker.tesla_model_x_lan
+      entity_id: sensor.template_presence_tesla_model_x
       negate: true
       state: home
   handlers:

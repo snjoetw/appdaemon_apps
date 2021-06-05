@@ -426,6 +426,10 @@ lynn_s_room_sleep_music_auto_play:
   triggers:
     - platform: time
       time: "05:00:00"
+  constraints:
+    - platform: state
+      entity_id: input_select.occupancy_lynn_s_room
+      state: OCCUPIED
   handlers:
     - constraints:
         - platform: state

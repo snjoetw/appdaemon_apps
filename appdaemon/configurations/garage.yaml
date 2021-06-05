@@ -48,6 +48,7 @@ garage_bench_light:
       entity_ids:
         - lock.entry_door_lock_locked
         - binary_sensor.mqtt_garage_entry_door
+        - binary_sensor.zwave_garage_motion
   handlers:
     - constraints:
         - platform: triggered_state
@@ -65,6 +66,11 @@ garage_bench_light:
         - platform: triggered_state
           to: locked
       actions:
+        - platform: turn_on
+          entity_ids:
+            light.wled_garage_bench_light:
+              brightness: 254
+              rgb_color: [255, 159, 0]
         - platform: delay
           delay: 300
           actions:

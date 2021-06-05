@@ -9,6 +9,7 @@ water_leak_detected:
       entity_ids:
         - binary_sensor.zb_kitchen_sink_water_leak
         - binary_sensor.zb_washer_water_leak
+        - binary_sensor.zb_fridge_water_leak
   handlers:
     - constraints:
         - platform: triggered_state

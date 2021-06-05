@@ -53,10 +53,26 @@ climate_auto_fan_min_on_time:
           state:
             - Bad
             - Very Bad
+        - platform: state
+          entity_id: input_select.climate_comfort_mode
+          state: Hot
+          negate: true
       actions:
         - platform: set_fan_min_on_time
           entity_id: climate.main_floor
           fan_min_on_time: 15
+    - constraints:
+        - platform: state
+          entity_id: input_select.air_quality_level
+          state: Moderate
+        - platform: state
+          entity_id: input_select.climate_comfort_mode
+          state: [Hot, Warm]
+          negate: true
+      actions:
+        - platform: set_fan_min_on_time
+          entity_id: climate.main_floor
+          fan_min_on_time: 5
     - constraints:
         - platform: attribute
           entity_id: climate.main_floor

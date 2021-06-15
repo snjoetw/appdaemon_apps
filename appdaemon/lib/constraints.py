@@ -17,6 +17,8 @@ def get_constraint(app, config):
         return TriggeredEventConstraint(app, config)
     elif platform == 'triggered_action':
         return TriggeredActionConstraint(app, config)
+    elif platform == 'triggered_time':
+        return TriggeredTimeConstraint(app, config)
     elif platform == 'attribute':
         return AttributeConstraint(app, config)
     elif platform == 'time':
@@ -118,7 +120,7 @@ class StateConstraint(Constraint):
                 return False
 
             if condition and last_changed_seconds is not None:
-                last_changed = self.get_state(entity_id, attribute='last_changed')
+                last_changed = self.int_state(entity_id, attribute='last_changed')
                 delta = datetime.now() - last_changed
                 condition = self._matches_value(last_changed_seconds, delta.total_seconds)
 
@@ -253,6 +255,23 @@ class TriggeredActionConstraint(Constraint):
 
         action_name = self.cfg.value('action_name', None)
         return action_name == action['action_name']
+
+
+class TriggeredTimeConstraint(Constraint):
+    def __init__(self, app, constraint_config):
+        super().__init__(app, constraint_config)
+
+    def check(self, trigger_info):
+        if trigger_info.platform != "time":
+            return False
+
+        triggered = trigger_info.data
+        expected_times = self.cfg.list('time')
+        matched = self._matches_value(expected_times, triggered['time'])
+
+        self.debug('Checking {} matches {}? {}'.format(triggered['time'], expected_times, matched))
+
+        return matched
 
 
 class AttributeConstraint(Constraint):

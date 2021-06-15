@@ -120,16 +120,23 @@ class TimeTrigger(Trigger):
         if interval_in_seconds > 0:
             self.app.debug('Scheduled time trigger to run every {} sec'.format(interval_in_seconds))
             now = datetime.now() + timedelta(seconds=2)
-            self.app.run_every(self._run_every_handler, now, interval_in_seconds)
+            self.app.run_every(self._run_every_handler, now, interval_in_seconds, **{
+                'time': {
+                    'minutes': minutes,
+                    'seconds': seconds,
+                }
+            })
         elif self.cfg.value("time") is not None:
             time = self.cfg.value("time");
             self.app.debug('Scheduled time trigger to run at {}'.format(time))
-            self.app.run_daily(self._run_every_handler, time)
+            self.app.run_daily(self._run_every_handler, time, **{
+                'time': time,
+            })
 
     @monitored_callback
-    def _run_every_handler(self, time=None, **kwargs):
+    def _run_every_handler(self, kwargs=None):
         self._callback(TriggerInfo("time", {
-            "time": time,
+            "time": kwargs['time'],
         }))
 
 

@@ -71,16 +71,6 @@ class BaseAutomation(hass.Hass):
         return to_float(self.get_state(entity_id))
 
     @utils.sync_wrapper
-    async def sun_up(self):
-        sun_entity_id = self.cfg.value('sun_entity_id', 'sun.sun')
-        return self.get_state(sun_entity_id) == 'above_horizon'
-
-    @utils.sync_wrapper
-    async def sun_down(self):
-        sun_entity_id = self.cfg.value('sun_entity_id', 'sun.sun')
-        return self.get_state(sun_entity_id) == 'below_horizon'
-
-    @utils.sync_wrapper
     async def get_state(self, entity=None, **kwargs):
         if entity is None and not 'namespace' in kwargs:
             self.debug('About to retrieve state with entity=None\n{}'.format(''.join(traceback.format_stack())))

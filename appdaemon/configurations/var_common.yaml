@@ -78,7 +78,7 @@ var_downstairs_lights: &var_downstairs_lights
   - light.hue_hallway_light
   - light.zwave_kitchen_light
   - light.zwave_lobby_light
-  - light.zwave_stairway_light
+#  - light.zwave_stairway_light
   - switch.zwave_kitchen_counter_light
   - switch.zwave_living_room_light
   - switch.sh_washroom_light
@@ -86,11 +86,11 @@ var_downstairs_lights: &var_downstairs_lights
 var_upstairs_lights: &var_upstairs_lights
   - light.hue_lynn_s_room_ceiling_light
   - light.hue_lynn_s_room_lightstrip
+  - light.hue_lynn_s_room_lamp
   - light.hue_upstairs_hallway_light
   - light.hue_kids_bathroom_light
   - light.hue_master_bedroom_light
   - light.yeelight_strip1_7811dc691196
-  - light.yeelight_lynn_s_room_bedside_lamp
   - light.zwave_master_bathroom_light
   - switch.sh_master_bedroom_wall_light
   - switch.zwave_master_bathroom_ceiling_light

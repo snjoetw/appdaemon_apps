@@ -127,11 +127,12 @@ class TimeTrigger(Trigger):
                 }
             })
         elif self.cfg.value("time") is not None:
-            time = self.cfg.value("time");
-            self.app.debug('Scheduled time trigger to run at {}'.format(time))
-            self.app.run_daily(self._run_every_handler, time, **{
-                'time': time,
-            })
+            times = self.cfg.list("time");
+            for time in times:
+                self.app.debug('Scheduled time trigger to run at {}'.format(time))
+                self.app.run_daily(self._run_every_handler, time, **{
+                    'time': time,
+                })
 
     @monitored_callback
     def _run_every_handler(self, kwargs=None):

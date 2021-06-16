@@ -10,15 +10,20 @@ lynns_room_lighting:
       - entity_id: light.hue_lynn_s_room_lightstrip
         brightness: 75
         rgb_color: [ 255, 203, 114 ]
+      - entity_id: light.hue_lynn_s_room_lamp
+        brightness: 10
+        rgb_color: [ 255, 203, 114 ]
     Sleeping:
       - entity_id: light.hue_lynn_s_room_lightstrip
         brightness: 75
+        rgb_color: [ 255, 203, 114 ]
+      - entity_id: light.hue_lynn_s_room_lamp
+        brightness: 10
         rgb_color: [ 255, 203, 114 ]
     Midnight:
       - entity_id: light.hue_lynn_s_room_lightstrip
         brightness: 40
         rgb_color: [ 255, 203, 114 ]
-
 
 lynns_room_button:
   module: automation
@@ -87,6 +92,9 @@ lynns_room_button:
             - entity_id: light.hue_lynn_s_room_lightstrip
               brightness: 65
               rgb_color: [ 255, 203, 114 ]
+            - entity_id: light.hue_lynn_s_room_lamp
+              brightness: 10
+              rgb_color: [ 255, 203, 114 ]
         - platform: turn_off
           entity_ids:
             - input_boolean.is_motion_enabled_lynns_room
@@ -109,10 +117,10 @@ lynns_room_button:
           dim_light_before_turn_off: false
           entity_ids:
             - light.hue_lynn_s_room_lightstrip
+            - light.hue_lynn_s_room_lamp
             - light.hue_lynn_s_room_ceiling_light
             - light.hue_kids_bathroom_light
             - light.yeelight_strip1_7811dc691196
-            - light.yeelight_lynn_s_room_bedside_lamp
             - light.xiaomi_upstairs_hallway_night_light
             - light.hue_upstairs_hallway_light
         - platform: turn_on
@@ -189,8 +197,8 @@ lynns_room_wakeup_lighting:
       actions:
         - platform: turn_on
           entity_ids:
-            - entity_id: light.yeelight_lynn_s_room_bedside_lamp
-              brightness: 10
+            - entity_id: light.hue_lynn_s_room_lamp
+              brightness: 5
               rgb_color: [ 255, 203, 114 ]
 
 
@@ -423,34 +431,36 @@ lynn_s_room_window_monitor:
 lynn_s_room_sleep_music_auto_play:
   module: automation
   class: Automation
+  variables:
+    play_time:
+      - "05:00:00"
+      - "21:15:00"
+    stop_time:
+      - "08:00:00"
   triggers:
     - platform: time
-      time: "05:00:00"
-  constraints:
-    - platform: state
-      entity_id: input_select.occupancy_lynn_s_room
-      state: OCCUPIED
+      time: '{{play_time}}'
+    - platform: time
+      time: '{{stop_time}}'
   handlers:
     - constraints:
+        - platform: triggered_time
+          time: '{{play_time}}'
         - platform: state
           entity_id: media_player.lynns_room
           state: playing
           negate: true
+        - platform: state
+          entity_id: input_select.occupancy_lynn_s_room
+          state: OCCUPIED
       actions:
         - platform: turn_on_media_player
           entity_id: media_player.lynns_room
-          volume: 0.03
+          volume: 0.02
           source: 'Baby Mozart: Essential Classical Lullabies for Sleeping Baby'
-
-
-lynn_s_room_sleep_music_auto_stop:
-  module: automation
-  class: Automation
-  triggers:
-    - platform: time
-      time: "09:00:00"
-  handlers:
     - constraints:
+        - platform: triggered_time
+          time: '{{stop_time}}'
         - platform: state
           entity_id: media_player.lynns_room
           state: playing

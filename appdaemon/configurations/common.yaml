@@ -296,10 +296,12 @@ briefer:
       calendar_entity_id: calendar.google_home
       waste_collection_calendar_entity_id: calendar.google_my_waste
 
-    - provider: commute_time
-      workday_entity_id: binary_sensor.workday_sensor
-      start_time: '08:00:00'
-      end_time: '10:00:00'
+#    - provider: commute_time
+#      workday_entity_id: binary_sensor.workday_sensor
+#      start_time: '08:00:00'
+#      end_time: '10:00:00'
+    - provider: covid19
+      covid19_cases_entity_id: sensor.bc_covid_19_cases
 
     - provider: stock
       api_key: !secret finhub_api_key

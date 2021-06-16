@@ -276,13 +276,21 @@ walkin_closet_lighting:
 master_bedroom_sleep_music_auto_play:
   module: automation
   class: Automation
+  variables:
+    play_time:
+      - "05:00:00"
+      - "20:45:00"
+    stop_time:
+      - "09:30:00"
   triggers:
     - platform: time
-      time: "20:45:00"
+      time: '{{play_time}}'
     - platform: time
-      time: "05:00:00"
+      time: '{{stop_time}}'
   handlers:
     - constraints:
+        - platform: triggered_time
+          time: '{{play_time}}'
         - platform: state
           entity_id: media_player.master_bedroom
           state: playing
@@ -292,16 +300,9 @@ master_bedroom_sleep_music_auto_play:
           entity_id: media_player.master_bedroom
           volume: 0.05
           source: 'Always Near - A Romantic Collection'
-
-
-master_bedroom_sleep_music_auto_stop:
-  module: automation
-  class: Automation
-  triggers:
-    - platform: time
-      time: "09:30:00"
-  handlers:
     - constraints:
+        - platform: triggered_time
+          time: '{{stop_time}}'
         - platform: state
           entity_id: media_player.master_bedroom
           state: playing

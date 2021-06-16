@@ -77,6 +77,58 @@ master_bedroom_occupancy_monitor:
           option: OCCUPIED
 
 
+master_bathroom_auto_blind:
+  log_level: DEBUG
+  module: automation
+  class: Automation
+  variables:
+    door_monitor_start_time: '08:00:00'
+    open_time: '09:30:00'
+    close_time: 'sunrise - 00:30:00'
+  triggers:
+    - platform: time
+      time: '{{open_time}}'
+    - platform: time
+      time: '{{close_time}}'
+    - platform: state
+      entity_id: binary_sensor.zb_master_bathroom_door
+      to: "on"
+  handlers:
+    - constraints:
+        - platform: triggered_time
+          time: '{{open_time}}'
+      actions:
+        - platform: service
+          service: cover/set_cover_position
+          data:
+            entity_id: cover.zb_master_bathroom_blind
+            position: 100
+    - constraints:
+        - platform: triggered_time
+          time: '{{close_time}}'
+      actions:
+        - platform: service
+          service: cover/set_cover_position
+          data:
+            entity_id: cover.zb_master_bathroom_blind
+            position: 40
+    - constraints:
+        - platform: triggered_state
+          to: "on"
+        - platform: time
+          start_time: '{{door_monitor_start_time}}'
+          end_time: '{{open_time}}'
+        - platform: attribute
+          entity_id: cover.zb_master_bathroom_blind
+          attribute: current_position
+          value: '<=50'
+      actions:
+        - platform: service
+          service: cover/set_cover_position
+          data:
+            entity_id: cover.zb_master_bathroom_blind
+            position: 100
+
 master_bathroom_lighting:
   module: motion_lighting
   class: MotionLighting

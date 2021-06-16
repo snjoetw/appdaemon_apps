@@ -71,6 +71,9 @@ class MotionLighting(BaseAutomation):
         return self.enabler_entity_id is None or self.get_state(self.enabler_entity_id) == 'on'
 
     def _register_motion_state_change_event(self):
+        if not self.motion_entity_ids:
+            return
+
         self.motion_event_handlers = [self.listen_state(self._motion_state_change_handler, motion_entity_id)
                                       for motion_entity_id in self.motion_entity_ids]
         self.debug('Registered motion state handler, entity_ids={}'.format(self.motion_entity_ids))
@@ -175,7 +178,7 @@ class MotionLighting(BaseAutomation):
         if turn_off_delay is None:
             return
 
-        self.debug('Motion stopped, will turn off in {}'.format(turn_off_delay))
+        self.debug('About to turn lights off in {} second'.format(turn_off_delay))
         self.turn_off_lights_handle = self.run_in(self._turn_off_lights_handler, turn_off_delay)
 
     def _cancel_turn_off_delay(self):
@@ -191,9 +194,12 @@ class MotionLighting(BaseAutomation):
         })]
         self.do_actions(actions)
 
-    def _figure_turn_off_delay(self, trigger_info):
+    def _figure_turn_off_delay(self, trigger_info: TriggerInfo):
         if trigger_info is not None and trigger_info.data.get('entity_id') == PATHWAY_LIGHT_TRIGGER_ENTITY_ID:
             return self.pathway_light_turn_off_delay
+
+        if trigger_info is not None and trigger_info.platform == 'time':
+            return 0
 
         return self.turn_off_delay
 

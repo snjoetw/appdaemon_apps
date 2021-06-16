@@ -73,8 +73,19 @@ shower_time_scene:
             💦 Shower time activated, remember to take the towel!
             Do you want to change music?
           ios:
-            category: "shower_time_music"
             thread_id: Shower Time Scene
+            actions:
+              - action: 'SONOS_PIANO_CHILL'
+                title: 'Piano Chill'
+
+              - action: 'SONOS_CHILL_MIX'
+                title: 'Chill Mix'
+
+              - action: 'SONOS_K_POP_CHILL'
+                title: 'K-Pop Chill'
+
+              - action: 'SONOS_K_POP_ESSENTIALS'
+                title: 'K-Pop Essentials'
 
 
 camping_time_scene:

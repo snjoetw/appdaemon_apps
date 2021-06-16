@@ -6,10 +6,52 @@ notifier:
   module: notifier
   class: Notifier
   ios:
-    external_base_url: !secret homeassistant_external_url
     recipients:
       joe: mobile_app_joes_iphone
       yuyu: mobile_app_yuyus_iphone
+    notification_templates:
+      alarm_armed:
+        thread_id: Alarm Monitor
+        url: /lovelace/view_alarm
+        actions:
+          - action: ALARM_DISARM
+            title: Disarm
+      alarm_disarmed:
+        thread_id: Alarm Monitor
+        url: /lovelace/view_alarm
+        actions:
+          - action: ALARM_ARM_HOME
+            title: Arm Home
+          - action: ALARM_ARM_AWAY
+            title: Arm Away
+      garage_opened_closed:
+        thread_id: Garage Monitor
+        url: /lovelace/view_alarm
+        actions:
+          - action: CLOSE_FRONT_GARAGE_DOOR
+            title: Close Front Garage
+            constraints:
+              - platform: state
+                entity_id: cover.myq_front_garage_door
+                state: open
+          - action: CLOSE_BACK_GARAGE_DOOR
+            title: Close Back Garage
+            constraints:
+              - platform: state
+                entity_id: cover.myq_back_garage_door
+                state: open
+          - action: OPEN_FRONT_GARAGE_DOOR
+            title: Open Front Garage
+            constraints:
+              - platform: state
+                entity_id: cover.myq_front_garage_door
+                state: closed
+          - action: OPEN_BACK_GARAGE_DOOR
+            title: Open Back Garage
+            constraints:
+              - platform: state
+                entity_id: cover.myq_back_garage_door
+                state: closed
   facebook_messenger:
     recipients: !secret facebook_recipients_by_name
     access_token: !secret facebook_meesenger_page_access_token
@@ -394,7 +436,7 @@ mobile_app_notification_handler:
 #          recipient: joe
 #          notifier: ios
 #          ios:
-#            category: alarm_armed
+#            notification_template_name: alarm_armed
 #            critical: true
 
 

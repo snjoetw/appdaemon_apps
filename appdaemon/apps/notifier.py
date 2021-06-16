@@ -2,12 +2,13 @@ import json
 import os.path
 import time
 from datetime import datetime
-
-import requests
 from enum import Enum
 from typing import List
 
+import requests
+
 from base_automation import BaseAutomation
+from lib.constraints import get_constraint
 
 
 class NotifierType(Enum):
@@ -72,7 +73,7 @@ class Messenger:
     def __init__(self, app, config, notifier_type):
         self._app = app
         self._notifier_type = notifier_type
-        self._camera_snapshot_filepath = config.get('camera_snapshot_filepath', '/config/www/snapshot')
+        self._camera_snapshot_filepath = config.get('camera_snapshot_filepath', '/media/snapshot')
         self._recipients = config.get(notifier_type.value, {}).get('recipients')
 
     @property
@@ -108,7 +109,7 @@ class IosMessenger(Messenger):
     def __init__(self, app, config):
         super().__init__(app, config, NotifierType.IOS)
 
-        self._external_base_url = config.get(NotifierType.IOS.value).get('external_base_url')
+        self._notification_templates = config.get(NotifierType.IOS.value).get('notification_templates')
 
     def send(self, message: Message):
         recipients = self.figure_recipients(message)
@@ -133,7 +134,7 @@ class IosMessenger(Messenger):
 
         if message.camera_entity_id:
             snapshot_filepath = self.get_camera_snapshot(message.camera_entity_id)
-            snapshot_url = '{}/local{}'.format(self._external_base_url, snapshot_filepath)
+            snapshot_url = '/media/local{}'.format(snapshot_filepath)
             data['attachment'] = {
                 'url': snapshot_url,
                 'hide-thumbnail': False,
@@ -143,18 +144,20 @@ class IosMessenger(Messenger):
         if settings is None:
             return data
 
-        url = settings.get('url')
+        template = self._notification_templates.get(settings.get('notification_template_name'), {})
+        url = settings.get('url', template.get('url'))
         if url is not None:
             data['url'] = url
 
+        actions = self._figure_actions(settings, template)
+        self.app.debug('Using actions={}'.format(actions))
+        if actions is not None and actions:
+            data['actions'] = actions
+
         push = {}
-        thread_id = settings.get('thread_id')
+        thread_id = settings.get('thread_id', template.get('thread_id'))
         if thread_id is not None:
             push['thread-id'] = thread_id
-
-        category = settings.get('category')
-        if category is not None:
-            push['category'] = category
 
         critical = settings.get('critical')
         if critical:
@@ -168,6 +171,28 @@ class IosMessenger(Messenger):
             data['push'] = push
 
         return data
+
+    def _figure_actions(self, settings: dict, template: dict):
+        action_candidates = settings.get('actions', template.get('actions'))
+        if not action_candidates:
+            return []
+
+        actions = []
+        for action_candidate in action_candidates:
+            if self._is_action_constraint_match(action_candidate):
+                actions.append(action_candidate)
+
+        return actions
+
+    def _is_action_constraint_match(self, action_candidate):
+        constraint_configs = action_candidate.get('constraints', [])
+        for constraint_config in constraint_configs:
+            constraint = get_constraint(self.app, constraint_config)
+            if not constraint.check(None):
+                self.app.debug('Constraint does not match {}, skipping {}'.format(constraint, action_candidate))
+                return False
+
+        return True
 
 
 class FacebookMessenger(Messenger):

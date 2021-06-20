@@ -33,6 +33,7 @@ def create_turn_off_action(app, entity_id):
 
 class MotionLighting(BaseAutomation):
     motion_entity_ids: List[str]
+    darkness_entity_id: str
     enabler_entity_id: str
     scene_entity_id: str
     lighting_scenes: Dict[str, Any]
@@ -40,9 +41,11 @@ class MotionLighting(BaseAutomation):
     dim_light_before_turn_off: bool
     turn_on_constraints: List[Constraint]
     turn_off_light_entity_ids: List[str]
+    pathway_light_turn_off_delay: int
 
     def initialize(self):
         self.motion_entity_ids = self.cfg.list('motion_entity_id')
+        self.darkness_entity_id = self.cfg.value('darkness_entity_id')
         self.enabler_entity_id = self.cfg.value('enabler_entity_id')
         self.scene_entity_id = self.cfg.value('scene_entity_id')
         self.lighting_scenes = self.cfg.value('lighting_scenes')
@@ -109,6 +112,9 @@ class MotionLighting(BaseAutomation):
         if not self.is_enabled:
             return False
 
+        if self.darkness_entity_id and self.get_state(self.darkness_entity_id) == 'Not Dark':
+            return False
+
         motion_state = trigger_info.data.get('to')
         if motion_state not in TURN_ON_TRIGGER_STATES:
             return False
@@ -167,7 +173,10 @@ class MotionLighting(BaseAutomation):
             return light_settings
 
         scene = DEFAULT_SCENE if self.scene_entity_id is None else self.get_state(self.scene_entity_id)
+        if scene not in self.lighting_scenes:
+            scene = DEFAULT_SCENE
         light_settings = self.lighting_scenes.get(scene)
+
         self.debug('Scene is {}, using light_settings={}'.format(scene, light_settings))
 
         return light_settings

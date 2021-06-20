@@ -87,12 +87,14 @@ master_bathroom_auto_blind:
     close_time: 'sunrise - 00:30:00'
   triggers:
     - platform: time
-      time: '{{open_time}}'
-    - platform: time
-      time: '{{close_time}}'
+      time:
+        - '{{open_time}}'
+        - '{{close_time}}'
     - platform: state
-      entity_id: binary_sensor.zb_master_bathroom_door
-      to: "on"
+      entity_id:
+        - binary_sensor.zb_master_bathroom_door
+        - binary_sensor.sleeping_time
+        - sun.sun
   handlers:
     - constraints:
         - platform: triggered_time
@@ -112,8 +114,12 @@ master_bathroom_auto_blind:
           data:
             entity_id: cover.zb_master_bathroom_blind
             position: 40
+    # when door==open
+    # if time_between=8:00&9:30 + blind_is_closed
+    # then open_blind
     - constraints:
         - platform: triggered_state
+          entity_id: binary_sensor.zb_master_bathroom_door
           to: "on"
         - platform: time
           start_time: '{{door_monitor_start_time}}'
@@ -128,6 +134,53 @@ master_bathroom_auto_blind:
           data:
             entity_id: cover.zb_master_bathroom_blind
             position: 100
+    # when sunset
+    # if window_is_open + blind_is_closed
+    # then open_blind
+    - constraints:
+        - platform: triggered_state
+          entity_id: sun.sun
+          to: "below_horizon"
+        - platform: state
+          entity_id: binary_sensor.mqtt_master_bathroom_window
+          state: "on"
+        - platform: attribute
+          entity_id: cover.zb_master_bathroom_blind
+          attribute: current_position
+          value: '<=50'
+      actions:
+        - platform: service
+          service: cover/set_cover_position
+          data:
+            entity_id: cover.zb_master_bathroom_blind
+            position: 100
+    # when door_is_closed or sleeping_time
+    # if door_is_closed + sleeping_time + sun_still_up + blind_is_opened
+    # then close_blind
+    - constraints:
+        - platform: triggered_state
+          entity_id:
+            - binary_sensor.zb_master_bathroom_door
+            - binary_sensor.sleeping_time
+        - platform: state
+          entity_id: binary_sensor.zb_master_bathroom_door
+          state: "off"
+        - platform: state
+          entity_id: binary_sensor.sleeping_time
+          state: 'on'
+        - platform: state
+          entity_id: sun.sun
+          state: above_horizon
+        - platform: attribute
+          entity_id: cover.zb_master_bathroom_blind
+          attribute: current_position
+          value: '>=95'
+      actions:
+        - platform: service
+          service: cover/set_cover_position
+          data:
+            entity_id: cover.zb_master_bathroom_blind
+            position: 40
 
 master_bathroom_lighting:
   module: motion_lighting

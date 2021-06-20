@@ -21,6 +21,45 @@ light_runtime_monitor:
       threshold_in_minute: 5
 
 
+darkness_monitor:
+  module: darkness_monitor
+  class: DarknessMonitor
+  zones:
+    - darkness_entity_id: input_select.darkness_level_downstairs_kitchen
+      participate_sun_down_time: true
+      areas:
+        - light_sensor_entity_id: sensor.zb_kitchen_motion_illuminance
+          darkness_threshold: 75
+          skip_when_on_entity_ids:
+            - light.zwave_kitchen_light
+            - switch.zwave_kitchen_counter_light
+        - light_sensor_entity_id: sensor.zwave_backyard_luminance
+          darkness_threshold: 3000
+
+    - darkness_entity_id: input_select.darkness_level_downstairs_front
+      participate_sun_down_time: true
+      areas:
+        - light_sensor_entity_id: sensor.zb_office_motion_illuminance
+          darkness_threshold: 75
+          skip_when_on_entity_ids:
+            - light.xiaomi_office_light
+        - light_sensor_entity_id: sensor.zb_living_room_motion_illuminance
+          darkness_threshold: 100
+          skip_when_on_entity_ids:
+            - switch.zwave_living_room_light
+
+    - darkness_entity_id: input_select.darkness_level_upstairs_master_bathroom
+      participate_sun_down_time: true
+      areas:
+        - light_sensor_entity_id: sensor.zb_master_bathroom_motion_illuminance
+          darkness_threshold: 150
+          skip_when_on_entity_ids:
+            - light.zwave_master_bathroom_light
+            - switch.zwave_master_bathroom_ceiling_light
+        - light_sensor_entity_id: sensor.zwave_backyard_luminance
+          darkness_threshold: 750
+
+
 lighting_mode_monitor:
   module: lighting_mode_monitor
   class: LightingModeMonitor
@@ -45,12 +84,6 @@ lighting_mode_monitor:
     # Family Room
     - light_sensor_entity_id: sensor.zwave_backyard_luminance
       mode_entity_id: input_select.lighting_mode_family_room
-      participate_sleeping_time: false
-      thresholds:
-        750: Not Dark
-        0: Dark
-    - light_sensor_entity_id: sensor.zwave_backyard_luminance
-      mode_entity_id: input_select.lighting_mode_office
       participate_sleeping_time: false
       thresholds:
         750: Not Dark

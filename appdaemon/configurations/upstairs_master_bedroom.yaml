@@ -186,6 +186,7 @@ master_bathroom_lighting:
   module: motion_lighting
   class: MotionLighting
   enabler_entity_id: input_boolean.is_motion_enabled_master_bathroom
+  darkness_entity_id: input_select.darkness_level_upstairs_master_bathroom
   scene_entity_id: input_select.lighting_mode_master_bathroom
   motion_entity_id: binary_sensor.zb_master_bathroom_motion
   turn_off_delay: 3600
@@ -197,7 +198,7 @@ master_bathroom_lighting:
       entity_id: light.zwave_master_bathroom_light
       state: "off"
   lighting_scenes:
-    Dark:
+    Default:
       - entity_id: switch.zwave_master_bathroom_ceiling_light
       - entity_id: light.zwave_master_bathroom_light
         brightness: 254
@@ -205,6 +206,7 @@ master_bathroom_lighting:
       - entity_id: light.zwave_master_bathroom_light
         brightness: 125
     Midnight:
+    # don't turn on anything
 
 
 master_bathroom_shower_mode:

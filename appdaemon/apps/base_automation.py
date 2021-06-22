@@ -23,10 +23,6 @@ class BaseAutomation(hass.Hass):
         return Config(self, self.args)
 
     @property
-    def debug_enabled(self):
-        return self.cfg.value('debug', False)
-
-    @property
     def log_level(self):
         log_level = self.cfg.value('log_level')
         if log_level:

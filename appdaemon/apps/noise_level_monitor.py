@@ -1,6 +1,5 @@
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from itertools import repeat
 
 from base_automation import BaseAutomation
 from lib.core.monitored_callback import monitored_callback
@@ -167,16 +166,17 @@ def handle_noise_detected(app, light_setting, light_data):
         light_setting.delegate_light_entity_id,
         attribute='all')
 
-    for _ in repeat(None, 3):
+    if original['state'] == 'off':
         app.turn_on(light_setting.delegate_light_entity_id, **{
-            'brightness': 20,
+            'brightness': 255,
         })
-        app.sleep(1)
-        app.turn_on(light_setting.delegate_light_entity_id, **{
-            **light_data,
-            'brightness': 254,
-        })
-        app.sleep(1)
+
+    app.turn_on(light_setting.delegate_light_entity_id, **{
+        **light_data,
+        'flash': 'long',
+    })
+
+    app.sleep(3)
 
     if original['state'] == 'on':
         app.turn_on(light_setting.delegate_light_entity_id, **{
